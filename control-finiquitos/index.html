@@ -1,0 +1,1344 @@
+<!doctype html><html lang="es"><head><script>window.CLAUDE_LOCAL = {"app": "control-finiquitos", "titulo": "Control Finiquitos Zara Chile", "carpeta": "Artefactos/Control Finiquitos"};</script><script src="/comun/claude-local.js"></script><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Control Finiquitos Zara Chile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,500..800&family=Public+Sans:ital,wght@0,400..700;1,400&display=swap">
+<style>
+/* Layout: libro de control — cabecera con parámetros del corte, pestañas por tarea (resumen / detalle / carga / centros), tarjetas planas sobre papel verde-gris. */
+:root{
+  --bg:#F3F5F3; --panel:#FFFFFF; --ink:#16201F; --muted:#5A6764; --line:#DCE2DF; --line-strong:#C3CCC8;
+  --accent:#0E6B5C; --accent-ink:#FFFFFF; --accent-soft:#E0EEE9; --hover:#EEF3F1;
+  --ok:#1D7A3E; --warn:#9A5B00; --warn-soft:#FBF0DC; --bad:#B42318; --bad-soft:#FBE7E5;
+  --s-tienda:#0E6B5C; --s-estructura:#B26A12; --s-home:#5552C9; --s-sin:#97A19E;
+  --grid:#E6EAE8; --tip:#FFFFFF;
+  --f-display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --f-body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --r:8px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#0F1514; --panel:#161E1C; --ink:#E5ECE9; --muted:#9AA8A4; --line:#26312E; --line-strong:#384541;
+  --accent:#43C2A7; --accent-ink:#06201B; --accent-soft:#16332C; --hover:#1C2725;
+  --ok:#5BCB83; --warn:#E3A84C; --warn-soft:#2E2412; --bad:#F2786D; --bad-soft:#341A18;
+  --s-tienda:#43C2A7; --s-estructura:#E3A84C; --s-home:#9593F2; --s-sin:#6F7B78;
+  --grid:#222C2A; --tip:#1C2624; color-scheme:dark;}}
+:root[data-theme="dark"]{
+  --bg:#0F1514; --panel:#161E1C; --ink:#E5ECE9; --muted:#9AA8A4; --line:#26312E; --line-strong:#384541;
+  --accent:#43C2A7; --accent-ink:#06201B; --accent-soft:#16332C; --hover:#1C2725;
+  --ok:#5BCB83; --warn:#E3A84C; --warn-soft:#2E2412; --bad:#F2786D; --bad-soft:#341A18;
+  --s-tienda:#43C2A7; --s-estructura:#E3A84C; --s-home:#9593F2; --s-sin:#6F7B78;
+  --grid:#222C2A; --tip:#1C2624; color-scheme:dark;}
+body{background:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45}
+.wrap{max-width:1320px;margin-inline:auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:20px 48px;display:grid;gap:16px}
+.num,td.n,th.n{font-variant-numeric:tabular-nums}
+h1,h2,h3{font-family:var(--f-display);font-stretch:88%;margin:0;text-wrap:balance;letter-spacing:-.005em}
+h1{font-size:1.65rem;font-weight:750;line-height:1.15}
+h2{font-size:1.08rem;font-weight:700}
+h3{font-size:.95rem;font-weight:650}
+p{margin:0}
+.sub{color:var(--muted);font-size:.86rem}
+.eyebrow{font-size:.7rem;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600}
+button,select,input{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.btn{display:inline-flex;align-items:center;gap:6px;border:1px solid var(--line-strong);background:var(--panel);border-radius:6px;padding:7px 12px;cursor:pointer;font-weight:550;font-size:.88rem;white-space:nowrap}
+.btn:hover{background:var(--hover)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink)}
+.btn.primary:hover{filter:brightness(1.07)}
+.btn.danger{color:var(--bad);border-color:color-mix(in srgb,var(--bad) 45%,transparent)}
+.btn.danger.armed{background:var(--bad);color:#fff;border-color:var(--bad)}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.btn svg{width:16px;height:16px;flex:none}
+.link{background:none;border:0;padding:0;color:var(--accent);cursor:pointer;font-weight:600;text-decoration:underline;text-underline-offset:2px}
+.field{display:grid;gap:4px;min-width:0}
+.field>span{font-size:.74rem;color:var(--muted);font-weight:600;letter-spacing:.02em}
+.inp,select.inp{border:1px solid var(--line-strong);background:var(--panel);border-radius:6px;padding:6px 9px;min-width:0;width:100%;box-sizing:border-box}
+.inp:focus{border-color:var(--accent)}
+.inp.bad{border-color:var(--bad)}
+
+/* header */
+.top{display:flex;flex-wrap:wrap;align-items:flex-end;justify-content:space-between;gap:12px 24px}
+.top .title{display:grid;gap:4px;min-width:0}
+.controls{display:flex;flex-wrap:wrap;gap:10px;align-items:flex-end}
+.controls .field{width:auto}
+.controls select{min-width:150px}
+.status{display:inline-flex;align-items:center;gap:6px;font-size:.78rem;color:var(--muted)}
+.dot{width:7px;height:7px;border-radius:50%;background:var(--s-sin);flex:none}
+.dot.on{background:var(--ok)} .dot.warn{background:var(--warn)}
+.banner{border:1px solid var(--line);background:var(--warn-soft);border-radius:var(--r);padding:10px 14px;display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.banner.bad{background:var(--bad-soft)}
+
+/* tabs */
+.tabs{display:flex;gap:2px;border-bottom:1px solid var(--line);overflow-x:auto;scrollbar-width:none}
+.tab{background:none;border:0;border-bottom:2px solid transparent;padding:9px 14px;cursor:pointer;font-weight:600;color:var(--muted);white-space:nowrap;margin-bottom:-1px}
+.tab[aria-selected="true"]{color:var(--ink);border-bottom-color:var(--accent)}
+.tab:hover{color:var(--ink)}
+.tab .count{font-weight:500;font-size:.78rem;color:var(--muted);margin-left:4px}
+.pane{display:grid;gap:16px}
+
+/* cards */
+.card{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:16px 18px;display:grid;gap:12px;min-width:0}
+.card-h{display:flex;justify-content:space-between;align-items:flex-start;gap:8px 16px;flex-wrap:wrap}
+.card-h>div{display:grid;gap:2px;min-width:0}
+.grid2{display:grid;gap:16px;grid-template-columns:repeat(auto-fit,minmax(min(100%,30rem),1fr))}
+
+/* kpis */
+.kpis{display:grid;gap:12px;grid-template-columns:repeat(auto-fit,minmax(min(100%,13.5rem),1fr))}
+.kpi{background:var(--panel);border:1px solid var(--line);border-radius:var(--r);padding:14px 16px;display:grid;gap:4px;align-content:start}
+.kpi .v{font-family:var(--f-display);font-stretch:85%;font-weight:700;font-size:1.85rem;line-height:1.1;font-variant-numeric:tabular-nums}
+.kpi .d{font-size:.8rem;color:var(--muted)}
+.up{color:var(--bad)} .down{color:var(--ok)}
+.takeaway{font-size:.98rem;max-width:80ch}
+.takeaway b{font-weight:650}
+
+/* tables */
+.tbl-wrap{overflow-x:auto;min-width:0;border:1px solid var(--line);border-radius:6px}
+.tbl-wrap.tall{max-height:68vh;overflow:auto}
+table{border-collapse:collapse;width:100%;font-size:.84rem}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{font-weight:650;font-size:.74rem;letter-spacing:.02em;color:var(--muted);background:var(--panel);position:sticky;top:0;z-index:1}
+td.n,th.n{text-align:right}
+tr.total td{font-weight:700;background:var(--accent-soft)}
+tr.sub td{color:var(--muted);font-size:.8rem}
+tr.future td{color:var(--muted)}
+td.future,th.future{color:var(--muted);opacity:.65}
+td.cierre,th.cierre{box-shadow:inset 0 -2px 0 var(--accent)}
+tbody tr.click{cursor:pointer}
+tbody tr.click:hover td{background:var(--hover)}
+td.wrap{white-space:normal;min-width:16rem}
+.seg{display:inline-flex;align-items:center;gap:6px}
+.sw{width:9px;height:9px;border-radius:2px;flex:none;display:inline-block}
+.bar-cell{display:flex;align-items:center;gap:8px;justify-content:flex-end}
+.bar-cell i{display:block;height:6px;border-radius:3px;background:var(--accent);opacity:.75}
+.pill{display:inline-block;font-size:.72rem;font-weight:650;border-radius:999px;padding:1px 8px;background:var(--hover);color:var(--muted)}
+.pill.bad{background:var(--bad-soft);color:var(--bad)}
+.pill.ok{background:var(--accent-soft);color:var(--accent)}
+.sortbtn{all:unset;cursor:pointer}
+.sortbtn:focus-visible{outline:2px solid var(--accent)}
+
+/* chart */
+.legend{display:flex;flex-wrap:wrap;gap:6px 16px;font-size:.82rem}
+.legend span{display:inline-flex;align-items:center;gap:6px}
+.chart{position:relative;min-height:300px}
+.chart svg{display:block;width:100%;overflow:visible}
+.chart text{fill:var(--muted);font-size:11px;font-family:var(--f-body)}
+.chart .tot{fill:var(--ink);font-weight:650;font-size:11px}
+.tip{position:absolute;pointer-events:none;background:var(--tip);border:1px solid var(--line-strong);border-radius:6px;padding:8px 10px;font-size:.78rem;box-shadow:0 6px 18px rgba(0,0,0,.14);min-width:180px;z-index:5}
+.tip .row{display:flex;justify-content:space-between;gap:14px}
+.tip .h{color:var(--muted);margin-bottom:4px;font-weight:600}
+
+/* detalle filtros */
+.filters{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,11rem),1fr));align-items:end}
+.sumline{display:flex;gap:6px 18px;flex-wrap:wrap;font-size:.86rem;color:var(--muted)}
+.sumline b{color:var(--ink);font-variant-numeric:tabular-nums}
+
+/* carga */
+.drop{border:1.5px dashed var(--line-strong);border-radius:var(--r);padding:26px 18px;display:grid;justify-items:center;gap:6px;text-align:center;cursor:pointer;background:var(--bg)}
+.drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+.drop input{position:absolute;opacity:0;width:1px;height:1px}
+.drop b{font-family:var(--f-display);font-stretch:90%;font-size:1.05rem}
+.stats{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,9.5rem),1fr))}
+.stat{border:1px solid var(--line);border-radius:6px;padding:10px 12px;display:grid;gap:2px}
+.stat .v{font-weight:700;font-size:1.15rem;font-variant-numeric:tabular-nums}
+.radio{display:grid;gap:8px}
+.radio label{display:flex;gap:10px;align-items:flex-start;border:1px solid var(--line);border-radius:6px;padding:10px 12px;cursor:pointer}
+.radio label:has(input:checked){border-color:var(--accent);background:var(--accent-soft)}
+.radio input{margin-top:3px;accent-color:var(--accent)}
+.progress{height:6px;background:var(--hover);border-radius:3px;overflow:hidden}
+.progress i{display:block;height:100%;background:var(--accent);width:0;transition:width .2s}
+.msg{font-size:.86rem}
+.msg.ok{color:var(--ok)} .msg.bad{color:var(--bad)} .msg.warn{color:var(--warn)}
+.row-actions{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+ul.plain{margin:0;padding-left:18px;display:grid;gap:3px;font-size:.84rem}
+
+/* editor */
+.sheet{position:fixed;inset:0;z-index:20;background:rgba(10,16,15,.45);display:flex;justify-content:flex-end}
+.sheet-panel{background:var(--panel);width:min(640px,100%);height:100%;display:grid;grid-template-rows:auto 1fr auto;box-shadow:-10px 0 30px rgba(0,0,0,.2)}
+.sheet-panel header,.sheet-panel footer{padding:14px max(18px,env(safe-area-inset-right,0px)) 14px 18px;display:flex;justify-content:space-between;align-items:center;gap:10px;border-bottom:1px solid var(--line)}
+.sheet-panel header{padding-top:max(14px,env(safe-area-inset-top,0px))}
+.sheet-panel footer{border-bottom:0;border-top:1px solid var(--line);flex-wrap:wrap;padding-bottom:max(14px,env(safe-area-inset-bottom,0px))}
+.sheet-body{overflow:auto;padding:16px 18px;display:grid;gap:18px;align-content:start}
+.fs{display:grid;gap:10px;grid-template-columns:repeat(auto-fit,minmax(min(100%,13rem),1fr));border:0;margin:0;padding:0}
+.fs legend{font-family:var(--f-display);font-stretch:90%;font-weight:700;font-size:.92rem;margin-bottom:8px;padding:0}
+.fs .full{grid-column:1/-1}
+.amt-total{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.chk{display:inline-flex;gap:6px;align-items:center;font-size:.82rem;color:var(--muted)}
+.chk input{accent-color:var(--accent)}
+.hint{font-size:.76rem;color:var(--muted)}
+.err{font-size:.78rem;color:var(--bad)}
+.empty{padding:28px 12px;text-align:center;color:var(--muted);display:grid;gap:8px;justify-items:center}
+.skel{display:inline-block;height:.9em;width:7em;border-radius:4px;background:var(--hover)}
+body.ro .w-only{display:none!important}
+@media (prefers-reduced-motion: no-preference){.pane{animation:fade .25s ease-out}@keyframes fade{from{opacity:.4}to{opacity:1}}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div class="title">
+      <span class="eyebrow">Zara Chile · Tiendas, Estructura y Zara Home · CLP</span>
+      <h1>Control de gasto en finiquitos e indemnizaciones</h1>
+      <span class="status" id="status"><span class="dot" id="status-dot"></span><span id="status-text">Conectando…</span></span>
+    </div>
+    <div class="controls">
+      <label class="field"><span>Mes de cierre</span>
+        <select class="inp" id="sel-cierre" aria-label="Mes de cierre"><option value="">Último mes cargado</option></select></label>
+      <label class="field"><span>Inicio año comercial</span>
+        <select class="inp" id="sel-inicio" aria-label="Mes de inicio del año comercial"></select></label>
+      <button class="btn w-only" id="btn-new" type="button"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 3v10M3 8h10"/></svg>Nuevo registro</button>
+      <button class="btn primary" id="btn-xlsx" type="button"><svg viewBox="0 0 16 16" fill="none" stroke="currentColor" stroke-width="1.8"><path d="M8 2v8m-3.5-3.5L8 10l3.5-3.5M3 13h10"/></svg>Descargar Excel</button>
+    </div>
+  </header>
+
+  <div id="banner" class="banner" hidden></div>
+
+  <nav class="tabs" role="tablist" aria-label="Secciones">
+    <button class="tab" role="tab" id="t-resumen" aria-controls="resumen" aria-selected="true" type="button">Resumen</button>
+    <button class="tab" role="tab" id="t-detalle" aria-controls="detalle" aria-selected="false" type="button">Detalle<span class="count" id="cnt-det"></span></button>
+    <button class="tab w-only" role="tab" id="t-cargar" aria-controls="cargar" aria-selected="false" type="button">Cargar datos</button>
+    <button class="tab" role="tab" id="t-centros" aria-controls="centros" aria-selected="false" type="button">Centros de costo<span class="count" id="cnt-cc"></span></button>
+  </nav>
+
+  <!-- RESUMEN -->
+  <section class="pane" id="resumen" role="tabpanel" aria-labelledby="t-resumen">
+    <p class="takeaway" id="takeaway"><span class="skel"></span></p>
+    <div class="kpis" id="kpis">
+      <div class="kpi"><span class="eyebrow">Gasto acumulado período</span><span class="v"><span class="skel"></span></span></div>
+      <div class="kpi"><span class="eyebrow">Gasto mes de cierre</span><span class="v"><span class="skel"></span></span></div>
+      <div class="kpi"><span class="eyebrow">Casos período</span><span class="v"><span class="skel"></span></span></div>
+      <div class="kpi"><span class="eyebrow">Costo promedio por caso</span><span class="v"><span class="skel"></span></span></div>
+    </div>
+    <div id="res-empty" class="card" hidden>
+      <div class="empty"><h2>Aún no hay finiquitos cargados</h2><p>Sube la base exportada del sistema en <button class="link" type="button" data-go="cargar">Cargar datos</button> o agrega un registro con <b>Nuevo registro</b>.</p></div>
+    </div>
+    <div id="res-body" class="pane">
+      <div class="card" id="c-seg">
+        <div class="card-h"><div><h2>1. Indicadores por segmento</h2><span class="sub" id="c-seg-sub"></span></div></div>
+        <div class="tbl-wrap" id="tbl-seg"></div>
+      </div>
+      <div class="card" id="c-chart">
+        <div class="card-h"><div><h2>Gasto mensual por segmento</h2><span class="sub" id="c-chart-sub"></span></div><div class="legend" id="legend"></div></div>
+        <div class="chart" id="chart"></div>
+      </div>
+      <div class="card" id="c-mes">
+        <div class="card-h"><div><h2>2. Evolución mensual por segmento</h2><span class="sub">Año comercial completo; los meses posteriores al cierre se muestran atenuados.</span></div></div>
+        <div class="tbl-wrap" id="tbl-mes"></div>
+      </div>
+      <div class="card" id="c-mot">
+        <div class="card-h"><div><h2>3. Gasto acumulado por motivo de retiro</h2><span class="sub" id="c-mot-sub"></span></div></div>
+        <div class="tbl-wrap" id="tbl-mot"></div>
+      </div>
+      <div class="card" id="c-cc">
+        <div class="card-h"><div><h2>4. Detalle por centro de costo</h2><span class="sub" id="c-cc-sub"></span></div></div>
+        <div class="tbl-wrap" id="tbl-cc"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- DETALLE -->
+  <section class="pane" id="detalle" role="tabpanel" aria-labelledby="t-detalle" hidden>
+    <div class="card">
+      <div class="card-h"><div><h2>Registros de finiquito</h2><span class="sub">Toca una fila para revisarla o corregirla.</span></div>
+        <div class="row-actions"><button class="btn" id="btn-det-xlsx" type="button">Descargar detalle filtrado</button></div></div>
+      <div class="filters">
+        <label class="field"><span>Buscar</span><input class="inp" id="f-q" type="search" placeholder="Nombre, RUT o centro"></label>
+        <label class="field"><span>Meses</span><select class="inp" id="f-mes"></select></label>
+        <label class="field"><span>Segmento</span><select class="inp" id="f-seg"></select></label>
+        <label class="field"><span>Motivo</span><select class="inp" id="f-mot"></select></label>
+      </div>
+      <div class="sumline" id="det-sum"></div>
+      <div class="tbl-wrap tall" id="tbl-det"></div>
+    </div>
+  </section>
+
+  <!-- CARGAR -->
+  <section class="pane" id="cargar" role="tabpanel" aria-labelledby="t-cargar" hidden>
+    <div class="card">
+      <div class="card-h"><div><h2>Cargar una base</h2><span class="sub">El reporte del sistema con las 18 columnas CODIGO … FINXPA_I (.xlsx o .csv). Sirve para el mes nuevo y para bases antiguas.</span></div>
+        <button class="btn" id="btn-tpl" type="button">Descargar plantilla</button></div>
+      <label class="drop" id="drop" for="file-in">
+        <input type="file" id="file-in" accept=".xlsx,.xlsm,.csv,.txt">
+        <b>Elige el archivo o arrástralo aquí</b>
+        <span class="sub">Se lee la hoja <i>Base_Datos</i> o la primera que tenga las columnas CODIGO y FINXPA_I. Las columnas SEGMENTO, CENTRO_COSTO y MES se calculan solas.</span>
+      </label>
+      <div id="imp" hidden></div>
+    </div>
+    <div class="grid2">
+      <div class="card">
+        <div class="card-h"><div><h2>Historial de cargas</h2><span class="sub">Últimas 30 cargas y cambios manuales.</span></div></div>
+        <div class="tbl-wrap" id="tbl-log"></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><div><h2>Eliminar un mes completo</h2><span class="sub">Útil para volver a cargar un mes desde cero.</span></div></div>
+        <div class="row-actions">
+          <select class="inp" id="del-mes" style="width:auto" aria-label="Mes a eliminar"></select>
+          <button class="btn danger" id="btn-del-mes" type="button">Eliminar mes</button>
+        </div>
+        <p class="msg" id="del-msg"></p>
+      </div>
+    </div>
+  </section>
+
+  <!-- CENTROS -->
+  <section class="pane" id="centros" role="tabpanel" aria-labelledby="t-centros" hidden>
+    <div class="card" id="cc-pend-card" hidden>
+      <div class="card-h"><div><h2>Centros sin clasificar</h2><span class="sub">Aparecen en los datos pero no en el maestro. Asígnales un segmento para que entren al resumen.</span></div></div>
+      <div class="tbl-wrap" id="tbl-pend"></div>
+    </div>
+    <div class="card">
+      <div class="card-h"><div><h2>Maestro de centros de costo</h2><span class="sub">Cada CENCOS pertenece a un segmento: Tienda, Estructura o Zara Home.</span></div></div>
+      <div class="tbl-wrap" id="tbl-maestro"></div>
+      <div class="filters w-only" style="grid-template-columns:repeat(auto-fit,minmax(min(100%,9rem),1fr))">
+        <label class="field"><span>CENCOS</span><input class="inp" id="mc-cod" inputmode="numeric" placeholder="7065"></label>
+        <label class="field"><span>Centro de costo</span><input class="inp" id="mc-nom" placeholder="Costanera Center"></label>
+        <label class="field"><span>Segmento</span><select class="inp" id="mc-seg"></select></label>
+        <button class="btn" id="mc-add" type="button">Agregar centro</button>
+      </div>
+      <p class="msg" id="mc-msg"></p>
+    </div>
+  </section>
+</div>
+
+<!-- EDITOR -->
+<div class="sheet" id="editor" hidden role="dialog" aria-modal="true" aria-labelledby="ed-title">
+  <div class="sheet-panel">
+    <header><div><h2 id="ed-title">Nuevo finiquito</h2><span class="sub" id="ed-sub">Mismo formato que la base del sistema.</span></div>
+      <button class="btn" type="button" id="ed-close" aria-label="Cerrar">Cerrar</button></header>
+    <div class="sheet-body">
+      <fieldset class="fs"><legend>Trabajador</legend>
+        <label class="field"><span>RUT (CODIGO)</span><input class="inp" id="ed-CODIGO" placeholder="12345678-9" autocomplete="off"><span class="err" id="er-CODIGO"></span></label>
+        <label class="field"><span>Nombre (NOMBRE)</span><input class="inp" id="ed-NOMBRE" placeholder="APELLIDO APELLIDO, NOMBRES" autocomplete="off"><span class="err" id="er-NOMBRE"></span></label>
+        <label class="field"><span>Cargo</span><select class="inp" id="ed-cargo-sel"></select></label>
+        <label class="field" id="ed-cargo-new" hidden><span>Código y descripción del cargo</span>
+          <span style="display:flex;gap:6px"><input class="inp" id="ed-CARGO" inputmode="numeric" placeholder="18" style="width:5.5rem"><input class="inp" id="ed-D_CARGO" placeholder="Dependiente"></span></label>
+      </fieldset>
+      <fieldset class="fs"><legend>Centro de costo</legend>
+        <label class="field full"><span>CENCOS</span><select class="inp" id="ed-cc-sel"></select><span class="err" id="er-CENCOS"></span></label>
+        <div class="fs full" id="ed-cc-new" hidden>
+          <label class="field"><span>Código CENCOS</span><input class="inp" id="ed-CENCOS" inputmode="numeric"></label>
+          <label class="field"><span>Nombre del centro</span><input class="inp" id="ed-D_CENCOS"></label>
+          <label class="field"><span>Segmento</span><select class="inp" id="ed-cc-seg"></select></label>
+        </div>
+      </fieldset>
+      <fieldset class="fs"><legend>Retiro</legend>
+        <label class="field"><span>Fecha de ingreso</span><input class="inp" type="date" id="ed-FECHA_ING" min="1950-01-01" max="2100-12-31"></label>
+        <label class="field"><span>Fecha de retiro</span><input class="inp" type="date" id="ed-FECHA_RET" min="1950-01-01" max="2100-12-31"></label>
+        <label class="field"><span>Mes de pago (AMES)</span><input class="inp" type="month" id="ed-AMES" min="2000-01" max="2100-12"><span class="err" id="er-AMES"></span></label>
+        <label class="field full"><span>Motivo de retiro</span><select class="inp" id="ed-mot-sel"></select><span class="err" id="er-MOTI"></span></label>
+        <label class="field full" id="ed-mot-new" hidden><span>Código y descripción del motivo</span>
+          <span style="display:flex;gap:6px"><input class="inp" id="ed-MOTI_RET" inputmode="numeric" placeholder="319" style="width:5.5rem"><input class="inp" id="ed-D_MOTI_RET" placeholder="Art. 161: Necesidades de la empresa"></span></label>
+      </fieldset>
+      <fieldset class="fs"><legend>Montos (CLP)</legend>
+        <label class="field"><span>VACPRO_I · Vacaciones proporcionales</span><input class="inp num amt" type="number" step="1" id="ed-VACPRO_I"></label>
+        <label class="field"><span>MESDEA_I · Mes de aviso</span><input class="inp num amt" type="number" step="1" id="ed-MESDEA_I"></label>
+        <label class="field"><span>INDLEG_I · Indemnización legal</span><input class="inp num amt" type="number" step="1" id="ed-INDLEG_I"></label>
+        <label class="field"><span>INDEMA_I · Indemnización adicional</span><input class="inp num amt" type="number" step="1" id="ed-INDEMA_I"></label>
+        <label class="field"><span>INVOLU_I · Indemnización voluntaria</span><input class="inp num amt" type="number" step="1" id="ed-INVOLU_I"></label>
+        <div class="field full"><span>FINXPA_I · Total finiquito</span>
+          <div class="amt-total"><input class="inp num" type="number" step="1" id="ed-FINXPA_I" style="max-width:14rem">
+            <label class="chk"><input type="checkbox" id="ed-auto">Calcular como suma de los montos</label></div>
+          <span class="hint">En la base del sistema el total puede incluir otros haberes; desmarca para escribirlo a mano.</span><span class="err" id="er-FINXPA_I"></span></div>
+      </fieldset>
+    </div>
+    <footer>
+      <button class="btn danger" type="button" id="ed-del" hidden>Eliminar registro</button>
+      <span class="msg" id="ed-msg"></span>
+      <span class="row-actions" style="margin-left:auto"><button class="btn" type="button" id="ed-cancel">Cancelar</button><button class="btn primary" type="button" id="ed-save">Guardar</button></span>
+    </footer>
+  </div>
+</div>
+
+<script>
+(() => {
+'use strict';
+/* ---------- constantes ---------- */
+const SEGS = ['Tienda', 'Estructura', 'Zara Home'];
+const SIN = 'Sin clasificar';
+const SEG_VAR = { 'Tienda': '--s-tienda', 'Estructura': '--s-estructura', 'Zara Home': '--s-home', [SIN]: '--s-sin' };
+const MES = ['ene','feb','mar','abr','may','jun','jul','ago','sep','oct','nov','dic'];
+const MES_L = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const COLS = ['CODIGO','NOMBRE','CENCOS','D_CENCOS','CARGO','D_CARGO','FECHA_ING','FECHA_RET','MOTI_RET','D_MOTI_RET','AMES','PERI','VACPRO_I','MESDEA_I','INDLEG_I','INDEMA_I','INVOLU_I','FINXPA_I'];
+const AMT = ['VACPRO_I','MESDEA_I','INDLEG_I','INDEMA_I','INVOLU_I'];
+const NUMC = ['CENCOS','CARGO','MOTI_RET','AMES', ...AMT, 'FINXPA_I'];
+const MOTIVOS_REF = [[301,'Art. 159 N°1: Mutuo Acuerdo'],[302,'Art. 159 N°2: Renuncia Voluntaria'],[303,'Art. 159 N°3: Muerte Trabajador'],[304,'Art. 159 N°4: Vcto. Plazo convenido'],[305,'Art. 159 N°5: Conclusión del trabajo o servicio'],[306,'Art. 159 N°6: Caso fortuito o fuerza mayor'],[313,'Art. 160 N°3: No concurrencia sin justa causa'],[318,'Art. 160 N°7: Incumplimiento de obligaciones'],[319,'Art. 161: Necesidades de la empresa']];
+
+/* ---------- estado ---------- */
+const S = {
+  months: new Map(),      // ames(string) -> {ames, rows:[...]}
+  maestro: [],            // [{cencos, centro, segmento}]
+  mesInicio: 2,
+  cargas: [],
+  cierre: '',             // '' = automático; si no, índice de mes
+  tab: 'resumen',
+  det: { q: '', mes: 'periodo', seg: '', mot: '', sort: 'mes', dir: -1 },
+  loaded: { meses: false, maestro: false, app: false },
+  db: null, dl: null, canWrite: true, mode: 'connecting'
+};
+const $ = (id) => document.getElementById(id);
+const css = (v) => getComputedStyle(document.documentElement).getPropertyValue(v).trim();
+
+/* ---------- utilidades ---------- */
+function h(tag, attrs, ...kids) {
+  const el = document.createElement(tag);
+  if (attrs) for (const [k, v] of Object.entries(attrs)) {
+    if (v == null || v === false) continue;
+    if (k === 'class') el.className = v;
+    else if (k === 'text') el.textContent = v;
+    else if (k === 'style') el.setAttribute('style', v);
+    else if (k.startsWith('on')) el.addEventListener(k.slice(2), v);
+    else el.setAttribute(k, v === true ? '' : v);
+  }
+  for (const c of kids.flat()) { if (c == null || c === false) continue; el.append(c instanceof Node ? c : String(c)); }
+  return el;
+}
+const fill = (el, ...kids) => el.replaceChildren(...kids.flat(3).filter((k) => k != null && k !== false));
+const sum = (rs) => rs.reduce((a, r) => a + (Number(r.FINXPA_I) || 0), 0);
+const fmtCLP = (n) => (n < 0 ? '-$' : '$') + Math.round(Math.abs(n)).toLocaleString('es-CL');
+const fmtInt = (n) => Math.round(n).toLocaleString('es-CL');
+const fmtPct = (x, d = 1) => (x * 100).toLocaleString('es-CL', { minimumFractionDigits: d, maximumFractionDigits: d }) + '%';
+const fmtM = (n) => '$' + (n / 1e6).toLocaleString('es-CL', { maximumFractionDigits: Math.abs(n) >= 1e8 ? 0 : 1 }) + ' M';
+const amesToIdx = (a) => Math.floor(a / 100) * 12 + (a % 100) - 1;
+const idxToAmes = (i) => Math.floor(i / 12) * 100 + (i % 12) + 1;
+const idxLabel = (i) => MES[i % 12] + '-' + String(Math.floor(i / 12)).slice(-2);
+const idxLong = (i) => MES_L[i % 12].toLowerCase() + ' ' + Math.floor(i / 12);
+const fmtDate = (s) => s ? s.slice(8, 10) + '-' + s.slice(5, 7) + '-' + s.slice(0, 4) : '';
+const clean = (s) => String(s ?? '').replace(/\s+/g, ' ').trim();
+const normRut = (s) => String(s ?? '').replace(/[.\s]/g, '').toUpperCase();
+function rutOk(r) {
+  const m = normRut(r).match(/^(\d{1,9})-([\dK])$/); if (!m) return false;
+  let s = 0, mul = 2; for (let i = m[1].length - 1; i >= 0; i--) { s += +m[1][i] * mul; mul = mul === 7 ? 2 : mul + 1; }
+  const dv = 11 - (s % 11); return (dv === 11 ? '0' : dv === 10 ? 'K' : String(dv)) === m[2];
+}
+const segColor = (s) => css(SEG_VAR[s] || '--s-sin');
+const swatch = (s) => h('span', { class: 'sw', style: `background:var(${SEG_VAR[s] || '--s-sin'})` });
+const segLabel = (s) => h('span', { class: 'seg' }, swatch(s), s);
+
+/* ---------- datos derivados ---------- */
+function maestroMap() { const m = new Map(); for (const it of S.maestro) m.set(Number(it.cencos), it); return m; }
+function allRecords() {
+  const mm = maestroMap(), out = [];
+  for (const [mk, doc] of S.months) {
+    for (const r of (doc.rows || [])) {
+      const m = mm.get(Number(r.CENCOS));
+      const dc = clean(r.D_CENCOS);
+      let seg = m && SEGS.includes(m.segmento) ? m.segmento : (dc.toLowerCase().startsWith('zara home') ? 'Zara Home' : SIN);
+      const ames = Number(r.AMES) || Number(mk);
+      out.push({ ...r, _mk: mk, _i: amesToIdx(ames), _seg: seg, _centro: dc || (m && m.centro) || ('CC ' + r.CENCOS), _mot: clean(r.D_MOTI_RET) || ('Motivo ' + (r.MOTI_RET ?? '¿?')) });
+    }
+  }
+  return out;
+}
+function compute() {
+  const recs = allRecords();
+  if (!recs.length) return null;
+  const maxI = Math.max(...recs.map((r) => r._i));
+  const cierre = S.cierre !== '' ? Number(S.cierre) : maxI;
+  const mi = S.mesInicio - 1, y = Math.floor(cierre / 12);
+  const start = ((cierre % 12) < mi ? y - 1 : y) * 12 + mi, end = start + 11;
+  const months = Array.from({ length: 12 }, (_, k) => start + k);
+  const inP = recs.filter((r) => r._i >= start && r._i <= cierre);
+  const inYear = recs.filter((r) => r._i >= start && r._i <= end);
+  const segs = recs.some((r) => r._seg === SIN) ? [...SEGS, SIN] : SEGS.slice();
+  const totP = sum(inP);
+  const seg1 = segs.map((s) => {
+    const mr = recs.filter((r) => r._seg === s && r._i === cierre), pr = inP.filter((r) => r._seg === s);
+    const gp = sum(pr); return { seg: s, gm: sum(mr), cm: mr.length, gp, cp: pr.length, pct: totP ? gp / totP : 0, avg: pr.length ? gp / pr.length : 0 };
+  });
+  const mesR = recs.filter((r) => r._i === cierre), prevR = recs.filter((r) => r._i === cierre - 1);
+  const tot1 = { seg: 'Total', gm: sum(mesR), cm: mesR.length, gp: totP, cp: inP.length, pct: totP ? 1 : 0, avg: inP.length ? totP / inP.length : 0 };
+  const monthly = months.map((i) => {
+    const mr = recs.filter((r) => r._i === i), by = {};
+    for (const s of segs) by[s] = sum(mr.filter((r) => r._seg === s));
+    return { i, by, total: sum(mr), casos: mr.length, future: i > cierre };
+  });
+  monthly.forEach((m, k) => { m.var = k > 0 && monthly[k - 1].total && m.total ? m.total / monthly[k - 1].total - 1 : null; });
+  const motMap = new Map();
+  for (const r of inP) { if (!motMap.has(r._mot)) motMap.set(r._mot, { mot: r._mot, cod: r.MOTI_RET, by: Object.fromEntries(segs.map((s) => [s, 0])), total: 0, casos: 0 }); const o = motMap.get(r._mot); o.by[r._seg] += Number(r.FINXPA_I) || 0; o.total += Number(r.FINXPA_I) || 0; o.casos++; }
+  const motivos = [...motMap.values()].sort((a, b) => b.total - a.total);
+  const ccMap = new Map();
+  for (const r of inYear) {
+    const k = r._seg + '|' + r._centro;
+    if (!ccMap.has(k)) ccMap.set(k, { seg: r._seg, centro: r._centro, cencos: r.CENCOS, by: {}, acum: 0, casos: 0 });
+    const o = ccMap.get(k); o.by[r._i] = (o.by[r._i] || 0) + (Number(r.FINXPA_I) || 0);
+    if (r._i <= cierre) { o.acum += Number(r.FINXPA_I) || 0; o.casos++; }
+  }
+  const centros = [...ccMap.values()].sort((a, b) => segs.indexOf(a.seg) - segs.indexOf(b.seg) || b.acum - a.acum);
+  const allIdx = [...new Set(recs.map((r) => r._i))].sort((a, b) => b - a);
+  return { recs, maxI, cierre, start, end, months, inP, segs, seg1, tot1, monthly, motivos, centros, prevTotal: sum(prevR), sinCount: recs.filter((r) => r._seg === SIN).length, allIdx };
+}
+
+/* ---------- render ---------- */
+let rafPending = false;
+function schedule() { if (rafPending) return; rafPending = true; requestAnimationFrame(() => { rafPending = false; render(); }); }
+
+function render() {
+  const C = compute();
+  renderControls(C);
+  $('cnt-det').textContent = C ? '(' + fmtInt(C.recs.length) + ')' : '';
+  $('cnt-cc').textContent = S.maestro.length ? '(' + S.maestro.length + ')' : '';
+  const ready = S.loaded.meses || S.mode === 'local';
+  if (S.tab === 'resumen') renderResumen(C, ready);
+  if (S.tab === 'detalle') renderDetalle(C);
+  if (S.tab === 'cargar') renderCargar(C);
+  if (S.tab === 'centros') renderCentros(C);
+  renderBanner(C);
+}
+
+function renderBanner(C) {
+  const b = $('banner'); b.replaceChildren(); b.className = 'banner';
+  if (S.mode === 'local') {
+    b.classList.add('bad');
+    b.append(h('span', null, 'Esta vista no tiene acceso al almacenamiento del artefacto: puedes revisar y cargar archivos, pero los cambios no se guardarán al cerrar.'));
+    b.hidden = false; return;
+  }
+  if (C && C.sinCount > 0) {
+    b.append(h('span', null, h('b', null, fmtInt(C.sinCount) + (C.sinCount === 1 ? ' registro sin clasificar' : ' registros sin clasificar')), ': su centro de costo no está en el maestro y no entra a los segmentos.'),
+      h('button', { class: 'link', type: 'button', onclick: () => go('centros') }, 'Asignar segmento'));
+    b.hidden = false; return;
+  }
+  b.hidden = true;
+}
+
+function renderControls(C) {
+  const sel = $('sel-cierre'), cur = S.cierre;
+  const opts = [h('option', { value: '' }, C ? 'Último mes cargado (' + idxLabel(C.maxI) + ')' : 'Último mes cargado')];
+  if (C) for (const i of C.allIdx) opts.push(h('option', { value: String(i) }, idxLabel(i)));
+  sel.replaceChildren(...opts); sel.value = cur;
+  if (sel.value !== cur) { S.cierre = ''; sel.value = ''; }
+  const si = $('sel-inicio');
+  if (!si.options.length) si.replaceChildren(...MES_L.map((m, k) => h('option', { value: String(k + 1) }, m)));
+  si.value = String(S.mesInicio);
+}
+
+function kpi(label, value, detail, detailClass) {
+  return h('div', { class: 'kpi' }, h('span', { class: 'eyebrow' }, label), h('span', { class: 'v' }, value), detail ? h('span', { class: 'd ' + (detailClass || '') }, detail) : null);
+}
+
+function renderResumen(C, ready) {
+  $('res-empty').hidden = !(ready && !C);
+  $('res-body').hidden = !C && ready;
+  $('kpis').hidden = !C && ready;
+  if (!C) { $('takeaway').hidden = ready; return; }
+  $('takeaway').hidden = false;
+  const per = idxLabel(C.start) + ' a ' + idxLabel(C.end);
+  const acum = 'acumulado ' + idxLabel(C.start) + ' – ' + idxLabel(C.cierre);
+  const top = C.seg1.slice().sort((a, b) => b.gp - a.gp)[0];
+  const m0 = C.motivos[0];
+  const tk = $('takeaway'); fill(tk, 
+    'Entre ', h('b', null, idxLabel(C.start)), ' y ', h('b', null, idxLabel(C.cierre)), ' se pagaron ', h('b', null, fmtCLP(C.tot1.gp)), ' en ', h('b', null, fmtInt(C.tot1.cp) + ' finiquitos'), '. ',
+    top && top.gp ? [h('b', null, top.seg), ' concentra el ', h('b', null, fmtPct(top.pct)), ' del gasto'] : '',
+    m0 ? [' y el motivo de mayor costo es ', h('b', null, m0.mot), ' (', fmtPct(C.tot1.gp ? m0.total / C.tot1.gp : 0), ').'] : '.');
+  const d = C.prevTotal ? C.tot1.gm / C.prevTotal - 1 : null;
+  $('kpis').replaceChildren(
+    kpi('Gasto acumulado período', fmtCLP(C.tot1.gp), 'Año comercial ' + per),
+    kpi('Gasto mes de cierre · ' + idxLabel(C.cierre), fmtCLP(C.tot1.gm), d == null ? fmtInt(C.tot1.cm) + ' casos' : (d >= 0 ? '+' : '') + fmtPct(d) + ' vs ' + idxLabel(C.cierre - 1) + ' · ' + fmtInt(C.tot1.cm) + ' casos', d == null ? '' : d > 0 ? 'up' : 'down'),
+    kpi('Casos período', fmtInt(C.tot1.cp), acum),
+    kpi('Costo promedio por caso', fmtCLP(C.tot1.avg), acum));
+  $('c-seg-sub').textContent = 'Mes de cierre ' + idxLabel(C.cierre) + ' y ' + acum + '.';
+  $('c-mot-sub').textContent = 'Ordenado por gasto, ' + acum + '.';
+  $('c-cc-sub').textContent = 'Meses del año comercial ' + per + '; acumulado y casos hasta ' + idxLabel(C.cierre) + '.';
+  $('c-chart-sub').textContent = 'Total finiquito (FINXPA_I) por mes de pago, año comercial ' + per + '.';
+
+  // 1. segmento
+  const t1 = h('table', null, h('thead', null, h('tr', null, h('th', null, 'Segmento'), h('th', { class: 'n' }, 'Gasto mes de cierre'), h('th', { class: 'n' }, 'Casos mes'), h('th', { class: 'n' }, 'Gasto acum. período'), h('th', { class: 'n' }, 'Casos período'), h('th', { class: 'n' }, '% del total'), h('th', { class: 'n' }, 'Costo prom./caso'))),
+    h('tbody', null, [...C.seg1, C.tot1].map((r) => h('tr', { class: r.seg === 'Total' ? 'total' : null },
+      h('td', null, r.seg === 'Total' ? 'Total' : segLabel(r.seg)), h('td', { class: 'n' }, fmtCLP(r.gm)), h('td', { class: 'n' }, fmtInt(r.cm)), h('td', { class: 'n' }, fmtCLP(r.gp)), h('td', { class: 'n' }, fmtInt(r.cp)), h('td', { class: 'n' }, fmtPct(r.pct)), h('td', { class: 'n' }, fmtCLP(r.avg))))));
+  $('tbl-seg').replaceChildren(t1);
+
+  // 2. mensual
+  const mh = (i) => h('th', { class: 'n' + (i > C.cierre ? ' future' : '') + (i === C.cierre ? ' cierre' : '') }, idxLabel(i));
+  const mc = (i, v, fmt) => h('td', { class: 'n' + (i > C.cierre ? ' future' : '') + (i === C.cierre ? ' cierre' : '') }, v == null ? '' : fmt(v));
+  const acSeg = (s) => C.monthly.filter((m) => !m.future).reduce((a, m) => a + m.by[s], 0);
+  const rows2 = C.segs.map((s) => h('tr', null, h('td', null, segLabel(s)), C.monthly.map((m) => mc(m.i, m.by[s], fmtCLP)), h('td', { class: 'n' }, fmtCLP(acSeg(s))), h('td', { class: 'n' }, fmtPct(C.tot1.gp ? acSeg(s) / C.tot1.gp : 0))));
+  rows2.push(h('tr', { class: 'total' }, h('td', null, 'Total'), C.monthly.map((m) => mc(m.i, m.total, fmtCLP)), h('td', { class: 'n' }, fmtCLP(C.tot1.gp)), h('td', { class: 'n' }, fmtPct(C.tot1.gp ? 1 : 0))));
+  rows2.push(h('tr', { class: 'sub' }, h('td', null, 'N° de casos'), C.monthly.map((m) => mc(m.i, m.casos, fmtInt)), h('td', { class: 'n' }, fmtInt(C.tot1.cp)), h('td')));
+  rows2.push(h('tr', { class: 'sub' }, h('td', null, 'Var. % vs mes anterior'), C.monthly.map((m) => mc(m.i, m.var, (v) => (v >= 0 ? '+' : '') + fmtPct(v))), h('td'), h('td')));
+  $('tbl-mes').replaceChildren(h('table', null, h('thead', null, h('tr', null, h('th', null, 'Segmento'), C.months.map(mh), h('th', { class: 'n' }, 'Acum. período'), h('th', { class: 'n' }, '% total'))), h('tbody', null, rows2)));
+
+  // 3. motivo
+  const maxMot = Math.max(1, ...C.motivos.map((m) => m.total));
+  const t3 = h('table', null, h('thead', null, h('tr', null, h('th', null, 'Motivo de retiro'), C.segs.map((s) => h('th', { class: 'n' }, s)), h('th', { class: 'n' }, 'Casos'), h('th', { class: 'n' }, 'Total'), h('th', { class: 'n' }, '% total'))),
+    h('tbody', null,
+      C.motivos.map((m) => h('tr', null, h('td', null, m.mot), C.segs.map((s) => h('td', { class: 'n' }, m.by[s] ? fmtCLP(m.by[s]) : '–')), h('td', { class: 'n' }, fmtInt(m.casos)), h('td', { class: 'n' }, fmtCLP(m.total)),
+        h('td', { class: 'n' }, h('span', { class: 'bar-cell' }, h('i', { style: `width:${Math.max(2, Math.round(64 * m.total / maxMot))}px` }), fmtPct(C.tot1.gp ? m.total / C.tot1.gp : 0))))),
+      h('tr', { class: 'total' }, h('td', null, 'Total'), C.segs.map((s) => h('td', { class: 'n' }, fmtCLP(C.motivos.reduce((a, m) => a + m.by[s], 0)))), h('td', { class: 'n' }, fmtInt(C.tot1.cp)), h('td', { class: 'n' }, fmtCLP(C.tot1.gp)), h('td', { class: 'n' }, fmtPct(C.tot1.gp ? 1 : 0)))));
+  $('tbl-mot').replaceChildren(t3);
+
+  // 4. centro
+  const t4 = h('table', null, h('thead', null, h('tr', null, h('th', null, 'Segmento'), h('th', null, 'Centro de costo'), C.months.map(mh), h('th', { class: 'n' }, 'Acum. período'), h('th', { class: 'n' }, 'Casos'))),
+    h('tbody', null,
+      h('tr', { class: 'total' }, h('td', null, 'Total'), h('td'), C.monthly.map((m) => mc(m.i, m.total, fmtCLP)), h('td', { class: 'n' }, fmtCLP(C.tot1.gp)), h('td', { class: 'n' }, fmtInt(C.tot1.cp))),
+      C.centros.map((c) => h('tr', null, h('td', null, segLabel(c.seg)), h('td', null, c.centro), C.months.map((i) => mc(i, c.by[i] || 0, (v) => v ? fmtCLP(v) : '–')), h('td', { class: 'n' }, fmtCLP(c.acum)), h('td', { class: 'n' }, fmtInt(c.casos))))));
+  $('tbl-cc').replaceChildren(t4);
+
+  // legend + chart
+  $('legend').replaceChildren(...C.segs.map((s) => h('span', null, swatch(s), s)));
+  drawChart(C);
+}
+
+/* ---------- gráfico ---------- */
+function niceStep(max, n) { const raw = max / n, p = Math.pow(10, Math.floor(Math.log10(raw))), f = raw / p; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * p; }
+const measure = (() => { const c = document.createElement('canvas').getContext('2d'); return (t, px = 11) => { c.font = px + 'px "Public Sans", system-ui, sans-serif'; return c.measureText(t).width; }; })();
+let lastC = null;
+function drawChart(C) {
+  lastC = C;
+  const box = $('chart'); const W = Math.max(280, box.clientWidth || 600), H = 300;
+  const NS = 'http://www.w3.org/2000/svg';
+  const s = (tag, attrs) => { const e = document.createElementNS(NS, tag); for (const k in attrs) e.setAttribute(k, attrs[k]); return e; };
+  const max = Math.max(1, ...C.monthly.map((m) => m.total));
+  const step = niceStep(max, 4), top = Math.ceil(max / step) * step;
+  const ticks = []; for (let v = 0; v <= top + 1e-6; v += step) ticks.push(v);
+  const ml = Math.ceil(Math.max(...ticks.map((t) => measure(fmtM(t))))) + 10, mr = 6, mt = 22, mb = 26;
+  const iw = W - ml - mr, ih = H - mt - mb;
+  const band = iw / 12, bw = Math.min(40, band * 0.62);
+  const y = (v) => mt + ih - (v / top) * ih;
+  const svg = s('svg', { viewBox: `0 0 ${W} ${H}`, width: '100%', height: H, role: 'img', 'aria-label': 'Gasto mensual por segmento, barras apiladas' });
+  for (const t of ticks) {
+    svg.append(s('line', { x1: ml, x2: W - mr, y1: y(t), y2: y(t), stroke: css('--grid'), 'stroke-width': 1 }));
+    const tx = s('text', { x: ml - 8, y: y(t) + 4, 'text-anchor': 'end' }); tx.textContent = fmtM(t); svg.append(tx);
+  }
+  const showTot = band >= 46;
+  const labelEvery = band < 30 ? 2 : 1;
+  C.monthly.forEach((m, k) => {
+    const cx = ml + band * k + band / 2, x0 = cx - bw / 2;
+    let acc = 0;
+    const g = s('g', { opacity: m.future ? .35 : 1 });
+    for (const sg of C.segs) {
+      const v = m.by[sg]; if (!v) continue;
+      const y1 = y(acc + v), y0 = y(acc);
+      g.append(s('rect', { x: x0, y: y1, width: bw, height: Math.max(0, y0 - y1 - (acc > 0 ? 0 : 0)), fill: segColor(sg) }));
+      acc += v;
+    }
+    svg.append(g);
+    if (showTot && m.total) { const tt = s('text', { x: cx, y: y(m.total) - 6, 'text-anchor': 'middle', class: 'tot' }); tt.textContent = fmtM(m.total).replace('$', ''); svg.append(tt); }
+    if (k % labelEvery === 0 || m.i === C.cierre) {
+      const lb = s('text', { x: cx, y: H - 8, 'text-anchor': 'middle' }); lb.textContent = idxLabel(m.i);
+      if (m.i === C.cierre) { lb.setAttribute('style', 'fill:var(--ink);font-weight:700'); }
+      svg.append(lb);
+    }
+    const hit = s('rect', { x: ml + band * k, y: mt, width: band, height: ih, fill: 'transparent', tabindex: 0, 'aria-label': idxLabel(m.i) + ': ' + fmtCLP(m.total) });
+    const show = () => showTip(m, cx, C);
+    hit.addEventListener('mouseenter', show); hit.addEventListener('focus', show);
+    hit.addEventListener('mouseleave', hideTip); hit.addEventListener('blur', hideTip);
+    svg.append(hit);
+  });
+  svg.append(s('line', { x1: ml, x2: W - mr, y1: y(0), y2: y(0), stroke: css('--line-strong'), 'stroke-width': 1 }));
+  const tip = h('div', { class: 'tip', id: 'tip', hidden: true });
+  box.replaceChildren(svg, tip);
+}
+function showTip(m, cx, C) {
+  const tip = $('tip'); if (!tip) return;
+  fill(tip, h('div', { class: 'h' }, idxLong(m.i) + (m.future ? ' · después del cierre' : '')),
+    C.segs.filter((s) => m.by[s]).map((s) => h('div', { class: 'row' }, h('span', { class: 'seg' }, swatch(s), s), h('span', { class: 'num' }, fmtCLP(m.by[s])))),
+    h('div', { class: 'row', style: 'margin-top:4px;font-weight:700' }, h('span', null, 'Total · ' + fmtInt(m.casos) + ' casos'), h('span', { class: 'num' }, fmtCLP(m.total))));
+  tip.hidden = false;
+  const bw = $('chart').clientWidth, tw = tip.offsetWidth;
+  let left = cx + 14; if (left + tw > bw) left = cx - tw - 14; if (left < 0) left = 0;
+  tip.style.left = left + 'px'; tip.style.top = '24px';
+}
+function hideTip() { const t = $('tip'); if (t) t.hidden = true; }
+new ResizeObserver(() => { if (lastC && S.tab === 'resumen') drawChart(lastC); }).observe($('chart'));
+
+/* ---------- detalle ---------- */
+function renderDetalle(C) {
+  const fm = $('f-mes'), fs = $('f-seg'), fo = $('f-mot');
+  const mopts = [h('option', { value: 'periodo' }, C ? 'Período ' + idxLabel(C.start) + ' – ' + idxLabel(C.cierre) : 'Período actual'), h('option', { value: 'todos' }, 'Todos los meses')];
+  if (C) for (const i of C.allIdx) mopts.push(h('option', { value: String(i) }, idxLabel(i)));
+  fm.replaceChildren(...mopts); fm.value = S.det.mes; if (fm.value !== S.det.mes) { S.det.mes = 'periodo'; fm.value = 'periodo'; }
+  const segs = C ? C.segs : SEGS;
+  fs.replaceChildren(h('option', { value: '' }, 'Todos'), ...segs.map((s) => h('option', { value: s }, s))); fs.value = S.det.seg;
+  const mots = C ? [...new Set(C.recs.map((r) => r._mot))].sort() : [];
+  fo.replaceChildren(h('option', { value: '' }, 'Todos'), ...mots.map((s) => h('option', { value: s }, s))); fo.value = S.det.mot; if (fo.value !== S.det.mot) { S.det.mot = ''; fo.value = ''; }
+  const rows = detRows(C);
+  $('det-sum').replaceChildren(h('span', null, h('b', null, fmtInt(rows.length)), ' registros'), h('span', null, 'Total ', h('b', null, fmtCLP(sum(rows)))), h('span', null, 'Promedio ', h('b', null, fmtCLP(rows.length ? sum(rows) / rows.length : 0))));
+  if (!C) { $('tbl-det').replaceChildren(h('div', { class: 'empty' }, 'Sin registros todavía.')); return; }
+  const cols = [['mes', 'Mes', false], ['CODIGO', 'RUT', false], ['NOMBRE', 'Nombre', false], ['_centro', 'Centro de costo', false], ['_seg', 'Segmento', false], ['D_CARGO', 'Cargo', false], ['_mot', 'Motivo', false], ['FECHA_ING', 'Ingreso', false], ['FECHA_RET', 'Retiro', false], ['FINXPA_I', 'Total finiquito', true]];
+  const th = cols.map(([k, l, n]) => h('th', { class: n ? 'n' : null, 'aria-sort': S.det.sort === k ? (S.det.dir > 0 ? 'ascending' : 'descending') : null },
+    h('button', { class: 'sortbtn', type: 'button', onclick: () => { S.det.dir = S.det.sort === k ? -S.det.dir : (n || k === 'mes' ? -1 : 1); S.det.sort = k; schedule(); } }, l + (S.det.sort === k ? (S.det.dir > 0 ? ' ↑' : ' ↓') : ''))));
+  const body = rows.length ? rows.map((r) => h('tr', { class: 'click', tabindex: 0, onclick: () => openEditor(r), onkeydown: (e) => { if (e.key === 'Enter') openEditor(r); } },
+    h('td', null, idxLabel(r._i)), h('td', { class: 'num' }, r.CODIGO), h('td', null, clean(r.NOMBRE)), h('td', null, r._centro), h('td', null, segLabel(r._seg)), h('td', null, clean(r.D_CARGO)), h('td', null, r._mot), h('td', { class: 'num' }, fmtDate(r.FECHA_ING)), h('td', { class: 'num' }, fmtDate(r.FECHA_RET)), h('td', { class: 'n' }, fmtCLP(Number(r.FINXPA_I) || 0))))
+    : [h('tr', null, h('td', { colspan: cols.length }, h('div', { class: 'empty' }, 'Ningún registro coincide con los filtros.')))];
+  $('tbl-det').replaceChildren(h('table', null, h('thead', null, h('tr', null, th)), h('tbody', null, body)));
+}
+function detRows(C) {
+  if (!C) return [];
+  const q = S.det.q.trim().toLowerCase();
+  let rows = C.recs.filter((r) => {
+    if (S.det.mes === 'periodo' && !(r._i >= C.start && r._i <= C.cierre)) return false;
+    if (S.det.mes !== 'periodo' && S.det.mes !== 'todos' && r._i !== Number(S.det.mes)) return false;
+    if (S.det.seg && r._seg !== S.det.seg) return false;
+    if (S.det.mot && r._mot !== S.det.mot) return false;
+    if (q && !(clean(r.NOMBRE).toLowerCase().includes(q) || normRut(r.CODIGO).toLowerCase().includes(normRut(q).toLowerCase()) || r._centro.toLowerCase().includes(q))) return false;
+    return true;
+  });
+  const k = S.det.sort, d = S.det.dir;
+  const val = (r) => k === 'mes' ? r._i : k === 'FINXPA_I' ? Number(r.FINXPA_I) || 0 : clean(r[k]).toLowerCase();
+  rows.sort((a, b) => { const va = val(a), vb = val(b); return (va < vb ? -1 : va > vb ? 1 : 0) * d || clean(a.NOMBRE).localeCompare(clean(b.NOMBRE)); });
+  return rows;
+}
+$('f-q').addEventListener('input', (e) => { S.det.q = e.target.value; schedule(); });
+$('f-mes').addEventListener('change', (e) => { S.det.mes = e.target.value; schedule(); });
+$('f-seg').addEventListener('change', (e) => { S.det.seg = e.target.value; schedule(); });
+$('f-mot').addEventListener('change', (e) => { S.det.mot = e.target.value; schedule(); });
+
+/* ---------- centros ---------- */
+function segSelect(id, value, withEmpty) {
+  const sel = h('select', { class: 'inp', id }, withEmpty ? h('option', { value: '' }, 'Elegir…') : null, SEGS.map((s) => h('option', { value: s }, s)));
+  sel.value = value || (withEmpty ? '' : SEGS[0]); return sel;
+}
+function renderCentros(C) {
+  const recs = C ? C.recs : [];
+  const stat = new Map();
+  for (const r of recs) { const k = Number(r.CENCOS); const o = stat.get(k) || { n: 0, t: 0, nombre: r._centro }; o.n++; o.t += Number(r.FINXPA_I) || 0; stat.set(k, o); }
+  const mm = maestroMap();
+  const pend = [...stat.entries()].filter(([k]) => !mm.has(k)).map(([k, o]) => ({ cencos: k, ...o, sug: o.nombre.toLowerCase().startsWith('zara home') ? 'Zara Home' : '' }));
+  $('cc-pend-card').hidden = !pend.length;
+  if (pend.length) {
+    $('tbl-pend').replaceChildren(h('table', null, h('thead', null, h('tr', null, h('th', null, 'CENCOS'), h('th', null, 'Nombre en la base'), h('th', { class: 'n' }, 'Casos'), h('th', { class: 'n' }, 'Gasto'), h('th', { class: 'w-only' }, 'Segmento'), h('th', { class: 'w-only' }))),
+      h('tbody', null, pend.map((p) => {
+        const nm = h('input', { class: 'inp', value: p.nombre.startsWith('CC ') ? '' : p.nombre, placeholder: 'Nombre del centro', 'aria-label': 'Nombre del centro ' + p.cencos });
+        const sg = segSelect('pend-' + p.cencos, p.sug, true);
+        return h('tr', null, h('td', { class: 'num' }, String(p.cencos)), h('td', null, p.nombre), h('td', { class: 'n' }, fmtInt(p.n)), h('td', { class: 'n' }, fmtCLP(p.t)), h('td', { class: 'w-only' }, h('div', { style: 'display:flex;gap:6px' }, nm, sg)),
+          h('td', { class: 'w-only' }, h('button', { class: 'btn', type: 'button', onclick: async (e) => {
+            if (!sg.value) { sg.classList.add('bad'); return; }
+            e.target.disabled = true;
+            await saveMaestro([...S.maestro, { cencos: p.cencos, centro: clean(nm.value) || p.nombre, segmento: sg.value }], 'Centro ' + p.cencos + ' asignado a ' + sg.value);
+          } }, 'Guardar')));
+      }))));
+  }
+  const list = S.maestro.slice().sort((a, b) => SEGS.indexOf(a.segmento) - SEGS.indexOf(b.segmento) || String(a.centro).localeCompare(String(b.centro)));
+  $('tbl-maestro').replaceChildren(list.length ? h('table', null, h('thead', null, h('tr', null, h('th', null, 'CENCOS'), h('th', null, 'Centro de costo'), h('th', null, 'Segmento'), h('th', { class: 'n' }, 'Casos'), h('th', { class: 'n' }, 'Gasto total'), h('th', { class: 'w-only' }))),
+    h('tbody', null, list.map((it) => {
+      const st = stat.get(Number(it.cencos)) || { n: 0, t: 0 };
+      const sg = segSelect('ms-' + it.cencos, it.segmento, false);
+      sg.setAttribute('aria-label', 'Segmento de ' + it.centro);
+      if (!S.canWrite) sg.disabled = true;
+      sg.addEventListener('change', () => saveMaestro(S.maestro.map((x) => Number(x.cencos) === Number(it.cencos) ? { ...x, segmento: sg.value } : x), 'Centro ' + it.cencos + ' → ' + sg.value));
+      let armed = false;
+      const del = h('button', { class: 'btn danger', type: 'button', onclick: async () => {
+        if (!armed) { armed = true; del.classList.add('armed'); del.textContent = st.n ? 'Quitar (' + st.n + ' quedarán sin clasificar)' : 'Confirmar'; return; }
+        await saveMaestro(S.maestro.filter((x) => Number(x.cencos) !== Number(it.cencos)), 'Centro ' + it.cencos + ' quitado del maestro');
+      } }, 'Quitar');
+      return h('tr', null, h('td', { class: 'num' }, String(it.cencos)), h('td', null, it.centro), h('td', null, sg), h('td', { class: 'n' }, fmtInt(st.n)), h('td', { class: 'n' }, fmtCLP(st.t)), h('td', { class: 'w-only' }, del));
+    }))) : h('div', { class: 'empty' }, 'El maestro está vacío. Agrega el primer centro abajo.'));
+  const ms = $('mc-seg'); if (!ms.options.length) ms.replaceChildren(...SEGS.map((s) => h('option', { value: s }, s)));
+}
+$('mc-add').addEventListener('click', async () => {
+  const cod = parseInt($('mc-cod').value, 10), nom = clean($('mc-nom').value), seg = $('mc-seg').value, msg = $('mc-msg');
+  if (!cod) { msg.className = 'msg bad'; msg.textContent = 'Escribe el código CENCOS (número).'; return; }
+  if (!nom) { msg.className = 'msg bad'; msg.textContent = 'Escribe el nombre del centro.'; return; }
+  const exists = S.maestro.some((x) => Number(x.cencos) === cod);
+  const next = exists ? S.maestro.map((x) => Number(x.cencos) === cod ? { cencos: cod, centro: nom, segmento: seg } : x) : [...S.maestro, { cencos: cod, centro: nom, segmento: seg }];
+  if (await saveMaestro(next, (exists ? 'Centro actualizado: ' : 'Centro agregado: ') + cod + ' ' + nom)) { $('mc-cod').value = ''; $('mc-nom').value = ''; msg.className = 'msg ok'; msg.textContent = exists ? 'Centro actualizado.' : 'Centro agregado.'; }
+});
+
+/* ---------- almacenamiento ---------- */
+async function retry(fn) {
+  try { return await fn(); } catch (e) {
+    if (e && e.code === 'unavailable') { await new Promise((r) => setTimeout(r, 400 + Math.random() * 600)); return fn(); }
+    if (e && e.code === 'resource_exhausted') { await new Promise((r) => setTimeout(r, 1500 + Math.random() * 1000)); return fn(); }
+    throw e;
+  }
+}
+function errText(e) {
+  const c = e && e.code;
+  if (c === 'invalid_argument') return 'No tienes permiso para guardar cambios aquí, o el mes supera el tamaño máximo (256 KB).';
+  if (c === 'quota_exceeded') return 'Se llenó el almacenamiento del artefacto. Elimina meses antiguos que ya no necesites.';
+  if (c === 'resource_exhausted') return 'Demasiadas escrituras seguidas. Espera unos segundos y vuelve a intentar.';
+  return 'No se pudo guardar (' + (c || 'error') + '). Vuelve a intentar.';
+}
+const store = {
+  async setMonth(mk, rows) {
+    const body = { ames: Number(mk), rows, updatedAt: new Date().toISOString() };
+    if (JSON.stringify(body).length > 250000) throw { code: 'too_big', message: 'El mes ' + mk + ' tiene demasiados registros para un documento.' };
+    if (S.db) await retry(() => S.db.doc('meses/' + mk).set(body));
+    S.months.set(String(mk), body); schedule();
+  },
+  async delMonth(mk) { if (S.db) await retry(() => S.db.doc('meses/' + mk).delete()); S.months.delete(String(mk)); schedule(); },
+  async setMaestro(items) { if (S.db) await retry(() => S.db.doc('config/maestro').set({ items, updatedAt: new Date().toISOString() })); S.maestro = items; schedule(); },
+  async setApp(o) { if (S.db) await retry(() => S.db.doc('config/app').set(o)); },
+  async log(o) {
+    const body = { ...o, at: new Date().toISOString() };
+    if (S.db) { try { await retry(() => S.db.collection('cargas').add(body)); } catch (e) { /* el historial no bloquea */ } }
+    else { S.cargas = [body, ...S.cargas].slice(0, 30); schedule(); }
+  }
+};
+async function saveMaestro(items, note) {
+  try { await store.setMaestro(items); if (note) await store.log({ tipo: 'maestro', archivo: note }); return true; }
+  catch (e) { const m = $('mc-msg'); m.className = 'msg bad'; m.textContent = errText(e); return false; }
+}
+
+/* ---------- lectura de archivos ---------- */
+async function unzip(buf) {
+  const u8 = new Uint8Array(buf), dv = new DataView(buf); let e = -1;
+  for (let i = u8.length - 22; i >= Math.max(0, u8.length - 65557); i--) if (dv.getUint32(i, true) === 0x06054b50) { e = i; break; }
+  if (e < 0) throw new Error('El archivo no es un Excel .xlsx válido. Si es un .xls antiguo, ábrelo en Excel y guárdalo como .xlsx.');
+  const n = dv.getUint16(e + 10, true); let p = dv.getUint32(e + 16, true);
+  const td = new TextDecoder(), files = new Map();
+  for (let k = 0; k < n; k++) {
+    if (dv.getUint32(p, true) !== 0x02014b50) break;
+    const method = dv.getUint16(p + 10, true), csize = dv.getUint32(p + 20, true), nl = dv.getUint16(p + 28, true), xl = dv.getUint16(p + 30, true), cl = dv.getUint16(p + 32, true), off = dv.getUint32(p + 42, true);
+    files.set(td.decode(u8.subarray(p + 46, p + 46 + nl)).replace(/^\//, '').toLowerCase(), { method, csize, off });
+    p += 46 + nl + xl + cl;
+  }
+  return {
+    async text(name) {
+      const f = files.get(name.replace(/^\//, '').toLowerCase()); if (!f) return null;
+      const start = f.off + 30 + dv.getUint16(f.off + 26, true) + dv.getUint16(f.off + 28, true);
+      const data = u8.subarray(start, start + f.csize);
+      if (f.method === 0) return td.decode(data);
+      if (f.method !== 8) throw new Error('Compresión no soportada en el archivo.');
+      const ds = new DecompressionStream('deflate-raw');
+      return td.decode(await new Response(new Blob([data]).stream().pipeThrough(ds)).arrayBuffer());
+    }
+  };
+}
+async function readXlsx(buf) {
+  const z = await unzip(buf);
+  const P = (s) => new DOMParser().parseFromString(s, 'application/xml');
+  const q = (el, t) => Array.from(el.getElementsByTagNameNS('*', t));
+  const wbx = await z.text('xl/workbook.xml'); if (!wbx) throw new Error('No encontré el libro dentro del archivo.');
+  const wb = P(wbx), rels = P((await z.text('xl/_rels/workbook.xml.rels')) || '<Relationships/>');
+  const relMap = {}; q(rels, 'Relationship').forEach((r) => { relMap[r.getAttribute('Id')] = r.getAttribute('Target'); });
+  const ssx = await z.text('xl/sharedStrings.xml');
+  const ss = ssx ? q(P(ssx), 'si').map((si) => q(si, 't').filter((t) => t.parentNode.localName !== 'rPh').map((t) => t.textContent).join('')) : [];
+  const sheets = q(wb, 'sheet').map((s) => {
+    const rid = s.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id') || s.getAttribute('r:id');
+    let t = relMap[rid] || ''; t = t.startsWith('/') ? t.slice(1) : 'xl/' + t.replace(/^\.\//, '');
+    return { name: s.getAttribute('name'), path: t };
+  });
+  const colIdx = (ref) => { let n = 0; for (const ch of ref) { const c = ch.charCodeAt(0); if (c < 65 || c > 90) break; n = n * 26 + (c - 64); } return n - 1; };
+  async function grid(path) {
+    const x = await z.text(path); if (!x) return [];
+    const out = [];
+    for (const row of q(P(x), 'row')) {
+      const r = (+row.getAttribute('r') || out.length + 1) - 1, arr = [];
+      let ci = 0;
+      for (const c of q(row, 'c')) {
+        const ref = c.getAttribute('r'); if (ref) ci = colIdx(ref);
+        const t = c.getAttribute('t'), vEl = q(c, 'v')[0], v = vEl ? vEl.textContent : null;
+        let val = null;
+        if (t === 's') val = v != null ? ss[+v] : null;
+        else if (t === 'inlineStr') val = q(c, 't').map((e) => e.textContent).join('');
+        else if (t === 'str') val = v;
+        else if (t === 'b') val = v === '1';
+        else if (t === 'e') val = null;
+        else if (v != null && v !== '') val = Number(v);
+        arr[ci] = val; ci++;
+      }
+      out[r] = arr;
+    }
+    return out;
+  }
+  const order = sheets.slice().sort((a, b) => (b.name.toLowerCase() === 'base_datos') - (a.name.toLowerCase() === 'base_datos'));
+  for (const sh of order) { const g = await grid(sh.path); const hi = headerRow(g); if (hi >= 0) return { sheet: sh.name, grid: g, hi }; }
+  throw new Error('Ninguna hoja tiene las columnas CODIGO y FINXPA_I. Revisa que el archivo sea el reporte de finiquitos del sistema.');
+}
+function headerRow(g) {
+  for (let i = 0; i < Math.min(g.length, 30); i++) { const r = (g[i] || []).map((v) => String(v ?? '').trim().toUpperCase()); if (r.includes('CODIGO') && r.includes('FINXPA_I')) return i; }
+  return -1;
+}
+function readCsv(text) {
+  text = text.replace(/^﻿/, '');
+  const first = text.split(/\r?\n/)[0] || '';
+  const delim = [';', '\t', ','].sort((a, b) => first.split(b).length - first.split(a).length)[0];
+  const rows = []; let row = [], cur = '', inq = false;
+  for (let i = 0; i < text.length; i++) {
+    const ch = text[i];
+    if (inq) { if (ch === '"') { if (text[i + 1] === '"') { cur += '"'; i++; } else inq = false; } else cur += ch; }
+    else if (ch === '"') inq = true;
+    else if (ch === delim) { row.push(cur); cur = ''; }
+    else if (ch === '\n' || ch === '\r') { if (ch === '\r' && text[i + 1] === '\n') i++; row.push(cur); rows.push(row); row = []; cur = ''; }
+    else cur += ch;
+  }
+  if (cur !== '' || row.length) { row.push(cur); rows.push(row); }
+  const hi = headerRow(rows); if (hi < 0) throw new Error('El CSV no tiene las columnas CODIGO y FINXPA_I en su encabezado.');
+  return { sheet: 'CSV', grid: rows, hi };
+}
+const toNum = (v) => {
+  if (v == null || v === '') return null; if (typeof v === 'number') return v; if (typeof v === 'boolean') return NaN;
+  let s = String(v).trim().replace(/[$\s]/g, ''); if (s === '') return null;
+  if (/^-?\d{1,3}(\.\d{3})+(,\d+)?$/.test(s)) s = s.replace(/\./g, '').replace(',', '.');
+  else if (/^-?\d+,\d+$/.test(s)) s = s.replace(',', '.');
+  const n = Number(s); return Number.isFinite(n) ? n : NaN;
+};
+const pad = (n) => String(n).padStart(2, '0');
+const toDate = (v) => {
+  if (v == null || v === '') return null;
+  if (typeof v === 'number') { const d = new Date(Math.round((v - 25569) * 86400000)); return isNaN(d) ? undefined : d.toISOString().slice(0, 10); }
+  const s = String(v).trim(); let m;
+  if ((m = s.match(/^(\d{4})-(\d{1,2})-(\d{1,2})/))) return m[1] + '-' + pad(m[2]) + '-' + pad(m[3]);
+  if ((m = s.match(/^(\d{1,2})[/.-](\d{1,2})[/.-](\d{4})/))) return m[3] + '-' + pad(m[2]) + '-' + pad(m[1]);
+  if (/^\d+(\.\d+)?$/.test(s)) return toDate(Number(s));
+  return undefined;
+};
+function gridToRecords(parsed) {
+  const { grid, hi } = parsed;
+  const head = (grid[hi] || []).map((v) => String(v ?? '').trim().toUpperCase());
+  const idx = {}; COLS.forEach((c) => { idx[c] = head.indexOf(c); });
+  const missing = COLS.filter((c) => idx[c] < 0);
+  const recs = [], errors = [];
+  for (let i = hi + 1; i < grid.length; i++) {
+    const row = grid[i]; if (!row) continue;
+    const get = (c) => idx[c] >= 0 ? row[idx[c]] : null;
+    if (COLS.every((c) => get(c) == null || String(get(c)).trim() === '')) continue;
+    const r = {}, why = [];
+    r.CODIGO = normRut(get('CODIGO'));
+    if (!r.CODIGO) why.push('sin RUT');
+    r.NOMBRE = String(get('NOMBRE') ?? '').trim();
+    for (const c of ['D_CENCOS', 'D_CARGO', 'D_MOTI_RET']) r[c] = clean(get(c));
+    r.PERI = clean(get('PERI')) || 'M';
+    for (const c of ['FECHA_ING', 'FECHA_RET']) { const d = toDate(get(c)); if (d === undefined) why.push(c + ' no es fecha'); r[c] = d || null; }
+    for (const c of ['CENCOS', 'CARGO', 'MOTI_RET', 'AMES']) { const n = toNum(get(c)); if (Number.isNaN(n)) why.push(c + ' no es número'); r[c] = n == null || Number.isNaN(n) ? null : Math.round(n); }
+    for (const c of [...AMT, 'FINXPA_I']) { const n = toNum(get(c)); if (Number.isNaN(n)) why.push(c + ' no es número'); r[c] = n == null || Number.isNaN(n) ? (c === 'FINXPA_I' ? null : 0) : Math.round(n); }
+    if (r.AMES == null && r.FECHA_RET) r.AMES = Number(r.FECHA_RET.slice(0, 4) + r.FECHA_RET.slice(5, 7));
+    if (r.AMES == null || r.AMES % 100 < 1 || r.AMES % 100 > 12 || r.AMES < 190001 || r.AMES > 210012) why.push('AMES inválido');
+    if (r.FINXPA_I == null) r.FINXPA_I = AMT.reduce((a, c) => a + (r[c] || 0), 0);
+    if (r.CENCOS == null) why.push('sin CENCOS');
+    if (why.length) errors.push({ fila: i + 1, rut: r.CODIGO, nombre: clean(r.NOMBRE), why: why.join(', ') });
+    else recs.push(r);
+  }
+  return { recs, errors, missing };
+}
+
+/* ---------- importación ---------- */
+let IMP = null;
+function withKeys(rows) { const seen = {}; return rows.map((r) => { const b = normRut(r.CODIGO); seen[b] = (seen[b] || 0) + 1; return { k: seen[b] > 1 ? b + '#' + seen[b] : b, ...r }; }); }
+async function handleFile(file) {
+  const box = $('imp'); box.hidden = false; box.replaceChildren(h('p', { class: 'msg' }, 'Leyendo ' + file.name + '…'));
+  try {
+    const buf = await file.arrayBuffer();
+    let parsed;
+    if (/\.(csv|txt)$/i.test(file.name)) {
+      let text = new TextDecoder('utf-8').decode(buf);
+      if (text.includes('\uFFFD')) text = new TextDecoder('windows-1252').decode(buf);
+      parsed = readCsv(text);
+    } else parsed = await readXlsx(buf);
+    const res = gridToRecords(parsed);
+    if (res.missing.includes('AMES') && res.missing.includes('FECHA_RET')) throw new Error('Falta la columna AMES (mes de pago).');
+    IMP = { file: file.name, sheet: parsed.sheet, ...res, mode: 'merge', segPick: {} };
+    renderImport();
+  } catch (e) { IMP = null; box.replaceChildren(h('p', { class: 'msg bad' }, e.message || 'No se pudo leer el archivo.')); }
+}
+function importPlan() {
+  const byM = new Map();
+  for (const r of IMP.recs) { const mk = String(r.AMES); if (!byM.has(mk)) byM.set(mk, []); byM.get(mk).push(r); }
+  const plan = [];
+  for (const [mk, rows] of [...byM.entries()].sort()) {
+    const keyed = withKeys(rows);
+    const existing = (S.months.get(mk) || {}).rows || [];
+    const exK = new Set(existing.map((r) => r.k)), fileK = new Set(keyed.map((r) => r.k));
+    const nuevos = keyed.filter((r) => !exK.has(r.k)).length, upd = keyed.length - nuevos;
+    const borrados = IMP.mode === 'replace' ? existing.filter((r) => !fileK.has(r.k)).length : 0;
+    let finalRows;
+    if (IMP.mode === 'replace') finalRows = keyed;
+    else { const m = new Map(existing.map((r) => [r.k, r])); for (const r of keyed) m.set(r.k, r); finalRows = [...m.values()]; }
+    plan.push({ mk, n: keyed.length, nuevos, upd, borrados, total: sum(keyed), finalRows });
+  }
+  return plan;
+}
+function renderImport() {
+  const box = $('imp'); if (!IMP) { box.hidden = true; return; }
+  const plan = importPlan(), mm = maestroMap();
+  const newCC = new Map();
+  for (const r of IMP.recs) if (!mm.has(Number(r.CENCOS)) && !newCC.has(r.CENCOS)) newCC.set(r.CENCOS, r.D_CENCOS);
+  const tot = plan.reduce((a, p) => a + p.total, 0);
+  const st = (l, v) => h('div', { class: 'stat' }, h('span', { class: 'eyebrow' }, l), h('span', { class: 'v' }, v));
+  const kids = [
+    h('div', { class: 'card-h' }, h('div', null, h('h3', null, IMP.file), h('span', { class: 'sub' }, 'Hoja ' + IMP.sheet + ' · ' + plan.length + (plan.length === 1 ? ' mes: ' : ' meses: ') + plan.map((p) => idxLabel(amesToIdx(+p.mk))).join(', ')))),
+    h('div', { class: 'stats' }, st('Registros válidos', fmtInt(IMP.recs.length)), st('Total FINXPA_I', fmtCLP(tot)), st('Nuevos', fmtInt(plan.reduce((a, p) => a + p.nuevos, 0))), st('Se actualizan', fmtInt(plan.reduce((a, p) => a + p.upd, 0))), IMP.mode === 'replace' ? st('Se eliminan', fmtInt(plan.reduce((a, p) => a + p.borrados, 0))) : null, st('Con error', fmtInt(IMP.errors.length)))
+  ];
+  if (IMP.missing.length) kids.push(h('p', { class: 'msg warn' }, 'Columnas que no vienen en el archivo (se dejan vacías): ' + IMP.missing.join(', ') + '.'));
+  if (IMP.errors.length) kids.push(h('details', null, h('summary', { class: 'msg bad' }, fmtInt(IMP.errors.length) + ' filas no se cargarán (ver detalle)'),
+    h('ul', { class: 'plain' }, IMP.errors.slice(0, 50).map((e) => h('li', null, 'Fila ' + e.fila + (e.rut ? ' · ' + e.rut : '') + (e.nombre ? ' · ' + e.nombre : '') + ': ' + e.why)))));
+  kids.push(h('div', { class: 'radio', role: 'radiogroup', 'aria-label': 'Cómo cargar' },
+    h('label', null, h('input', { type: 'radio', name: 'imp-mode', value: 'merge', checked: IMP.mode === 'merge', onchange: () => { IMP.mode = 'merge'; renderImport(); } }), h('span', null, h('b', null, 'Agregar y actualizar'), h('br'), h('span', { class: 'sub' }, 'Suma los registros nuevos. Si un RUT ya existe en el mismo mes, se reemplaza por la versión del archivo. Lo demás no se toca.'))),
+    h('label', null, h('input', { type: 'radio', name: 'imp-mode', value: 'replace', checked: IMP.mode === 'replace', onchange: () => { IMP.mode = 'replace'; renderImport(); } }), h('span', null, h('b', null, 'Reemplazar los meses del archivo'), h('br'), h('span', { class: 'sub' }, 'Los meses que trae el archivo quedan exactamente como en el archivo; se borran los registros de esos meses que no vengan. Los demás meses no se tocan.')))));
+  if (newCC.size) {
+    kids.push(h('div', null, h('h3', null, 'Centros de costo nuevos'), h('p', { class: 'sub' }, 'No están en el maestro. Elige su segmento para clasificarlos al cargar (si lo dejas vacío, quedan como “Sin clasificar”).')));
+    kids.push(h('div', { class: 'tbl-wrap' }, h('table', null, h('tbody', null, [...newCC.entries()].map(([cc, nm]) => {
+      const sel = segSelect('nc-' + cc, IMP.segPick[cc] || (String(nm).toLowerCase().startsWith('zara home') ? 'Zara Home' : ''), true);
+      IMP.segPick[cc] = sel.value; sel.addEventListener('change', () => { IMP.segPick[cc] = sel.value; });
+      sel.setAttribute('aria-label', 'Segmento para ' + cc);
+      return h('tr', null, h('td', { class: 'num' }, String(cc)), h('td', null, nm || '(sin nombre)'), h('td', null, sel));
+    })))));
+  }
+  const prog = h('div', { class: 'progress', hidden: true }, h('i'));
+  const msg = h('p', { class: 'msg' });
+  const go = h('button', { class: 'btn primary', type: 'button', disabled: !IMP.recs.length }, 'Cargar ' + fmtInt(IMP.recs.length) + ' registros');
+  go.addEventListener('click', () => runImport(plan, newCC, go, prog, msg));
+  kids.push(h('div', { class: 'row-actions' }, go, h('button', { class: 'btn', type: 'button', onclick: () => { IMP = null; $('file-in').value = ''; renderImport(); } }, 'Descartar')), prog, msg);
+  box.replaceChildren(h('div', { class: 'card', style: 'background:var(--bg)' }, kids));
+}
+async function runImport(plan, newCC, btn, prog, msg) {
+  btn.disabled = true; prog.hidden = false; msg.className = 'msg'; msg.textContent = 'Guardando…';
+  const steps = plan.length + 1; let done = 0; const bar = prog.firstChild;
+  try {
+    const add = [...newCC.keys()].filter((cc) => IMP.segPick[cc]).map((cc) => ({ cencos: Number(cc), centro: clean(newCC.get(cc)) || 'CC ' + cc, segmento: IMP.segPick[cc] }));
+    if (add.length) await store.setMaestro([...S.maestro, ...add]);
+    bar.style.width = (++done / steps * 100) + '%';
+    for (const p of plan) { await store.setMonth(p.mk, p.finalRows); bar.style.width = (++done / steps * 100) + '%'; }
+    const tot = plan.reduce((a, p) => a + p.total, 0);
+    await store.log({ tipo: 'archivo', archivo: IMP.file, filas: IMP.recs.length, meses: plan.map((p) => +p.mk), total: tot, modo: IMP.mode });
+    msg.className = 'msg ok';
+    msg.textContent = 'Listo: ' + fmtInt(IMP.recs.length) + ' registros guardados en ' + plan.length + (plan.length === 1 ? ' mes.' : ' meses.');
+    IMP = null; $('file-in').value = '';
+    const box = $('imp'); box.replaceChildren(msg, h('div', { class: 'row-actions' }, h('button', { class: 'btn', type: 'button', onclick: () => go('resumen') }, 'Ver resumen')));
+  } catch (e) { msg.className = 'msg bad'; msg.textContent = (e && e.message && e.code === 'too_big') ? e.message : errText(e); btn.disabled = false; }
+}
+const drop = $('drop');
+$('file-in').addEventListener('change', (e) => { const f = e.target.files[0]; if (f) handleFile(f); });
+['dragenter', 'dragover'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add('over'); }));
+['dragleave', 'drop'].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove('over'); }));
+drop.addEventListener('drop', (e) => { const f = e.dataTransfer && e.dataTransfer.files[0]; if (f) handleFile(f); });
+
+function renderCargar(C) {
+  const sel = $('del-mes'), cur = sel.value;
+  const ks = [...S.months.keys()].sort().reverse();
+  sel.replaceChildren(...(ks.length ? ks.map((k) => h('option', { value: k }, idxLabel(amesToIdx(+k)) + ' · ' + ((S.months.get(k).rows || []).length) + ' registros')) : [h('option', { value: '' }, 'No hay meses cargados')]));
+  if (ks.includes(cur)) sel.value = cur;
+  $('btn-del-mes').disabled = !ks.length;
+  const log = S.cargas;
+  $('tbl-log').replaceChildren(log.length ? h('table', null, h('thead', null, h('tr', null, h('th', null, 'Fecha'), h('th', null, 'Origen'), h('th', null, 'Meses'), h('th', { class: 'n' }, 'Filas'), h('th', { class: 'n' }, 'Total'))),
+    h('tbody', null, log.map((l) => h('tr', null, h('td', { class: 'num' }, new Date(l.at).toLocaleString('es-CL', { dateStyle: 'short', timeStyle: 'short' })),
+      h('td', { class: 'wrap' }, (l.tipo === 'archivo' ? '' : l.tipo === 'manual' ? 'Manual · ' : l.tipo === 'maestro' ? 'Maestro · ' : l.tipo === 'borrado' ? 'Eliminado · ' : '') + (l.archivo || ''), l.modo === 'replace' ? h('span', { class: 'pill', style: 'margin-left:6px' }, 'reemplazo') : null),
+      h('td', null, (l.meses || []).map((m) => idxLabel(amesToIdx(m))).join(', ')), h('td', { class: 'n' }, l.filas != null ? fmtInt(l.filas) : ''), h('td', { class: 'n' }, l.total != null ? fmtCLP(l.total) : '')))))
+    : h('div', { class: 'empty' }, 'Todavía no hay cargas registradas.'));
+  if (IMP) renderImport();
+}
+let delArmed = null;
+$('btn-del-mes').addEventListener('click', async () => {
+  const mk = $('del-mes').value, b = $('btn-del-mes'), msg = $('del-msg'); if (!mk) return;
+  const n = (S.months.get(mk).rows || []).length;
+  if (delArmed !== mk) { delArmed = mk; b.classList.add('armed'); b.textContent = 'Confirmar: borrar ' + n + ' registros de ' + idxLabel(amesToIdx(+mk)); return; }
+  delArmed = null; b.classList.remove('armed'); b.textContent = 'Eliminar mes'; b.disabled = true;
+  try { const t = sum(S.months.get(mk).rows || []); await store.delMonth(mk); await store.log({ tipo: 'borrado', archivo: 'Mes completo', meses: [+mk], filas: n, total: t }); msg.className = 'msg ok'; msg.textContent = 'Mes ' + idxLabel(amesToIdx(+mk)) + ' eliminado.'; }
+  catch (e) { msg.className = 'msg bad'; msg.textContent = errText(e); }
+  b.disabled = false;
+});
+$('del-mes').addEventListener('change', () => { delArmed = null; const b = $('btn-del-mes'); b.classList.remove('armed'); b.textContent = 'Eliminar mes'; });
+
+/* ---------- editor manual ---------- */
+let ED = null;
+function catalogs() {
+  const recs = allRecords();
+  const cargos = new Map(), mot = new Map(MOTIVOS_REF.map(([c, d]) => [c, d]));
+  for (const r of recs) { if (r.CARGO != null && !cargos.has(r.CARGO)) cargos.set(r.CARGO, clean(r.D_CARGO)); if (r.MOTI_RET != null) mot.set(r.MOTI_RET, clean(r.D_MOTI_RET) || mot.get(r.MOTI_RET)); }
+  const cc = new Map(); for (const it of S.maestro) cc.set(Number(it.cencos), { nombre: it.centro, seg: it.segmento });
+  for (const r of recs) if (!cc.has(Number(r.CENCOS))) cc.set(Number(r.CENCOS), { nombre: r._centro, seg: SIN });
+  return { cargos, mot, cc };
+}
+function openEditor(rec) {
+  const cat = catalogs();
+  ED = rec ? { mk: rec._mk, k: rec.k, orig: rec } : { mk: null, k: null, orig: null };
+  const r = rec || {};
+  $('ed-title').textContent = rec ? 'Editar finiquito' : 'Nuevo finiquito';
+  $('ed-sub').textContent = rec ? clean(r.NOMBRE) + ' · ' + idxLabel(amesToIdx(+r.AMES || +rec._mk)) : 'Mismo formato que la base del sistema.';
+  for (const c of ['CODIGO', 'NOMBRE']) $('ed-' + c).value = r[c] || '';
+  const cs = $('ed-cargo-sel');
+  fill(cs, h('option', { value: '' }, 'Elegir…'), [...cat.cargos.entries()].sort((a, b) => a[1].localeCompare(b[1])).map(([c, d]) => h('option', { value: String(c) }, c + ' · ' + d)), h('option', { value: '__new' }, 'Otro cargo…'));
+  cs.value = r.CARGO != null && cat.cargos.has(r.CARGO) ? String(r.CARGO) : (r.CARGO != null ? '__new' : '');
+  $('ed-CARGO').value = r.CARGO ?? ''; $('ed-D_CARGO').value = clean(r.D_CARGO);
+  $('ed-cargo-new').hidden = cs.value !== '__new';
+  const cc = $('ed-cc-sel');
+  const groups = [...SEGS, SIN].map((s) => { const items = [...cat.cc.entries()].filter(([, v]) => v.seg === s).sort((a, b) => a[1].nombre.localeCompare(b[1].nombre)); return items.length ? h('optgroup', { label: s }, items.map(([c, v]) => h('option', { value: String(c) }, c + ' · ' + v.nombre))) : null; });
+  fill(cc, h('option', { value: '' }, 'Elegir…'), groups, h('option', { value: '__new' }, 'Centro nuevo…'));
+  cc.value = r.CENCOS != null ? String(r.CENCOS) : '';
+  $('ed-cc-new').hidden = cc.value !== '__new';
+  $('ed-CENCOS').value = ''; $('ed-D_CENCOS').value = ''; $('ed-cc-seg').replaceChildren(...SEGS.map((s) => h('option', { value: s }, s)));
+  for (const c of ['FECHA_ING', 'FECHA_RET']) $('ed-' + c).value = r[c] || '';
+  const am = r.AMES || (lastC ? idxToAmes(lastC.cierre) : null);
+  $('ed-AMES').value = am ? String(am).slice(0, 4) + '-' + String(am).slice(4, 6) : '';
+  const ms = $('ed-mot-sel');
+  fill(ms, h('option', { value: '' }, 'Elegir…'), [...cat.mot.entries()].sort((a, b) => a[0] - b[0]).map(([c, d]) => h('option', { value: String(c) }, d + ' (' + c + ')')), h('option', { value: '__new' }, 'Otro motivo…'));
+  ms.value = r.MOTI_RET != null ? String(r.MOTI_RET) : '';
+  $('ed-MOTI_RET').value = ''; $('ed-D_MOTI_RET').value = ''; $('ed-mot-new').hidden = true;
+  for (const c of [...AMT, 'FINXPA_I']) $('ed-' + c).value = r[c] != null ? r[c] : '';
+  const sumA = AMT.reduce((a, c) => a + (Number(r[c]) || 0), 0);
+  $('ed-auto').checked = !rec || Number(r.FINXPA_I) === sumA;
+  syncTotal();
+  document.querySelectorAll('#editor .err').forEach((e) => { e.textContent = ''; });
+  document.querySelectorAll('#editor .inp').forEach((e) => e.classList.remove('bad'));
+  $('ed-msg').textContent = ''; $('ed-msg').className = 'msg';
+  const del = $('ed-del'); del.hidden = !rec || !S.canWrite; del.classList.remove('armed'); del.textContent = 'Eliminar registro';
+  $('ed-save').hidden = !S.canWrite;
+  document.querySelectorAll('#editor input, #editor select').forEach((e) => { e.disabled = !S.canWrite; });
+  $('editor').hidden = false; document.body.style.overflow = 'hidden';
+  setTimeout(() => $(rec ? 'ed-close' : 'ed-CODIGO').focus(), 30);
+}
+function closeEditor() { $('editor').hidden = true; document.body.style.overflow = ''; ED = null; }
+function syncTotal() { const auto = $('ed-auto').checked, t = $('ed-FINXPA_I'); t.readOnly = auto; if (auto) t.value = AMT.reduce((a, c) => a + (Math.round(Number($('ed-' + c).value)) || 0), 0); }
+document.querySelectorAll('#editor .amt').forEach((e) => e.addEventListener('input', syncTotal));
+$('ed-auto').addEventListener('change', syncTotal);
+$('ed-cargo-sel').addEventListener('change', (e) => { $('ed-cargo-new').hidden = e.target.value !== '__new'; });
+$('ed-cc-sel').addEventListener('change', (e) => { $('ed-cc-new').hidden = e.target.value !== '__new'; });
+$('ed-mot-sel').addEventListener('change', (e) => { $('ed-mot-new').hidden = e.target.value !== '__new'; });
+$('ed-close').addEventListener('click', closeEditor); $('ed-cancel').addEventListener('click', closeEditor);
+$('editor').addEventListener('click', (e) => { if (e.target.id === 'editor') closeEditor(); });
+document.addEventListener('keydown', (e) => { if (e.key === 'Escape' && !$('editor').hidden) closeEditor(); });
+function edError(id, text) { $('er-' + id).textContent = text; return false; }
+$('ed-save').addEventListener('click', async () => {
+  document.querySelectorAll('#editor .err').forEach((e) => { e.textContent = ''; });
+  const cat = catalogs(); let ok = true;
+  const r = { PERI: (ED && ED.orig && ED.orig.PERI) || 'M' };
+  r.CODIGO = normRut($('ed-CODIGO').value);
+  if (!/^\d{1,9}-[\dK]$/.test(r.CODIGO)) ok = edError('CODIGO', 'Escribe el RUT con guion y dígito verificador, por ejemplo 12345678-9.');
+  else if (!rutOk(r.CODIGO)) $('er-CODIGO').textContent = 'Ojo: el dígito verificador no calza. Se guardará igual.';
+  r.NOMBRE = $('ed-NOMBRE').value.trim().toUpperCase(); if (!r.NOMBRE) ok = edError('NOMBRE', 'Escribe el nombre.');
+  const cs = $('ed-cargo-sel').value;
+  if (cs === '__new') { r.CARGO = parseInt($('ed-CARGO').value, 10) || null; r.D_CARGO = clean($('ed-D_CARGO').value); }
+  else if (cs) { r.CARGO = Number(cs); r.D_CARGO = cat.cargos.get(Number(cs)) || ''; } else { r.CARGO = null; r.D_CARGO = ''; }
+  const ccv = $('ed-cc-sel').value; let newCC = null;
+  if (ccv === '__new') {
+    r.CENCOS = parseInt($('ed-CENCOS').value, 10); r.D_CENCOS = clean($('ed-D_CENCOS').value);
+    if (!r.CENCOS || !r.D_CENCOS) ok = edError('CENCOS', 'Escribe el código y el nombre del centro nuevo.');
+    else if (!S.maestro.some((x) => Number(x.cencos) === r.CENCOS)) newCC = { cencos: r.CENCOS, centro: r.D_CENCOS, segmento: $('ed-cc-seg').value };
+  } else if (ccv) { r.CENCOS = Number(ccv); r.D_CENCOS = (ED && ED.orig && Number(ED.orig.CENCOS) === r.CENCOS && clean(ED.orig.D_CENCOS)) || (cat.cc.get(r.CENCOS) || {}).nombre || ''; }
+  else ok = edError('CENCOS', 'Elige el centro de costo.');
+  r.FECHA_ING = $('ed-FECHA_ING').value || null; r.FECHA_RET = $('ed-FECHA_RET').value || null;
+  const am = $('ed-AMES').value; r.AMES = am ? Number(am.replace('-', '')) : null; if (!r.AMES) ok = edError('AMES', 'Elige el mes de pago.');
+  const mv = $('ed-mot-sel').value;
+  if (mv === '__new') { r.MOTI_RET = parseInt($('ed-MOTI_RET').value, 10) || null; r.D_MOTI_RET = clean($('ed-D_MOTI_RET').value); if (!r.D_MOTI_RET) ok = edError('MOTI', 'Escribe la descripción del motivo.'); }
+  else if (mv) { r.MOTI_RET = Number(mv); r.D_MOTI_RET = cat.mot.get(Number(mv)) || ''; } else ok = edError('MOTI', 'Elige el motivo de retiro.');
+  for (const c of AMT) r[c] = Math.round(Number($('ed-' + c).value)) || 0;
+  r.FINXPA_I = Math.round(Number($('ed-FINXPA_I').value));
+  if (!Number.isFinite(r.FINXPA_I) || $('ed-FINXPA_I').value === '') ok = edError('FINXPA_I', 'Escribe el total del finiquito.');
+  if (!ok) { $('ed-msg').className = 'msg bad'; $('ed-msg').textContent = 'Revisa los campos marcados.'; return; }
+  const mk = String(r.AMES);
+  const target = ((S.months.get(mk) || {}).rows || []).slice();
+  const sameSpot = ED.orig && ED.mk === mk && normRut(ED.orig.CODIGO) === r.CODIGO;
+  const key = sameSpot ? ED.k : r.CODIGO;
+  if (!sameSpot && target.some((x) => x.k === key)) { $('ed-msg').className = 'msg bad'; $('ed-msg').textContent = 'Ya existe un registro de este RUT en ' + idxLabel(amesToIdx(r.AMES)) + '. Edita ese registro desde Detalle.'; return; }
+  const btn = $('ed-save'); btn.disabled = true; $('ed-msg').className = 'msg'; $('ed-msg').textContent = 'Guardando…';
+  try {
+    if (newCC) await store.setMaestro([...S.maestro, newCC]);
+    const row = { k: key }; for (const c of COLS) row[c] = r[c] ?? null;
+    if (sameSpot) await store.setMonth(mk, target.map((x) => x.k === key ? row : x));
+    else {
+      await store.setMonth(mk, [...target, row]);
+      if (ED.orig) { const old = ((S.months.get(ED.mk) || {}).rows || []).filter((x) => x.k !== ED.k); if (old.length) await store.setMonth(ED.mk, old); else await store.delMonth(ED.mk); }
+    }
+    await store.log({ tipo: 'manual', archivo: (ED.orig ? 'Edición: ' : 'Nuevo: ') + r.CODIGO, meses: [r.AMES], filas: 1, total: r.FINXPA_I });
+    closeEditor();
+  } catch (e) { $('ed-msg').className = 'msg bad'; $('ed-msg').textContent = errText(e); }
+  btn.disabled = false;
+});
+$('ed-del').addEventListener('click', async () => {
+  const b = $('ed-del');
+  if (!b.classList.contains('armed')) { b.classList.add('armed'); b.textContent = 'Confirmar eliminación'; return; }
+  try {
+    const rest = ((S.months.get(ED.mk) || {}).rows || []).filter((x) => x.k !== ED.k);
+    if (rest.length) await store.setMonth(ED.mk, rest); else await store.delMonth(ED.mk);
+    await store.log({ tipo: 'borrado', archivo: 'Registro ' + ED.orig.CODIGO, meses: [+ED.mk], filas: 1, total: Number(ED.orig.FINXPA_I) || 0 });
+    closeEditor();
+  } catch (e) { $('ed-msg').className = 'msg bad'; $('ed-msg').textContent = errText(e); }
+});
+$('btn-new').addEventListener('click', () => openEditor(null));
+
+/* ---------- exportación xlsx ---------- */
+const CRC = (() => { const t = new Uint32Array(256); for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xEDB88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; } return t; })();
+function crc32(d) { let c = 0xFFFFFFFF; for (let i = 0; i < d.length; i++) c = CRC[(c ^ d[i]) & 0xFF] ^ (c >>> 8); return (c ^ 0xFFFFFFFF) >>> 0; }
+function zipBlob(entries) {
+  const enc = new TextEncoder(), parts = [], central = []; let off = 0;
+  for (const e of entries) {
+    const name = enc.encode(e.name), data = enc.encode(e.data), crc = crc32(data);
+    const lh = new Uint8Array(30 + name.length), dv = new DataView(lh.buffer);
+    dv.setUint32(0, 0x04034b50, true); dv.setUint16(4, 20, true); dv.setUint16(6, 0x0800, true); dv.setUint16(8, 0, true); dv.setUint16(10, 0, true); dv.setUint16(12, 0x21, true);
+    dv.setUint32(14, crc, true); dv.setUint32(18, data.length, true); dv.setUint32(22, data.length, true); dv.setUint16(26, name.length, true); dv.setUint16(28, 0, true); lh.set(name, 30);
+    const ch = new Uint8Array(46 + name.length), cv = new DataView(ch.buffer);
+    cv.setUint32(0, 0x02014b50, true); cv.setUint16(4, 20, true); cv.setUint16(6, 20, true); cv.setUint16(8, 0x0800, true); cv.setUint16(10, 0, true); cv.setUint16(12, 0, true); cv.setUint16(14, 0x21, true);
+    cv.setUint32(16, crc, true); cv.setUint32(20, data.length, true); cv.setUint32(24, data.length, true); cv.setUint16(28, name.length, true); cv.setUint32(42, off, true); ch.set(name, 46);
+    parts.push(lh, data); central.push(ch); off += lh.length + data.length;
+  }
+  const cd = central.reduce((a, c) => a + c.length, 0), end = new Uint8Array(22), ev = new DataView(end.buffer);
+  ev.setUint32(0, 0x06054b50, true); ev.setUint16(8, entries.length, true); ev.setUint16(10, entries.length, true); ev.setUint32(12, cd, true); ev.setUint32(16, off, true);
+  return new Blob([...parts, ...central, end], { type: 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet' });
+}
+const X = { def: 0, head: 1, money: 2, moneyT: 3, pct: 4, pctT: 5, date: 6, headMonth: 7, title: 8, subtitle: 9, section: 10, textT: 11, int: 12, intT: 13, month: 14, label: 15, param: 16, text: 17, paramPlain: 18, headR: 19, moneyMuted: 20 };
+const STYLES = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">'
+  + '<numFmts count="4"><numFmt numFmtId="164" formatCode="&quot;$&quot;#,##0"/><numFmt numFmtId="165" formatCode="0.0%"/><numFmt numFmtId="166" formatCode="dd\\-mm\\-yyyy"/><numFmt numFmtId="167" formatCode="mmm\\-yy"/></numFmts>'
+  + '<fonts count="7"><font><sz val="10"/><color rgb="FF16201F"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="10"/><color rgb="FFFFFFFF"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="10"/><color rgb="FF16201F"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="16"/><color rgb="FF16201F"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF5A6764"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="12"/><color rgb="FF0E6B5C"/><name val="Calibri"/><family val="2"/></font><font><sz val="10"/><color rgb="FF97A19E"/><name val="Calibri"/><family val="2"/></font></fonts>'
+  + '<fills count="5"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FF0E6B5C"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE0EEE9"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFFFF2CC"/><bgColor indexed="64"/></patternFill></fill></fills>'
+  + '<borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left/><right/><top/><bottom style="thin"><color rgb="FFDCE2DF"/></bottom><diagonal/></border></borders>'
+  + '<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="21">'
+  + '<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>'
+  + '<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment vertical="center" wrapText="1"/></xf>'
+  + '<xf numFmtId="164" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>'
+  + '<xf numFmtId="164" fontId="2" fillId="3" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1"/>'
+  + '<xf numFmtId="165" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>'
+  + '<xf numFmtId="165" fontId="2" fillId="3" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1"/>'
+  + '<xf numFmtId="166" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>'
+  + '<xf numFmtId="167" fontId="1" fillId="2" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="right" vertical="center"/></xf>'
+  + '<xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
+  + '<xf numFmtId="0" fontId="4" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
+  + '<xf numFmtId="0" fontId="5" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
+  + '<xf numFmtId="0" fontId="2" fillId="3" borderId="0" xfId="0" applyFont="1" applyFill="1"/>'
+  + '<xf numFmtId="3" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1"/>'
+  + '<xf numFmtId="3" fontId="2" fillId="3" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1"/>'
+  + '<xf numFmtId="167" fontId="0" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyBorder="1" applyAlignment="1"><alignment horizontal="center"/></xf>'
+  + '<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>'
+  + '<xf numFmtId="167" fontId="2" fillId="4" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center"/></xf>'
+  + '<xf numFmtId="0" fontId="0" fillId="0" borderId="1" xfId="0" applyBorder="1"/>'
+  + '<xf numFmtId="3" fontId="2" fillId="4" borderId="0" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center"/></xf>'
+  + '<xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="right" vertical="center" wrapText="1"/></xf>'
+  + '<xf numFmtId="164" fontId="6" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyBorder="1"/>'
+  + '</cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>';
+const xesc = (s) => String(s).replace(/[\u0000-\u0008\u000B\u000C\u000E-\u001F]/g, '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;').replace(/"/g, '&quot;');
+const colName = (i) => { let s = ''; i++; while (i > 0) { const m = (i - 1) % 26; s = String.fromCharCode(65 + m) + s; i = Math.floor((i - 1) / 26); } return s; };
+const serial = (iso) => { if (!iso) return null; const [y, m, d] = iso.split('-').map(Number); return (Date.UTC(y, m - 1, d) - Date.UTC(1899, 11, 30)) / 86400000; };
+const serialIdx = (i) => (Date.UTC(Math.floor(i / 12), i % 12, 1) - Date.UTC(1899, 11, 30)) / 86400000;
+const cell = (v, s) => ({ v, s });
+function sheetXml(sh) {
+  const rows = sh.rows.map((row, ri) => {
+    if (!row) return '';
+    const cs = row.map((c, ci) => {
+      if (c == null) return '';
+      const o = typeof c === 'object' ? c : { v: c, s: 0 };
+      const ref = colName(ci) + (ri + 1), st = o.s ? ` s="${o.s}"` : '';
+      if (o.v == null || o.v === '') return `<c r="${ref}"${st}/>`;
+      if (typeof o.v === 'number') return Number.isFinite(o.v) ? `<c r="${ref}"${st}><v>${o.v}</v></c>` : `<c r="${ref}"${st}/>`;
+      return `<c r="${ref}"${st} t="inlineStr"><is><t xml:space="preserve">${xesc(o.v)}</t></is></c>`;
+    }).join('');
+    const ht = sh.heights && sh.heights[ri] ? ` ht="${sh.heights[ri]}" customHeight="1"` : '';
+    return `<row r="${ri + 1}"${ht}>${cs}</row>`;
+  }).join('');
+  let pane = '';
+  if (sh.freeze) { const { r = 0, c = 0 } = sh.freeze; const tl = colName(c) + (r + 1); pane = `<pane${c ? ` xSplit="${c}"` : ''}${r ? ` ySplit="${r}"` : ''} topLeftCell="${tl}" activePane="${r && c ? 'bottomRight' : r ? 'bottomLeft' : 'topRight'}" state="frozen"/>`; }
+  const cols = sh.cols ? '<cols>' + sh.cols.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('') + '</cols>' : '';
+  const af = sh.autoFilter ? `<autoFilter ref="${sh.autoFilter}"/>` : '';
+  const mg = sh.merges && sh.merges.length ? `<mergeCells count="${sh.merges.length}">` + sh.merges.map((m) => `<mergeCell ref="${m}"/>`).join('') + '</mergeCells>' : '';
+  return '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">'
+    + `<sheetViews><sheetView workbookViewId="0"${sh.grid === false ? ' showGridLines="0"' : ''}${sh.zoom ? ` zoomScale="${sh.zoom}"` : ''}>${pane}</sheetView></sheetViews><sheetFormatPr defaultRowHeight="15"/>${cols}<sheetData>${rows}</sheetData>${af}${mg}<pageMargins left="0.5" right="0.5" top="0.6" bottom="0.6" header="0.3" footer="0.3"/></worksheet>`;
+}
+function buildXlsx(sheets) {
+  const ns = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main', rns = 'http://schemas.openxmlformats.org/officeDocument/2006/relationships';
+  const dn = sheets.map((s, i) => s.autoFilter ? `<definedName name="_xlnm._FilterDatabase" localSheetId="${i}" hidden="1">'${s.name}'!$${s.autoFilter.replace(':', ':$').replace(/([A-Z]+)(\d+)/g, '$1$$$2')}</definedName>` : '').join('');
+  const entries = [
+    { name: '[Content_Types].xml', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>' + sheets.map((s, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('') + '<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>' },
+    { name: '_rels/.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>' },
+    { name: 'xl/workbook.xml', data: `<?xml version="1.0" encoding="UTF-8" standalone="yes"?><workbook xmlns="${ns}" xmlns:r="${rns}"><bookViews><workbookView/></bookViews><sheets>` + sheets.map((s, i) => `<sheet name="${xesc(s.name)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('') + `</sheets>${dn ? '<definedNames>' + dn + '</definedNames>' : ''}</workbook>` },
+    { name: 'xl/_rels/workbook.xml.rels', data: '<?xml version="1.0" encoding="UTF-8" standalone="yes"?><Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">' + sheets.map((s, i) => `<Relationship Id="rId${i + 1}" Type="${rns}/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('') + `<Relationship Id="rId${sheets.length + 1}" Type="${rns}/styles" Target="styles.xml"/></Relationships>` },
+    { name: 'xl/styles.xml', data: STYLES },
+    ...sheets.map((s, i) => ({ name: `xl/worksheets/sheet${i + 1}.xml`, data: sheetXml(s) }))
+  ];
+  return zipBlob(entries);
+}
+function baseSheet(recs, name) {
+  const head = [...COLS, 'SEGMENTO', 'CENTRO_COSTO', 'MES'];
+  const rows = [head.map((c) => cell(c, X.head))];
+  for (const r of recs) {
+    rows.push(COLS.map((c) => {
+      if (c === 'FECHA_ING' || c === 'FECHA_RET') return cell(serial(r[c]), X.date);
+      if ([...AMT, 'FINXPA_I'].includes(c)) return cell(Number(r[c]) || 0, X.money);
+      if (['CENCOS', 'CARGO', 'MOTI_RET', 'AMES'].includes(c)) return cell(r[c] == null ? null : Number(r[c]), X.text);
+      return cell(r[c] ?? '', X.text);
+    }).concat([cell(r._seg, X.text), cell(r._centro, X.text), cell(serialIdx(r._i), X.month)]));
+  }
+  return { name, rows, cols: [13, 38, 9, 28, 7, 26, 12, 12, 9, 40, 9, 6, 13, 13, 14, 14, 13, 14, 13, 28, 9], freeze: { r: 1 }, autoFilter: 'A1:' + colName(head.length - 1) + Math.max(1, rows.length) };
+}
+function dashSheet(C) {
+  const rows = [], merges = [], put = (r, c, v) => { (rows[r] = rows[r] || [])[c] = v; };
+  put(1, 1, cell('CONTROL DE GASTO EN FINIQUITOS E INDEMNIZACIONES', X.title));
+  put(2, 1, cell('Zara Chile · Tiendas, Estructura y Zara Home · Cifras en CLP (total finiquito FINXPA_I) · Generado ' + new Date().toLocaleString('es-CL'), X.subtitle));
+  put(4, 1, cell('Mes de cierre', X.label)); put(4, 2, cell(serialIdx(C.cierre), X.param)); put(4, 3, cell('Período', X.label)); put(4, 4, cell(serialIdx(C.start), X.param)); put(4, 5, cell(serialIdx(C.end), X.param));
+  put(4, 6, cell('Registros', X.label)); put(4, 7, cell(C.recs.length, X.paramPlain)); put(4, 9, cell('Sin clasificar', X.label)); put(4, 10, cell(C.sinCount, X.paramPlain)); put(4, 12, cell('Mes inicio año', X.label)); put(4, 13, cell(S.mesInicio, X.paramPlain));
+  put(5, 4, cell('desde', X.subtitle)); put(5, 5, cell('hasta', X.subtitle));
+  let r = 7;
+  put(r++, 1, cell('1. INDICADORES CLAVE', X.section));
+  ['Segmento', 'Gasto mes de cierre', 'Casos mes', 'Gasto acum. período', 'Casos período', '% del total', 'Costo prom./caso'].forEach((t, k) => put(r, 1 + k, cell(t, k ? X.headR : X.head))); r++;
+  for (const s of [...C.seg1, C.tot1]) { const T = s.seg === 'Total'; put(r, 1, cell(s.seg, T ? X.textT : X.text)); put(r, 2, cell(s.gm, T ? X.moneyT : X.money)); put(r, 3, cell(s.cm, T ? X.intT : X.int)); put(r, 4, cell(s.gp, T ? X.moneyT : X.money)); put(r, 5, cell(s.cp, T ? X.intT : X.int)); put(r, 6, cell(s.pct, T ? X.pctT : X.pct)); put(r, 7, cell(s.avg, T ? X.moneyT : X.money)); r++; }
+  r++;
+  put(r++, 1, cell('2. EVOLUCIÓN MENSUAL POR SEGMENTO (año comercial)', X.section));
+  put(r, 1, cell('Segmento', X.head)); C.months.forEach((i, k) => put(r, 2 + k, cell(serialIdx(i), X.headMonth))); put(r, 14, cell('Acum. período', X.headR)); put(r, 15, cell('% total', X.headR)); r++;
+  for (const s of C.segs) { put(r, 1, cell(s, X.text)); let ac = 0; C.monthly.forEach((m, k) => { put(r, 2 + k, cell(m.by[s], m.future ? X.moneyMuted : X.money)); if (!m.future) ac += m.by[s]; }); put(r, 14, cell(ac, X.money)); put(r, 15, cell(C.tot1.gp ? ac / C.tot1.gp : 0, X.pct)); r++; }
+  put(r, 1, cell('Total', X.textT)); C.monthly.forEach((m, k) => put(r, 2 + k, cell(m.total, X.moneyT))); put(r, 14, cell(C.tot1.gp, X.moneyT)); put(r, 15, cell(C.tot1.gp ? 1 : 0, X.pctT)); r++;
+  put(r, 1, cell('N° de casos', X.text)); C.monthly.forEach((m, k) => put(r, 2 + k, cell(m.casos, X.int))); put(r, 14, cell(C.tot1.cp, X.int)); r++;
+  put(r, 1, cell('Var. % vs mes anterior', X.text)); C.monthly.forEach((m, k) => put(r, 2 + k, cell(m.var, X.pct))); r += 2;
+  put(r++, 1, cell('3. GASTO ACUMULADO POR MOTIVO DE RETIRO', X.section));
+  put(r, 1, cell('Motivo de retiro', X.head)); C.segs.forEach((s, k) => put(r, 2 + k, cell(s, X.headR))); let cc = 2 + C.segs.length;
+  put(r, cc, cell('Casos', X.headR)); put(r, cc + 1, cell('Total', X.headR)); put(r, cc + 2, cell('% total', X.headR)); r++;
+  put(r, 1, cell('Total', X.textT)); C.segs.forEach((s, k) => put(r, 2 + k, cell(C.motivos.reduce((a, m) => a + m.by[s], 0), X.moneyT))); put(r, cc, cell(C.tot1.cp, X.intT)); put(r, cc + 1, cell(C.tot1.gp, X.moneyT)); put(r, cc + 2, cell(C.tot1.gp ? 1 : 0, X.pctT)); r++;
+  for (const m of C.motivos) { put(r, 1, cell(m.mot, X.text)); C.segs.forEach((s, k) => put(r, 2 + k, cell(m.by[s], X.money))); put(r, cc, cell(m.casos, X.int)); put(r, cc + 1, cell(m.total, X.money)); put(r, cc + 2, cell(C.tot1.gp ? m.total / C.tot1.gp : 0, X.pct)); r++; }
+  r++;
+  put(r++, 1, cell('4. DETALLE POR CENTRO DE COSTO', X.section));
+  put(r, 0, null); put(r, 1, cell('Segmento', X.head)); put(r, 2, cell('Centro de costo', X.head)); C.months.forEach((i, k) => put(r, 3 + k, cell(serialIdx(i), X.headMonth))); put(r, 15, cell('Acum. período', X.headR)); put(r, 16, cell('Casos', X.headR)); r++;
+  put(r, 1, cell('Total', X.textT)); put(r, 2, cell('', X.textT)); C.monthly.forEach((m, k) => put(r, 3 + k, cell(m.total, X.moneyT))); put(r, 15, cell(C.tot1.gp, X.moneyT)); put(r, 16, cell(C.tot1.cp, X.intT)); r++;
+  for (const c of C.centros) { put(r, 1, cell(c.seg, X.text)); put(r, 2, cell(c.centro, X.text)); C.months.forEach((i, k) => put(r, 3 + k, cell(c.by[i] || 0, i > C.cierre ? X.moneyMuted : X.money))); put(r, 15, cell(c.acum, X.money)); put(r, 16, cell(c.casos, X.int)); r++; }
+  return { name: 'Dashboard', rows, merges, grid: false, cols: [2, 40, 26, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 15, 16, 15, 10], heights: {} };
+}
+function maestroSheet() {
+  const rows = [null, [null, cell('Maestro de Centros de Costo', X.title)], [null, cell('Cada CENCOS se asigna a un segmento (Tienda / Estructura / Zara Home).', X.subtitle)], null,
+    [null, cell('CENCOS', X.head), cell('CENTRO_COSTO', X.head), cell('SEGMENTO', X.head)]];
+  for (const it of S.maestro.slice().sort((a, b) => SEGS.indexOf(a.segmento) - SEGS.indexOf(b.segmento) || a.cencos - b.cencos)) rows.push([null, cell(Number(it.cencos), X.text), cell(it.centro, X.text), cell(it.segmento, X.text)]);
+  return { name: 'Maestro_CC', rows, cols: [2, 12, 34, 16], grid: false };
+}
+async function saveFile(filename, blob, btn) {
+  if (!S.dl) { flash(btn, 'La descarga no está disponible en esta vista'); return; }
+  try { await S.dl.save({ filename, data: blob }); flash(btn, 'Descargado'); }
+  catch (e) { if (e && e.code !== 'declined') flash(btn, e.code === 'rate_limited' ? 'Ya hay una descarga abierta' : 'No se pudo descargar'); }
+}
+function flash(btn, text) { const old = btn.dataset.label || btn.innerHTML; btn.dataset.label = old; btn.textContent = text; clearTimeout(btn._t); btn._t = setTimeout(() => { btn.innerHTML = old; }, 2200); }
+const stamp = () => { const d = new Date(); return d.getFullYear() + pad(d.getMonth() + 1) + pad(d.getDate()); };
+$('btn-xlsx').addEventListener('click', (e) => {
+  const C = compute(); const btn = e.currentTarget; if (!C) { flash(btn, 'No hay datos para exportar'); return; }
+  const recs = C.recs.slice().sort((a, b) => a._i - b._i || clean(a.NOMBRE).localeCompare(clean(b.NOMBRE)));
+  const blob = buildXlsx([dashSheet(C), baseSheet(recs, 'Base_Datos'), maestroSheet()]);
+  saveFile('Finiquitos_Zara_cierre_' + idxLabel(C.cierre) + '_' + stamp() + '.xlsx', blob, btn);
+});
+$('btn-det-xlsx').addEventListener('click', (e) => {
+  const C = compute(); const btn = e.currentTarget; const rows = detRows(C); if (!rows.length) { flash(btn, 'No hay filas con estos filtros'); return; }
+  const filt = [S.det.mes === 'periodo' ? 'Período ' + idxLabel(C.start) + '–' + idxLabel(C.cierre) : S.det.mes === 'todos' ? 'Todos los meses' : idxLabel(+S.det.mes), S.det.seg, S.det.mot, S.det.q && 'búsqueda "' + S.det.q + '"'].filter(Boolean).join(' · ');
+  const sh = baseSheet(rows, 'Detalle');
+  sh.rows.push(null, [cell('Filtro: ' + filt, X.subtitle)], [cell('Total filtrado', X.textT), cell(rows.length + ' registros', X.textT), ...Array(15).fill(cell('', X.textT)), cell(sum(rows), X.moneyT)]);
+  sh.autoFilter = 'A1:U' + (rows.length + 1);
+  saveFile('Finiquitos_detalle_' + stamp() + '.xlsx', buildXlsx([sh]), btn);
+});
+$('btn-tpl').addEventListener('click', (e) => {
+  const ins = [[cell('Plantilla de carga · Finiquitos Zara Chile', X.title)], [cell('Completa una fila por finiquito en la hoja Base_Datos con estas 18 columnas y súbela en Cargar datos.', X.subtitle)], null,
+    [cell('Columna', X.head), cell('Contenido', X.head)], ...[['CODIGO', 'RUT con guion, ej. 12345678-9'], ['NOMBRE', 'APELLIDO APELLIDO, NOMBRES'], ['CENCOS / D_CENCOS', 'Código y nombre del centro de costo'], ['CARGO / D_CARGO', 'Código y descripción del cargo'], ['FECHA_ING / FECHA_RET', 'Fechas de ingreso y retiro (dd-mm-aaaa)'], ['MOTI_RET / D_MOTI_RET', 'Código y descripción del motivo (ej. 319 · Art. 161: Necesidades de la empresa)'], ['AMES', 'Mes de pago como número aaaamm, ej. 202611'], ['PERI', 'Periodicidad, normalmente M'], ['VACPRO_I … INVOLU_I', 'Componentes del finiquito en CLP'], ['FINXPA_I', 'Total finiquito en CLP (lo que suma el dashboard)']].map(([a, b]) => [cell(a, X.label), cell(b, X.text)])];
+  saveFile('Plantilla_carga_finiquitos.xlsx', buildXlsx([{ name: 'Base_Datos', rows: [COLS.map((c) => cell(c, X.head))], cols: [13, 38, 9, 28, 7, 26, 12, 12, 9, 40, 9, 6, 13, 13, 14, 14, 13, 14], freeze: { r: 1 } }, { name: 'Instrucciones', rows: ins, cols: [24, 80], grid: false }]), e.currentTarget);
+});
+
+/* ---------- navegación ---------- */
+const TABS = ['resumen', 'detalle', 'cargar', 'centros'];
+function go(tab) {
+  if (!TABS.includes(tab) || (tab === 'cargar' && !S.canWrite)) tab = 'resumen';
+  S.tab = tab;
+  for (const t of TABS) { $(t).hidden = t !== tab; $('t-' + t).setAttribute('aria-selected', String(t === tab)); }
+  try { history.replaceState(null, '', '#' + tab); } catch (e) { /* sin historial */ }
+  render();
+}
+TABS.forEach((t) => $('t-' + t).addEventListener('click', () => go(t)));
+document.addEventListener('click', (e) => { const g = e.target.closest('[data-go]'); if (g) go(g.dataset.go); });
+$('sel-cierre').addEventListener('change', (e) => { S.cierre = e.target.value; schedule(); });
+$('sel-inicio').addEventListener('change', async (e) => {
+  S.mesInicio = Number(e.target.value); schedule();
+  if (S.canWrite) { try { await store.setApp({ mesInicio: S.mesInicio }); } catch (err) { /* queda solo en esta vista */ } }
+});
+
+/* ---------- arranque ---------- */
+function setStatus(kind, text) { $('status-dot').className = 'dot ' + kind; $('status-text').textContent = text; }
+async function boot() {
+  const use = (n) => (window.claude && window.claude.use ? window.claude.use(n) : Promise.resolve(null));
+  const [db, dl, user] = await Promise.all([use('db'), use('downloads'), use('user')]);
+  S.db = db; S.dl = dl;
+  if (!dl) { $('btn-xlsx').title = 'La descarga no está disponible en esta vista'; }
+  if (user) { try { const c = await user.can('data.write'); if (c === false) S.canWrite = false; } catch (e) { /* sin dato */ } }
+  if (!S.canWrite) document.body.classList.add('ro');
+  if (!db) { S.mode = 'local'; setStatus('warn', 'Sin almacenamiento · modo de solo esta sesión'); render(); return; }
+  S.mode = 'db'; setStatus('', 'Cargando datos…');
+  const fail = (e) => { setStatus('warn', 'Se perdió la conexión con los datos. Recarga la página.'); };
+  db.collection('meses').onSnapshot((snap) => {
+    const m = new Map(); for (const d of snap.docs) { const b = d.data(); if (b) m.set(d.id, b); }
+    S.months = m; S.loaded.meses = true;
+    setStatus('on', 'Datos guardados · ' + snap.size + (snap.size === 1 ? ' mes' : ' meses') + (S.canWrite ? '' : ' · solo lectura'));
+    schedule();
+  }, fail);
+  db.doc('config/maestro').onSnapshot((d) => { S.maestro = d.exists ? ((d.data() || {}).items || []) : []; S.loaded.maestro = true; schedule(); }, fail);
+  db.doc('config/app').onSnapshot((d) => { const v = d.exists ? Number((d.data() || {}).mesInicio) : NaN; if (v >= 1 && v <= 12) S.mesInicio = v; S.loaded.app = true; schedule(); }, fail);
+  db.collection('cargas').orderBy('at', 'desc').limit(30).onSnapshot((snap) => { S.cargas = snap.docs.map((d) => d.data()); schedule(); }, () => {});
+}
+const initial = (location.hash || '').slice(1);
+go(TABS.includes(initial) ? initial : 'resumen');
+boot();
+})();
+</script>
+
+</body></html>

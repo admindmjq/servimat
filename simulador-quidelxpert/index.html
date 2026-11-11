@@ -1,0 +1,2153 @@
+<!doctype html><html lang="es"><head><script>window.CLAUDE_LOCAL = {"app": "simulador-quidelxpert", "titulo": "Simulador QuidelXpert", "carpeta": "Artefactos/Simulador QuidelXpert"};</script><script src="/comun/claude-local.js"></script><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Simulador QuidelXpert</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Chakra+Petch:wght@500;600;700&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: barra de marca + pestañas; simulador en dos columnas (datos | liquidación fija), una columna en teléfono. */
+:root {
+  color-scheme: dark;
+  --abismo: #021a20;
+  --petroleo: #053640;
+  --turquesa: #0e8c93;
+  --neon: #5ff5e8;
+  --neon-suave: #a8fbf3;
+  --panel: rgba(2, 22, 28, 0.78);
+  --panel-alto: rgba(4, 40, 48, 0.9);
+  --linea: rgba(95, 245, 232, 0.22);
+  --linea-fuerte: rgba(95, 245, 232, 0.5);
+  --texto: #e6fbf9;
+  --tenue: #9cc9c5;
+  --ok: #6dfdb0;
+  --alerta: #ffc56b;
+  --error: #ff8c9a;
+  --font-display: "Chakra Petch", "Segoe UI", system-ui, sans-serif;
+  --font-body: "IBM Plex Sans", "Segoe UI", system-ui, sans-serif;
+  --font-num: "IBM Plex Mono", ui-monospace, "Cascadia Mono", Consolas, monospace;
+  --r: 10px;
+}
+* { box-sizing: border-box; }
+html { background: var(--abismo); }
+body {
+  margin: 0;
+  min-height: 100vh;
+  font-family: var(--font-body);
+  font-size: 14px;
+  line-height: 1.45;
+  color: var(--texto);
+  background:
+    radial-gradient(1200px 600px at 85% -10%, rgba(95,245,232,0.18), transparent 60%),
+    radial-gradient(900px 500px at -10% 30%, rgba(14,140,147,0.35), transparent 60%),
+    linear-gradient(160deg, var(--abismo) 0%, var(--petroleo) 45%, #06505a 75%, var(--turquesa) 140%);
+  background-attachment: fixed;
+}
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--abismo); }
+.wrap { max-width: 1240px; margin: 0 auto; padding-block: 18px 40px; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+header.barra { display: flex; flex-wrap: wrap; align-items: center; gap: 12px 20px; justify-content: space-between; }
+.marca { display: flex; align-items: baseline; gap: 12px; flex-wrap: wrap; }
+.marca h1 {
+  margin: 0; font-family: var(--font-display); font-weight: 700; font-size: 28px; letter-spacing: 0.02em;
+  color: var(--neon-suave);
+  text-shadow: 0 0 6px rgba(95,245,232,0.75), 0 0 18px rgba(95,245,232,0.45), 0 0 36px rgba(14,140,147,0.6);
+}
+.marca h1 b { color: #fff; font-weight: 700; }
+.marca span { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.18em; font-size: 12px; color: var(--tenue); }
+
+.periodo { display: flex; flex-wrap: wrap; align-items: center; gap: 8px; }
+.periodo label { font-size: 12px; color: var(--tenue); text-transform: uppercase; letter-spacing: 0.08em; }
+
+nav.tabs { display: flex; gap: 4px; margin-top: 16px; border-bottom: 1px solid var(--linea); overflow-x: auto; }
+nav.tabs a {
+  font-family: var(--font-display); font-weight: 600; letter-spacing: 0.06em; text-transform: uppercase; font-size: 13px;
+  color: var(--tenue); text-decoration: none; padding: 10px 14px; border-bottom: 2px solid transparent; white-space: nowrap;
+}
+nav.tabs a[aria-current="page"] { color: var(--neon); border-bottom-color: var(--neon); text-shadow: 0 0 10px rgba(95,245,232,0.6); }
+nav.tabs a:hover { color: var(--texto); }
+nav.tabs a:focus-visible, button:focus-visible, input:focus-visible, select:focus-visible { outline: 2px solid var(--neon); outline-offset: 2px; }
+
+.aviso { margin-top: 14px; padding: 10px 14px; border-radius: var(--r); border: 1px solid var(--linea); background: var(--panel); font-size: 13px; color: var(--tenue); }
+.aviso.alerta { border-color: rgba(255,197,107,0.5); color: var(--alerta); }
+.aviso.error { border-color: rgba(255,140,154,0.5); color: var(--error); }
+
+section.vista { margin-top: 18px; }
+.grid-sim { display: grid; grid-template-columns: minmax(0, 1.05fr) minmax(0, 1fr); gap: 18px; align-items: start; }
+@media (max-width: 900px) { .grid-sim { grid-template-columns: 1fr; } }
+
+.panel { background: var(--panel); border: 1px solid var(--linea); border-radius: var(--r); padding: 16px; backdrop-filter: blur(6px); min-width: 0; }
+.panel + .panel { margin-top: 14px; }
+.panel h2 { margin: 0 0 12px; font-family: var(--font-display); font-weight: 600; font-size: 15px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--neon-suave); text-wrap: balance; }
+.panel h3 { margin: 16px 0 8px; font-family: var(--font-display); font-weight: 600; font-size: 13px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tenue); }
+.campos { display: grid; grid-template-columns: repeat(auto-fill, minmax(170px, 1fr)); gap: 12px; }
+.campo { display: flex; flex-direction: column; gap: 4px; min-width: 0; }
+.campo > span { font-size: 12px; color: var(--tenue); }
+.campo small { color: var(--tenue); font-size: 11px; }
+.check { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--texto); padding-top: 18px; }
+
+input, select {
+  font: inherit; color: var(--texto); background: rgba(0, 12, 16, 0.65); border: 1px solid var(--linea); border-radius: 7px;
+  padding: 8px 10px; min-width: 0; width: 100%;
+}
+input[type="checkbox"] { width: 16px; height: 16px; accent-color: var(--neon); }
+input.num { font-family: var(--font-num); font-variant-numeric: tabular-nums; text-align: right; }
+select option { background: #04252c; color: var(--texto); }
+.periodo select { width: auto; }
+
+button {
+  font: inherit; font-weight: 600; cursor: pointer; border-radius: 7px; padding: 8px 14px; border: 1px solid var(--linea-fuerte);
+  background: rgba(95,245,232,0.08); color: var(--neon-suave);
+}
+button:hover { background: rgba(95,245,232,0.16); }
+button.primario { background: var(--neon); color: #022126; border-color: var(--neon); box-shadow: 0 0 16px rgba(95,245,232,0.35); }
+button.primario:hover { background: var(--neon-suave); }
+button.peligro { color: var(--error); border-color: rgba(255,140,154,0.45); background: transparent; }
+button.mini { padding: 4px 9px; font-size: 12px; }
+button:disabled { opacity: 0.45; cursor: not-allowed; }
+.acciones { display: flex; flex-wrap: wrap; gap: 8px; margin-top: 12px; }
+
+.chips { display: flex; flex-wrap: wrap; gap: 6px; margin-bottom: 10px; }
+.chip { font-size: 12px; padding: 4px 10px; border-radius: 999px; border: 1px dashed var(--linea-fuerte); background: transparent; color: var(--tenue); font-weight: 500; }
+.chip:hover { color: var(--neon); border-style: solid; }
+.estado { display: inline-flex; align-items: center; gap: 6px; font-size: 12px; padding: 3px 10px; border-radius: 999px; border: 1px solid var(--linea); color: var(--tenue); white-space: nowrap; }
+.estado::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: currentColor; }
+.estado.verificado { color: var(--ok); border-color: rgba(109,253,176,0.4); }
+.estado.derivado { color: var(--alerta); border-color: rgba(255,197,107,0.4); }
+.estado.manual { color: var(--neon); border-color: var(--linea-fuerte); }
+.estado.falta { color: var(--error); border-color: rgba(255,140,154,0.4); }
+
+.items { display: flex; flex-direction: column; gap: 8px; }
+.item { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1.2fr) auto minmax(0, 1fr) auto; gap: 8px; align-items: center; }
+.item label.trib { display: flex; align-items: center; gap: 4px; font-size: 11px; color: var(--tenue); white-space: nowrap; }
+@media (max-width: 560px) { .item { grid-template-columns: 1fr 1fr; } .item input[data-k="nombre"] { grid-column: 1 / -1; } }
+.vacio { color: var(--tenue); font-size: 13px; padding: 8px 0; }
+
+/* Liquidación */
+.liq { position: sticky; top: calc(env(safe-area-inset-top, 0px) + 12px); }
+@media (max-width: 900px) { .liq { position: static; } }
+.liq-cab { display: flex; justify-content: space-between; align-items: baseline; gap: 10px; flex-wrap: wrap; border-bottom: 1px solid var(--linea); padding-bottom: 10px; margin-bottom: 8px; }
+.liq-cab strong { font-family: var(--font-display); font-size: 16px; letter-spacing: 0.04em; }
+table.lineas { width: 100%; border-collapse: collapse; font-size: 13px; }
+table.lineas td { padding: 5px 0; vertical-align: top; }
+table.lineas td.m { text-align: right; font-family: var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; padding-left: 12px; }
+table.lineas .d { color: var(--tenue); font-size: 11px; display: block; }
+table.lineas tr.sub td { border-top: 1px solid var(--linea); font-weight: 600; padding-top: 7px; }
+table.lineas tr.grupo td { padding-top: 12px; font-family: var(--font-display); font-size: 12px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--neon-suave); }
+.liquido {
+  margin-top: 14px; padding: 14px; border-radius: var(--r); border: 1px solid var(--linea-fuerte); background: var(--panel-alto);
+  display: flex; justify-content: space-between; align-items: center; gap: 12px; flex-wrap: wrap;
+}
+.liquido span { font-family: var(--font-display); text-transform: uppercase; letter-spacing: 0.12em; font-size: 13px; color: var(--tenue); }
+.liquido output { font-family: var(--font-num); font-size: 28px; font-weight: 500; color: var(--neon); text-shadow: 0 0 14px rgba(95,245,232,0.55); font-variant-numeric: tabular-nums; }
+.costo { margin-top: 10px; display: flex; justify-content: space-between; gap: 12px; font-size: 13px; color: var(--tenue); flex-wrap: wrap; }
+.costo b { font-family: var(--font-num); color: var(--texto); font-weight: 500; }
+.hallazgos { margin: 10px 0 0; padding: 0; list-style: none; display: flex; flex-direction: column; gap: 6px; font-size: 12px; }
+.hallazgos li { padding: 6px 10px; border-radius: 7px; border: 1px solid rgba(255,197,107,0.35); color: var(--alerta); }
+.hallazgos li.err { border-color: rgba(255,140,154,0.45); color: var(--error); }
+details.param { margin-top: 12px; font-size: 12px; color: var(--tenue); }
+details.param summary { cursor: pointer; color: var(--neon-suave); }
+details.param dl { display: grid; grid-template-columns: auto 1fr; gap: 3px 14px; margin: 8px 0 0; }
+details.param dd { margin: 0; text-align: right; font-family: var(--font-num); color: var(--texto); }
+
+/* Tablas */
+.tabla-scroll { overflow-x: auto; }
+table.datos { width: 100%; border-collapse: collapse; font-size: 13px; min-width: 760px; }
+table.datos th { text-align: right; font-family: var(--font-display); font-weight: 600; font-size: 11px; letter-spacing: 0.08em; text-transform: uppercase; color: var(--tenue); padding: 8px 10px; border-bottom: 1px solid var(--linea-fuerte); white-space: nowrap; }
+table.datos th:first-child, table.datos td:first-child { text-align: left; }
+table.datos td { padding: 7px 10px; border-bottom: 1px solid var(--linea); text-align: right; font-family: var(--font-num); font-variant-numeric: tabular-nums; white-space: nowrap; }
+table.datos tr.activo td { background: rgba(95,245,232,0.08); }
+table.datos tr.click { cursor: pointer; }
+table.datos tr.click:hover td { background: rgba(95,245,232,0.05); }
+.sube { color: var(--ok); } .baja { color: var(--error); }
+.grafico { margin-top: 14px; }
+.grafico svg { width: 100%; height: auto; display: block; }
+.leyenda { display: flex; gap: 16px; font-size: 12px; color: var(--tenue); margin-top: 6px; flex-wrap: wrap; }
+.leyenda i { display: inline-block; width: 18px; height: 3px; vertical-align: middle; margin-right: 6px; border-radius: 2px; }
+
+.tarjetas { display: grid; grid-template-columns: repeat(auto-fit, minmax(190px, 1fr)); gap: 12px; margin-top: 14px; }
+.tarjeta { background: var(--panel); border: 1px solid var(--linea); border-radius: var(--r); padding: 12px 14px; min-width: 0; }
+.tarjeta.var { background: var(--panel-alto); border-color: var(--linea-fuerte); }
+.tarjeta span { display: block; font-size: 12px; color: var(--tenue); white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.tarjeta b { display: block; margin-top: 4px; font-family: var(--font-num); font-weight: 500; font-size: 22px; font-variant-numeric: tabular-nums; }
+.tarjeta small { font-family: var(--font-num); font-size: 12px; }
+.tarjeta.var b { color: var(--neon); text-shadow: 0 0 10px rgba(95,245,232,0.4); }
+table.datos.vs { min-width: 620px; }
+table.datos.vs tr.grupo td { text-align: left; font-family: var(--font-display); font-size: 11px; letter-spacing: 0.1em; text-transform: uppercase; color: var(--neon-suave); padding-top: 14px; border-bottom-color: var(--linea-fuerte); }
+table.datos.vs tr.sub td { font-weight: 600; }
+table.datos.vs tr.liq td { background: rgba(95,245,232,0.1); font-weight: 600; color: var(--neon-suave); }
+table.datos.vs tr.vs-item td:first-child { padding-left: 22px; }
+table.datos.vs td.cero { color: var(--tenue); }
+table.vs-editor { min-width: 680px; }
+table.vs-editor td { vertical-align: middle; padding: 5px 8px; }
+table.vs-editor td:first-child { color: var(--tenue); width: 32%; }
+table.vs-editor input, table.vs-editor select { padding: 5px 8px; font-size: 13px; }
+table.vs-editor input.num { max-width: 190px; margin-left: auto; display: block; }
+table.vs-editor td:not(:first-child) { text-align: right; }
+table.vs-editor select { max-width: 230px; }
+table.vs-editor tr.difiere td { background: rgba(95,245,232,0.07); }
+table.vs-editor tr.difiere td:first-child { color: var(--neon-suave); box-shadow: inset 3px 0 0 var(--neon); }
+.vs-it { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 150px) auto auto; gap: 6px; align-items: center; }
+.vs-it label.trib { font-size: 11px; color: var(--tenue); display: flex; gap: 4px; align-items: center; white-space: nowrap; }
+table.vs-editor tr[data-item] td:first-child { width: 48%; }
+table.datos.vs td:first-child { font-family: var(--font-body); white-space: normal; }
+.vs-link { align-self: center; color: var(--neon-suave); font-size: 13px; }
+table.datos.hist td:first-child { font-family: var(--font-body); white-space: normal; min-width: 180px; }
+table.datos.hist td.acc { white-space: nowrap; }
+table.datos.hist td.acc button { margin-left: 6px; }
+table.datos.hist small { display: block; color: var(--tenue); font-family: var(--font-body); font-size: 11px; }
+.vs-chip { display: block; margin-top: 10px; padding: 8px 12px; border-radius: 8px; border: 1px dashed var(--linea-fuerte); color: var(--neon-suave); text-decoration: none; font-size: 12.5px; }
+.vs-chip:hover { border-style: solid; }
+.toast { position: fixed; right: max(16px, env(safe-area-inset-right, 0px)); bottom: calc(16px + env(safe-area-inset-bottom, 0px)); background: var(--panel-alto); border: 1px solid var(--linea-fuerte); color: var(--texto); padding: 10px 14px; border-radius: var(--r); font-size: 13px; box-shadow: 0 0 20px rgba(0,0,0,0.4); z-index: 20; }
+.pie { margin-top: 26px; font-size: 12px; color: var(--tenue); max-width: 75ch; }
+@media (prefers-reduced-motion: reduce) { * { transition: none !important; } }
+</style>
+
+<div class="wrap">
+  <header class="barra">
+    <div class="marca">
+      <h1>Quidel<b>Xpert</b></h1>
+      <span>Simulador de remuneraciones · Chile</span>
+    </div>
+    <div class="periodo">
+      <label for="selMes">Período</label>
+      <select id="selMes" aria-label="Mes"></select>
+      <select id="selAnio" aria-label="Año"></select>
+      <span id="estadoMes" class="estado">Cargando…</span>
+    </div>
+  </header>
+
+  <nav class="tabs" aria-label="Secciones">
+    <a href="#simulador" data-vista="simulador">Simulador</a>
+    <a href="#versus" data-vista="versus">Simulación 1 vs 2</a>
+    <a href="#comparar" data-vista="comparar">Comparar períodos</a>
+    <a href="#historial" data-vista="historial">Historial</a>
+    <a href="#parametros" data-vista="parametros">Parámetros</a>
+  </nav>
+
+  <div id="avisoGlobal" class="aviso" hidden></div>
+
+  <!-- SIMULADOR -->
+  <section class="vista" id="v-simulador">
+    <div class="grid-sim">
+      <div>
+        <form class="panel" id="formSim" autocomplete="off">
+          <h2>Contrato y jornada</h2>
+          <div class="campos">
+            <label class="campo"><span>Tipo de contrato</span>
+              <select id="tipoContrato">
+                <option value="INDEFINIDO">Indefinido</option>
+                <option value="PLAZO_FIJO">Plazo fijo</option>
+                <option value="OBRA_FAENA">Obra o faena</option>
+              </select></label>
+            <label class="campo"><span>Años en la empresa</span><input id="anios" class="num" type="number" min="0" step="1" value="2"></label>
+            <label class="campo"><span>Jornada semanal (horas)</span><input id="jornada" class="num" type="number" min="1" max="45" step="1" value="42"><small id="jornadaNota"></small></label>
+            <label class="campo"><span>Días trabajados</span><input id="dias" class="num" type="number" min="0" max="30" step="1" value="30"></label>
+          </div>
+
+          <h3>Remuneración</h3>
+          <div class="campos">
+            <label class="campo"><span>Sueldo base mensual</span><input id="sueldoBase" class="num" type="number" min="0" step="1000" value="1000000"></label>
+            <label class="campo"><span>Horas extra</span><input id="horasExtra" class="num" type="number" min="0" step="0.5" value="0"></label>
+            <label class="campo"><span>Recargo horas extra (%)</span><input id="recargo" class="num" type="number" min="50" step="5" value="50"></label>
+            <label class="campo"><span>Gratificación</span>
+              <select id="gratTipo">
+                <option value="ART50">Art. 50 (25%, tope 4,75 IMM)</option>
+                <option value="MONTO">Monto fijo</option>
+                <option value="NINGUNA">Sin gratificación</option>
+              </select></label>
+            <label class="campo" id="campoGratMonto" hidden><span>Monto gratificación</span><input id="gratMonto" class="num" type="number" min="0" step="1000" value="0"></label>
+          </div>
+
+          <h3>Previsión y salud</h3>
+          <div class="campos">
+            <label class="campo"><span>AFP</span>
+              <select id="afp">
+                <option value="CAPITAL">Capital</option>
+                <option value="CUPRUM">Cuprum</option>
+                <option value="HABITAT">Habitat</option>
+                <option value="MODELO">Modelo</option>
+                <option value="PLANVITAL">PlanVital</option>
+                <option value="PROVIDA">Provida</option>
+                <option value="UNO">Uno</option>
+                <option value="NINGUNA">Sin cotización AFP</option>
+              </select></label>
+            <label class="check"><input id="pensionado" type="checkbox"> Pensionado</label>
+            <label class="campo"><span>Salud</span>
+              <select id="salud">
+                <option value="FONASA">Fonasa (7%)</option>
+                <option value="ISAPRE">Isapre</option>
+              </select></label>
+            <label class="campo" id="campoIsapre" hidden><span>Isapre</span>
+              <select id="isapre"></select><small id="isapreInfo"></small></label>
+            <label class="campo" id="campoPlan" hidden><span>Plan Isapre (UF)</span><input id="planUF" class="num" type="number" min="0" step="0.01" value="3"></label>
+            <label class="campo"><span>Cargas familiares</span><input id="cargas" class="num" type="number" min="0" step="1" value="0"></label>
+            <label class="campo"><span>APV mensual ($)</span><input id="apv" class="num" type="number" min="0" step="1000" value="0"></label>
+            <label class="campo"><span>Régimen APV</span>
+              <select id="apvReg"><option value="B">B (rebaja impuesto)</option><option value="A">A (bonificación fiscal)</option></select></label>
+            <label class="campo"><span>Mutual adicional (%)</span><input id="mutualAd" class="num" type="number" min="0" step="0.01" value="0"></label>
+          </div>
+        </form>
+
+        <div class="panel">
+          <h2>Ítems de la liquidación</h2>
+          <div class="chips" id="presets" aria-label="Agregar ítem rápido"></div>
+          <div class="items" id="items"></div>
+          <div class="acciones">
+            <button type="button" id="btnItem">Agregar ítem</button>
+          </div>
+        </div>
+
+        <div class="panel">
+          <h2>Sueldo base desde líquido</h2>
+          <p class="vacio" style="padding-top:0">Indica el líquido que quieres pagar y calculo el sueldo base necesario con los mismos ítems, previsión y período.</p>
+          <div class="campos">
+            <label class="campo"><span>Líquido deseado</span><input id="liqObjetivo" class="num" type="number" min="0" step="1000" value="900000"></label>
+          </div>
+          <div class="acciones"><button type="button" id="btnInverso">Calcular sueldo base</button></div>
+        </div>
+
+        <div class="panel">
+          <h2>Simulaciones guardadas</h2>
+          <div class="campos">
+            <label class="campo"><span>Nombre de la simulación</span><input id="nombreEsc" type="text" maxlength="80" placeholder="Ej.: Vendedor Puerto Montt"></label>
+          </div>
+          <div class="acciones"><button type="button" id="btnGuardarEsc">Guardar simulación</button><button type="button" id="btnLimpiar">Nueva simulación</button></div>
+          <div id="listaEsc" class="items" style="margin-top:12px"></div>
+        </div>
+      </div>
+
+      <aside class="panel liq" aria-live="polite">
+        <div class="liq-cab"><strong>Liquidación simulada</strong><span id="liqPeriodo" class="estado"></span></div>
+        <div id="liqCuerpo"></div>
+        <div class="acciones" id="accionesLiq" hidden><button type="button" id="btnXlsxLiq" class="primario">Excel con fórmulas</button><button type="button" id="btnPdfLiq">PDF</button><button type="button" id="btnCsvLiq">CSV</button></div>
+      </aside>
+    </div>
+  </section>
+
+  <!-- SIMULACION 1 VS 2 -->
+  <section class="vista" id="v-versus" hidden>
+    <div class="panel">
+      <h2>Simulación 1 vs Simulación 2</h2>
+      <p class="vacio" style="padding-top:0">Fija las condiciones del Simulador como Simulación 1 y luego edita cualquiera de las dos aquí mismo: sueldo, bonos, AFP, Isapre y su plan, cargas, APV o ítems. La variación se calcula en el mismo mes.</p>
+      <div class="campos">
+        <label class="campo"><span>Nombre de la Simulación 1</span><input id="nomSim1" type="text" maxlength="60" value="Simulación 1"></label>
+        <label class="campo"><span>Nombre de la Simulación 2</span><input id="nomSim2" type="text" maxlength="60" value="Simulación 2"></label>
+        <label class="campo"><span>Usar simulación guardada como Simulación 1</span><select id="escSim1"></select></label>
+        <label class="campo"><span>Usar simulación guardada como Simulación 2</span><select id="escSim2"></select></label>
+      </div>
+      <div class="acciones">
+        <button type="button" class="primario" id="btnFijarSim1">Fijar condiciones actuales como Simulación 1</button>
+        <button type="button" id="btnEditarSim2">Editar Simulación 2</button>
+        <button type="button" id="btnIntercambiar">Intercambiar 1 y 2</button>
+        <button type="button" id="btnPdfVs">PDF</button>
+        <button type="button" class="peligro" id="btnQuitarSim1">Quitar Simulación 1</button>
+      </div>
+      <h3>Guardar o empezar de nuevo</h3>
+      <div class="campos">
+        <label class="campo" style="grid-column: span 2"><span>Nombre de la comparativa</span><input id="nomComp" type="text" maxlength="90" placeholder="Ej.: Daniel octubre · reajuste 5%"></label>
+      </div>
+      <div class="acciones">
+        <button type="button" class="primario" id="btnGuardarComp">Guardar comparativa</button>
+        <button type="button" class="peligro" id="btnLimpiarVs">Limpiar y crear nueva comparativa</button>
+        <a href="#historial" class="vs-link">Ver historial</a>
+      </div>
+      <p id="confirmLimpiarVs" class="aviso error" hidden>Se borrarán los datos de la Simulación 1 y 2 que no hayas guardado. <button type="button" class="mini peligro" id="btnConfirmLimpiarVs">Sí, limpiar</button> <button type="button" class="mini" id="btnCancelLimpiarVs">Cancelar</button></p>
+    </div>
+    <div id="vsCuerpo"><div id="vsTarjetas"></div><div id="vsEditor"></div><div id="vsResultado"></div></div>
+  </section>
+
+  <!-- COMPARAR -->
+  <section class="vista" id="v-comparar" hidden>
+    <div class="panel">
+      <h2>Misma simulación en varios meses</h2>
+      <div class="campos">
+        <label class="campo"><span>Desde</span><select id="cmpDesde"></select></label>
+        <label class="campo"><span>Hasta</span><select id="cmpHasta"></select></label>
+      </div>
+      <div class="acciones"><button type="button" id="btnXlsxCmp" class="primario">Excel con fórmulas</button><button type="button" id="btnPdfCmp">PDF</button><button type="button" id="btnCsvCmp">CSV</button></div>
+      <div class="grafico" id="cmpGrafico"></div>
+      <div class="tabla-scroll" style="margin-top:12px"><table class="datos" id="cmpTabla"></table></div>
+      <p class="vacio">Usa los datos de la pestaña Simulador. Cada fila aplica la UF, UTM, sueldo mínimo, topes y tasas de ese mes.</p>
+    </div>
+  </section>
+
+  <!-- HISTORIAL -->
+  <section class="vista" id="v-historial" hidden>
+    <div class="panel">
+      <h2>Historial de simulaciones</h2>
+      <div class="campos">
+        <label class="campo" style="grid-column: span 2"><span>Buscar por nombre o período</span><input id="buscarHist" type="search" placeholder="Ej.: Daniel, 2026-10, octubre"></label>
+      </div>
+      <p class="vacio">Los montos se recalculan con los parámetros del mes guardado. Abrir una simulación la carga en el Simulador; abrir una comparativa la carga en Simulación 1 vs 2.</p>
+    </div>
+    <div class="panel">
+      <h2>Comparativas guardadas (Simulación 1 vs 2)</h2>
+      <div class="tabla-scroll"><table class="datos hist" id="tablaComp"></table></div>
+    </div>
+    <div class="panel">
+      <h2>Simulaciones guardadas (Simulador)</h2>
+      <div class="tabla-scroll"><table class="datos hist" id="tablaHistSim"></table></div>
+    </div>
+  </section>
+
+  <!-- PARAMETROS -->
+  <section class="vista" id="v-parametros" hidden>
+    <div class="panel">
+      <h2>Parámetros por mes</h2>
+      <div class="tabla-scroll"><table class="datos" id="tablaParam"></table></div>
+      <div class="acciones">
+        <label class="campo" style="max-width:180px"><span>Nuevo mes (AAAA-MM)</span><input id="nuevoMes" type="text" placeholder="2026-11" maxlength="7"></label>
+        <button type="button" id="btnNuevoMes" style="align-self:flex-end">Crear desde el último mes</button>
+      </div>
+    </div>
+    <form class="panel" id="formParam" hidden>
+      <h2 id="tituloParam">Editar mes</h2>
+      <div class="campos" id="camposParam"></div>
+      <h3>Comisión AFP (%)</h3>
+      <div class="campos" id="camposComision"></div>
+      <h3>Asignación familiar</h3>
+      <div class="campos" id="camposAF"></div>
+      <div class="acciones">
+        <button type="submit" class="primario" id="btnGuardarParam">Guardar mes</button>
+        <button type="button" id="btnCerrarParam">Cerrar</button>
+        <button type="button" class="peligro" id="btnBorrarParam">Eliminar mes</button>
+      </div>
+      <p id="confirmBorrar" class="aviso error" hidden>¿Eliminar este mes? <button type="button" class="mini peligro" id="btnConfirmBorrar">Sí, eliminar</button> <button type="button" class="mini" id="btnCancelBorrar">Cancelar</button></p>
+    </form>
+  </section>
+
+  <p class="pie">Simulación referencial según normativa chilena vigente para cada mes (Código del Trabajo, DL 3.500, Ley 19.728, Ley 21.735 y tabla de impuesto único del SII). Parámetros tomados de Previred y del SII; los meses marcados como <em>derivados</em> repiten tasas del mes verificado más cercano. La asignación familiar se calcula sobre la renta imponible del mes, no sobre el promedio del semestre. No reemplaza el proceso oficial de remuneraciones.</p>
+</div>
+<div id="toast" class="toast" role="status" hidden></div>
+
+<script>
+/* ===== MOTOR DE CÁLCULO (puro, sin DOM) ===== */
+const TRAMOS_IMPUESTO = [
+  { desde: 0, hasta: 13.5, factor: 0, rebaja: 0 },
+  { desde: 13.5, hasta: 30, factor: 0.04, rebaja: 0.54 },
+  { desde: 30, hasta: 50, factor: 0.08, rebaja: 1.74 },
+  { desde: 50, hasta: 70, factor: 0.135, rebaja: 4.49 },
+  { desde: 70, hasta: 90, factor: 0.23, rebaja: 11.14 },
+  { desde: 90, hasta: 120, factor: 0.304, rebaja: 17.8 },
+  { desde: 120, hasta: 310, factor: 0.35, rebaja: 23.32 },
+  { desde: 310, hasta: Infinity, factor: 0.4, rebaja: 38.82 },
+];
+const r0 = (n) => Math.round(n + Number.EPSILON);
+
+function impuestoUnico(base, utm) {
+  if (base <= 0) return { monto: 0, tramo: TRAMOS_IMPUESTO[0] };
+  const u = base / utm;
+  const t = TRAMOS_IMPUESTO.find((x) => u > x.desde && u <= x.hasta) || TRAMOS_IMPUESTO[0];
+  return { monto: t.factor === 0 ? 0 : Math.max(0, r0(base * t.factor - t.rebaja * utm)), tramo: t };
+}
+
+function asignacionFamiliar(renta, cargas, af) {
+  if (!cargas) return { monto: 0, tramo: "-" };
+  const letras = ["A", "B", "C"];
+  for (let i = 0; i < af.length; i++) {
+    if (renta <= af[i].hasta) return { monto: af[i].monto * cargas, tramo: letras[i] };
+  }
+  return { monto: 0, tramo: "D" };
+}
+
+function calcular(e, P) {
+  const pct = (x) => (Number(x) || 0) / 100;
+  const items = e.items || [];
+  const sueldo = r0((e.sueldoBase * e.dias) / 30);
+  const valorHora = e.jornada > 0 ? ((e.sueldoBase / 30) * 28) / (e.jornada * 4) : 0;
+  const horasExtra = r0(valorHora * (1 + pct(e.recargo)) * (e.horasExtra || 0));
+  const hImp = items.filter((i) => i.tipo === "HI");
+  const hNoImp = items.filter((i) => i.tipo === "HN");
+  const desc = items.filter((i) => i.tipo === "D");
+  const sumar = (a) => a.reduce((s, i) => s + (Number(i.monto) || 0), 0);
+  const otrosImp = sumar(hImp);
+  const topeGrat = r0((4.75 * P.imm) / 12);
+  let gratificacion = 0;
+  if (e.gratTipo === "ART50") gratificacion = Math.min(r0((sueldo + horasExtra + otrosImp) * 0.25), topeGrat);
+  else if (e.gratTipo === "MONTO") gratificacion = Number(e.gratMonto) || 0;
+  const totalImp = sueldo + horasExtra + otrosImp + gratificacion;
+
+  const topeAfp = r0(P.topeAfpUF * P.uf);
+  const topeCes = r0(P.topeCesUF * P.uf);
+  const baseAfp = Math.min(totalImp, topeAfp);
+  const baseCes = Math.min(totalImp, topeCes);
+
+  const conAfp = e.afp !== "NINGUNA";
+  const activoAfp = conAfp && !e.pensionado;
+  const comision = conAfp ? Number(P.comisiones[e.afp]) || 0 : 0;
+  const afp = activoAfp ? r0(baseAfp * (0.1 + comision / 100)) : 0;
+  const saludLegal = r0(baseAfp * 0.07);
+  const plan = e.salud === "ISAPRE" ? r0((Number(e.planUF) || 0) * P.uf) : 0;
+  const salud = Math.max(saludLegal, plan);
+  const adicionalIsapre = salud - saludLegal;
+  const cesTrab = !e.pensionado && e.tipoContrato === "INDEFINIDO" && e.anios < 11 ? r0(baseCes * pct(P.cesIndefTrab)) : 0;
+
+  const apv = Number(e.apv) || 0;
+  const apvRebaja = e.apvReg === "B" ? Math.min(apv, r0(50 * P.uf)) : 0;
+  const tribNoImp = sumar(hNoImp.filter((i) => i.tributable));
+  const tributable = Math.max(0, totalImp + tribNoImp - afp - saludLegal - cesTrab - apvRebaja);
+  const imp = impuestoUnico(tributable, P.utm);
+
+  const noImp = sumar(hNoImp);
+  const af = asignacionFamiliar(totalImp, Number(e.cargas) || 0, P.af);
+  const totalHaberes = totalImp + noImp + af.monto;
+  const legales = afp + salud + cesTrab + imp.monto;
+  const otrosDesc = sumar(desc) + apv;
+  const liquido = totalHaberes - legales - otrosDesc;
+
+  let tasaCesEmp = 0;
+  if (!e.pensionado) {
+    if (e.tipoContrato === "INDEFINIDO") tasaCesEmp = e.anios >= 11 ? P.cesMas11Emp : P.cesIndefEmp;
+    else tasaCesEmp = P.cesPlazoFijoEmp;
+  }
+  const cesEmp = r0(baseCes * pct(tasaCesEmp));
+  const sis = activoAfp ? r0(baseAfp * pct(P.sis)) : 0;
+  const aporteCI = activoAfp ? r0(baseAfp * pct(P.aporteCI)) : 0;
+  const aporteCEV = activoAfp ? r0(baseAfp * pct(P.aporteCEV)) : 0;
+  const aporteCRP = activoAfp ? r0(baseAfp * pct(P.aporteCRP)) : 0;
+  const mutual = r0(baseAfp * pct((Number(P.mutualBasica) || 0) + (Number(e.mutualAd) || 0)));
+  const totalEmp = cesEmp + sis + aporteCI + aporteCEV + aporteCRP + mutual;
+
+  return {
+    sueldo, horasExtra, valorHora, gratificacion, topeGrat, otrosImp, totalImp, noImp, asigFam: af,
+    totalHaberes, topeAfp, topeCes, baseAfp, baseCes, comision, afp, salud, saludLegal, plan, adicionalIsapre,
+    cesTrab, tributable, impuesto: imp.monto, tramo: imp.tramo, apv, apvRebaja, otrosDesc, legales, liquido,
+    emp: { cesEmp, tasaCesEmp, sis, aporteCI, aporteCEV, aporteCRP, mutual, total: totalEmp },
+    costoEmpresa: totalHaberes + totalEmp,
+    items: { hImp, hNoImp, desc },
+  };
+}
+
+function hallazgos(e, P, c) {
+  const h = [];
+  const minimo = (P.imm * e.jornada) / (P.jornadaLegal || 42);
+  if (e.sueldoBase < minimo - 1) h.push({ err: true, t: "El sueldo base es menor al ingreso mínimo proporcional a la jornada (" + fmt(r0(minimo)) + ")." });
+  if (e.jornada > (P.jornadaLegal || 42)) h.push({ t: "La jornada supera el máximo legal de " + (P.jornadaLegal || 42) + " horas para este mes." });
+  if (e.afp === "NINGUNA" && !e.pensionado) h.push({ t: "Trabajador activo sin AFP: no se calculan cotización AFP, SIS ni aporte del empleador." });
+  if (e.salud === "ISAPRE" && !(Number(e.planUF) > 0)) h.push({ err: true, t: "Falta el valor del plan Isapre en UF." });
+  if (e.salud === "ISAPRE" && !isapreDe(e.isapre)) h.push({ t: "Elige la Isapre del trabajador entre las vigentes." });
+  const isa = isapreDe(e.isapre);
+  if (e.salud === "ISAPRE" && isa && isa.tipo === "Cerrada") h.push({ t: "Isapre " + isa.nombre + " es cerrada: solo admite " + isa.grupo + "." });
+  if (c.totalImp > c.topeAfp) h.push({ t: "La renta imponible supera el tope de " + P.topeAfpUF + " UF: AFP y salud se calculan sobre " + fmt(c.topeAfp) + "." });
+  if (e.horasExtra > 48) h.push({ t: "Más de 48 horas extra en el mes: el máximo legal es de 2 horas por día." });
+  if (c.liquido < 0) h.push({ err: true, t: "Los descuentos superan los haberes." });
+  const descVol = c.otrosDesc;
+  if (descVol > 0.15 * c.totalHaberes && c.totalHaberes > 0) h.push({ t: "Los descuentos voluntarios superan el 15% de la remuneración (art. 58 CT, salvo acuerdo escrito hasta 45% del líquido para ciertos fines)." });
+  return h;
+}
+
+/* Sueldo base para un líquido objetivo (búsqueda binaria). */
+function sueldoDesdeLiquido(objetivo, e, P) {
+  let lo = 0, hi = 60000000;
+  for (let i = 0; i < 60 && hi - lo > 0.5; i++) {
+    const mid = (lo + hi) / 2;
+    if (calcular({ ...e, sueldoBase: mid }, P).liquido < objetivo) lo = mid; else hi = mid;
+  }
+  let base = Math.ceil(hi);
+  while (base > 0 && calcular({ ...e, sueldoBase: base - 1 }, P).liquido >= objetivo) base--;
+  return base;
+}
+
+const NF = new Intl.NumberFormat("es-CL", { maximumFractionDigits: 0 });
+const fmt = (n) => (Math.round(n) < 0 ? "-$" : "$") + NF.format(Math.abs(Math.round(n)));
+function pasoBonito(rango, n) { const bruto = rango / n, mag = Math.pow(10, Math.floor(Math.log10(bruto))), f = bruto / mag; return (f <= 1 ? 1 : f <= 2 ? 2 : f <= 2.5 ? 2.5 : f <= 5 ? 5 : 10) * mag; }
+const fmtP = (n, d = 2) => (Number(n) || 0).toLocaleString("es-CL", { minimumFractionDigits: d, maximumFractionDigits: d }) + "%";
+const NOMBRE_AFP = { CAPITAL: "Capital", CUPRUM: "Cuprum", HABITAT: "Habitat", MODELO: "Modelo", PLANVITAL: "PlanVital", PROVIDA: "Provida", UNO: "Uno", NINGUNA: "Sin AFP" };
+const MESES = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+const etiquetaPeriodo = (p) => { const [y, m] = p.split("-"); return MESES[Number(m) - 1] + " " + y; };
+/* Isapres vigentes (registro Superintendencia de Salud) con código Previred (Tabla 16). */
+const ISAPRES = [
+  { cod: "01", nombre: "Banmédica", tipo: "Abierta", reg: 99 },
+  { cod: "04", nombre: "Colmena", tipo: "Abierta", reg: 67 },
+  { cod: "02", nombre: "Consalud", tipo: "Abierta", reg: 107 },
+  { cod: "05", nombre: "Cruz Blanca", tipo: "Abierta", reg: 78 },
+  { cod: "28", nombre: "Esencial", tipo: "Abierta", reg: 108 },
+  { cod: "10", nombre: "Nueva Masvida", tipo: "Abierta", reg: 81 },
+  { cod: "03", nombre: "Vida Tres", tipo: "Abierta", reg: 80 },
+  { cod: "25", nombre: "Cruz del Norte", tipo: "Cerrada", reg: 94, grupo: "trabajadores de SQM" },
+  { cod: "12", nombre: "Fundación", tipo: "Cerrada", reg: 76, grupo: "trabajadores de BancoEstado" },
+  { cod: "11", nombre: "Isalud", tipo: "Cerrada", reg: 63, grupo: "trabajadores de Codelco" },
+];
+const isapreDe = (cod) => ISAPRES.find((i) => i.cod === cod);
+const nombreSalud = (e) => (e.salud === "ISAPRE" ? "Isapre " + (isapreDe(e.isapre) ? isapreDe(e.isapre).nombre : "(sin elegir)") : "Fonasa");
+const NOMBRE_CONTRATO = { INDEFINIDO: "Indefinido", PLAZO_FIJO: "Plazo fijo", OBRA_FAENA: "Obra o faena" };
+
+/* Líneas de la liquidación (texto plano): [nombre, monto, detalle, clase]. */
+function lineasLiquidacion(e, c, P) {
+  const g = [];
+  g.push(["Haberes", null, "", "grupo"]);
+  g.push(["Sueldo", c.sueldo, e.dias < 30 ? e.dias + " de 30 días" : ""]);
+  if (c.horasExtra) g.push(["Horas extra", c.horasExtra, NF.format(e.horasExtra) + " h × " + fmt(c.valorHora * (1 + e.recargo / 100))]);
+  c.items.hImp.forEach((i) => g.push([i.nombre || "Haber imponible", Number(i.monto) || 0, "Imponible"]));
+  if (c.gratificacion) g.push(["Gratificación", c.gratificacion, e.gratTipo === "ART50" ? (c.gratificacion === c.topeGrat ? "Art. 50, con tope de " + fmt(c.topeGrat) : "Art. 50, 25%") : "Monto fijo"]);
+  g.push(["Total imponible", c.totalImp, "", "sub"]);
+  c.items.hNoImp.forEach((i) => g.push([i.nombre || "Haber no imponible", Number(i.monto) || 0, i.tributable ? "No imponible, tributable" : "No imponible"]));
+  if (c.asigFam.monto) g.push(["Asignación familiar", c.asigFam.monto, "Tramo " + c.asigFam.tramo + ", " + e.cargas + " carga(s)"]);
+  g.push(["Total haberes", c.totalHaberes, "", "sub"]);
+  g.push(["Descuentos legales", null, "", "grupo"]);
+  if (c.afp) g.push(["AFP " + NOMBRE_AFP[e.afp], c.afp, fmtP(10 + c.comision) + " sobre " + fmt(c.baseAfp)]);
+  g.push([nombreSalud(e), c.salud, e.salud === "ISAPRE" ? (c.adicionalIsapre ? "Plan " + NF.format(e.planUF) + " UF (7% + adicional " + fmt(c.adicionalIsapre) + ")" : "7% legal (plan menor al 7%)") : "7% sobre " + fmt(c.baseAfp)]);
+  if (c.cesTrab) g.push(["Seguro de cesantía", c.cesTrab, fmtP(P.cesIndefTrab, 1) + " sobre " + fmt(c.baseCes)]);
+  g.push(["Impuesto único", c.impuesto, "Base " + fmt(c.tributable) + (c.tramo.factor ? " · tramo " + fmtP(c.tramo.factor * 100, 1) : " · exento")]);
+  g.push(["Total descuentos legales", c.legales, "", "sub"]);
+  if (c.apv || c.items.desc.length) {
+    g.push(["Otros descuentos", null, "", "grupo"]);
+    if (c.apv) g.push(["APV régimen " + e.apvReg, c.apv, e.apvReg === "B" ? "Rebaja la base del impuesto" : ""]);
+    c.items.desc.forEach((i) => g.push([i.nombre || "Descuento", Number(i.monto) || 0, ""]));
+    g.push(["Total otros descuentos", c.otrosDesc, "", "sub"]);
+  }
+  const emp = [["Costo empleador", null, "", "grupo"], ["Seguro de cesantía", c.emp.cesEmp, fmtP(c.emp.tasaCesEmp, 1)]];
+  if (c.emp.sis) emp.push(["SIS", c.emp.sis, fmtP(P.sis)]);
+  if (c.emp.aporteCI) emp.push(["Aporte cuenta individual (Ley 21.735)", c.emp.aporteCI, fmtP(P.aporteCI)]);
+  if (c.emp.aporteCEV) emp.push(["Seguro expectativa de vida", c.emp.aporteCEV, fmtP(P.aporteCEV)]);
+  if (c.emp.aporteCRP) emp.push(["Rentabilidad protegida (CRP)", c.emp.aporteCRP, fmtP(P.aporteCRP)]);
+  emp.push(["Mutual", c.emp.mutual, fmtP((Number(P.mutualBasica) || 0) + (Number(e.mutualAd) || 0))]);
+  emp.push(["Total aportes empleador", c.emp.total, "", "sub"]);
+  return { g, emp };
+}
+
+function resumenEntrada(e) {
+  const grat = e.gratTipo === "ART50" ? "Art. 50" : e.gratTipo === "MONTO" ? "Monto fijo " + fmt(e.gratMonto) : "Sin gratificación";
+  return [
+    ["Contrato", NOMBRE_CONTRATO[e.tipoContrato] + ", " + e.anios + " año(s)"],
+    ["Jornada", e.jornada + " h semanales · " + e.dias + " días"],
+    ["Sueldo base", fmt(e.sueldoBase)],
+    ["Horas extra", e.horasExtra ? NF.format(e.horasExtra) + " h al " + e.recargo + "%" : "Sin horas extra"],
+    ["Gratificación", grat],
+    ["AFP", NOMBRE_AFP[e.afp] + (e.pensionado ? " (pensionado)" : "")],
+    ["Salud", e.salud === "ISAPRE" ? nombreSalud(e) + " " + String(e.planUF).replace(".", ",") + " UF" : "Fonasa"],
+    ["Cargas familiares", String(e.cargas)],
+    ["APV", e.apv ? fmt(e.apv) + " régimen " + e.apvReg : "Sin APV"],
+  ];
+}
+
+/* --- Comparación Simulación 1 vs Simulación 2 (mismo mes) --- */
+function sumarPorNombre(items, tipo) {
+  const m = new Map();
+  items.filter((i) => i.tipo === tipo).forEach((i) => { const k = (i.nombre || "Sin nombre").trim(); m.set(k, (m.get(k) || 0) + (Number(i.monto) || 0)); });
+  return m;
+}
+function filasComparacion(eA, cA, eB, cB) {
+  const f = [];
+  const fila = (t, a, b, cls) => f.push([t, a, b, cls || ""]);
+  const items = (tipo) => {
+    const ma = sumarPorNombre(eA.items || [], tipo), mb = sumarPorNombre(eB.items || [], tipo);
+    [...new Set([...ma.keys(), ...mb.keys()])].forEach((k) => fila(k, ma.get(k) || 0, mb.get(k) || 0, "item"));
+  };
+  fila("Haberes", null, null, "grupo");
+  fila("Sueldo", cA.sueldo, cB.sueldo); fila("Horas extra", cA.horasExtra, cB.horasExtra, "opt");
+  items("HI");
+  fila("Gratificación", cA.gratificacion, cB.gratificacion, "opt");
+  fila("Total imponible", cA.totalImp, cB.totalImp, "sub");
+  items("HN");
+  fila("Asignación familiar", cA.asigFam.monto, cB.asigFam.monto, "opt");
+  fila("Total haberes", cA.totalHaberes, cB.totalHaberes, "sub");
+  fila("Descuentos legales", null, null, "grupo");
+  fila(eA.afp === eB.afp ? "AFP " + NOMBRE_AFP[eA.afp] : "AFP", cA.afp, cB.afp, "opt");
+  const sa = nombreSalud(eA), sb = nombreSalud(eB);
+  fila(sa === sb ? sa : "Salud", cA.salud, cB.salud);
+  fila("Seguro de cesantía", cA.cesTrab, cB.cesTrab, "opt");
+  fila("Impuesto único", cA.impuesto, cB.impuesto);
+  fila("Total descuentos legales", cA.legales, cB.legales, "sub");
+  if (cA.otrosDesc || cB.otrosDesc) {
+    fila("Otros descuentos", null, null, "grupo");
+    fila("APV", cA.apv, cB.apv, "opt");
+    items("D");
+    fila("Total otros descuentos", cA.otrosDesc, cB.otrosDesc, "sub");
+  }
+  fila("Líquido a pagar", cA.liquido, cB.liquido, "liq");
+  fila("Costo empleador", null, null, "grupo");
+  fila("Seguro de cesantía empleador", cA.emp.cesEmp, cB.emp.cesEmp, "opt");
+  fila("SIS", cA.emp.sis, cB.emp.sis, "opt");
+  fila("Aporte cuenta individual", cA.emp.aporteCI, cB.emp.aporteCI, "opt");
+  fila("Seguro expectativa de vida", cA.emp.aporteCEV, cB.emp.aporteCEV, "opt");
+  fila("Rentabilidad protegida", cA.emp.aporteCRP, cB.emp.aporteCRP, "opt");
+  fila("Mutual", cA.emp.mutual, cB.emp.mutual, "opt");
+  fila("Total aportes empleador", cA.emp.total, cB.emp.total, "sub");
+  fila("Costo total empresa", cA.costoEmpresa, cB.costoEmpresa, "liq");
+  return f.filter(([, a, b, cls]) => !(cls === "opt" && !a && !b));
+}
+function diferenciasCondiciones(eA, eB) {
+  const ra = resumenEntrada(eA), rb = resumenEntrada(eB), d = [];
+  ra.forEach(([k, v], i) => { if (v !== rb[i][1]) d.push([k, v, rb[i][1]]); });
+  if ((Number(eA.mutualAd) || 0) !== (Number(eB.mutualAd) || 0)) d.push(["Mutual adicional", fmtP(eA.mutualAd), fmtP(eB.mutualAd)]);
+  const resItems = (e) => { const it = e.items || []; return it.length ? it.length + " ítem(s) · " + fmt(it.reduce((s, i) => s + (i.tipo === "D" ? -1 : 1) * (Number(i.monto) || 0), 0)) + " neto" : "Sin ítems"; };
+  const ia = JSON.stringify((eA.items || []).map((i) => [i.nombre, i.tipo, !!i.tributable, Number(i.monto) || 0]));
+  const ib = JSON.stringify((eB.items || []).map((i) => [i.nombre, i.tipo, !!i.tributable, Number(i.monto) || 0]));
+  if (ia !== ib) d.push(["Ítems", resItems(eA), resItems(eB)]);
+  return d;
+}
+const variacionPct = (a, b) => (a ? ((b - a) / Math.abs(a)) * 100 : null);
+const fmtVar = (n) => (Math.round(n) > 0 ? "+" : "") + fmt(n);
+const fmtVarPct = (a, b) => { const p = variacionPct(a, b); return p === null ? (b ? "nuevo" : "—") : (p > 0 ? "+" : "") + p.toLocaleString("es-CL", { minimumFractionDigits: 1, maximumFractionDigits: 1 }) + "%"; };
+/* ===== FIN MOTOR ===== */
+</script>
+
+<script>
+/* ===== EXPORTADORES (Excel con fórmulas y PDF; sin librerías externas) ===== */
+const enc8 = (s) => new TextEncoder().encode(s);
+
+/* --- ZIP (método store) --- */
+const CRC_TABLA = (() => {
+  const t = new Uint32Array(256);
+  for (let n = 0; n < 256; n++) { let c = n; for (let k = 0; k < 8; k++) c = c & 1 ? 0xedb88320 ^ (c >>> 1) : c >>> 1; t[n] = c >>> 0; }
+  return t;
+})();
+function crc32(b) { let c = 0xffffffff; for (let i = 0; i < b.length; i++) c = CRC_TABLA[(c ^ b[i]) & 0xff] ^ (c >>> 8); return (c ^ 0xffffffff) >>> 0; }
+function zip(archivos) {
+  const partes = [], central = []; let off = 0;
+  const u16 = (v) => [v & 0xff, (v >>> 8) & 0xff];
+  const u32 = (v) => [v & 0xff, (v >>> 8) & 0xff, (v >>> 16) & 0xff, (v >>> 24) & 0xff];
+  const fecha = 0x5b5c, hora = 0x6000;
+  for (const [nombre, datos] of archivos) {
+    const n = enc8(nombre), d = typeof datos === "string" ? enc8(datos) : datos, crc = crc32(d);
+    const loc = new Uint8Array([...u32(0x04034b50), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(hora), ...u16(fecha), ...u32(crc), ...u32(d.length), ...u32(d.length), ...u16(n.length), ...u16(0)]);
+    partes.push(loc, n, d);
+    central.push(new Uint8Array([...u32(0x02014b50), ...u16(20), ...u16(20), ...u16(0x0800), ...u16(0), ...u16(hora), ...u16(fecha), ...u32(crc), ...u32(d.length), ...u32(d.length), ...u16(n.length), ...u16(0), ...u16(0), ...u16(0), ...u16(0), ...u32(0), ...u32(off)]), n);
+    off += loc.length + n.length + d.length;
+  }
+  const tamCentral = central.reduce((s, b) => s + b.length, 0);
+  const fin = new Uint8Array([...u32(0x06054b50), ...u16(0), ...u16(0), ...u16(archivos.length), ...u16(archivos.length), ...u32(tamCentral), ...u32(off), ...u16(0)]);
+  const todo = [...partes, ...central, fin];
+  const out = new Uint8Array(todo.reduce((s, b) => s + b.length, 0));
+  let p = 0; for (const b of todo) { out.set(b, p); p += b.length; }
+  return out;
+}
+
+/* --- XLSX --- */
+const xesc = (s) => String(s).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;").replace(/"/g, "&quot;");
+const colLetra = (n) => { let s = ""; n++; while (n > 0) { const m = (n - 1) % 26; s = String.fromCharCode(65 + m) + s; n = Math.floor((n - 1) / 26); } return s; };
+const colNum = (l) => l.split("").reduce((s, ch) => s * 26 + ch.charCodeAt(0) - 64, 0) - 1;
+/* Estilos (índices de cellXfs) */
+const ST = { normal: 0, negrita: 1, titulo: 2, cabecera: 3, dinero: 4, dineroNeg: 5, pct: 6, inTexto: 7, inDinero: 8, inNum: 9, inPct: 10, uf: 11, num: 12, nota: 13, liquido: 14, dec: 15, grupo: 16, inDec: 17 };
+const ESTILOS_XML = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main">
+<numFmts count="1"><numFmt numFmtId="164" formatCode="&quot;$&quot;#,##0"/></numFmts>
+<fonts count="7">
+<font><sz val="11"/><name val="Calibri"/></font>
+<font><b/><sz val="11"/><name val="Calibri"/></font>
+<font><b/><sz val="15"/><color rgb="FF0E8C93"/><name val="Calibri"/></font>
+<font><b/><sz val="11"/><color rgb="FFFFFFFF"/><name val="Calibri"/></font>
+<font><i/><sz val="10"/><color rgb="FF5B7A78"/><name val="Calibri"/></font>
+<font><b/><sz val="14"/><color rgb="FF053640"/><name val="Calibri"/></font>
+<font><b/><sz val="11"/><color rgb="FF0E8C93"/><name val="Calibri"/></font>
+</fonts>
+<fills count="5">
+<fill><patternFill patternType="none"/></fill>
+<fill><patternFill patternType="gray125"/></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FF053640"/><bgColor indexed="64"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFFFF6D5"/><bgColor indexed="64"/></patternFill></fill>
+<fill><patternFill patternType="solid"><fgColor rgb="FFD9F6F3"/><bgColor indexed="64"/></patternFill></fill>
+</fills>
+<borders count="2">
+<border><left/><right/><top/><bottom/><diagonal/></border>
+<border><left/><right/><top style="thin"><color rgb="FF0E8C93"/></top><bottom/><diagonal/></border>
+</borders>
+<cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs>
+<cellXfs count="18">
+<xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/>
+<xf numFmtId="0" fontId="1" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="0" fontId="3" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1" applyAlignment="1"><alignment horizontal="center" vertical="center" wrapText="1"/></xf>
+<xf numFmtId="164" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>
+<xf numFmtId="164" fontId="1" fillId="0" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyBorder="1"/>
+<xf numFmtId="10" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>
+<xf numFmtId="0" fontId="0" fillId="3" borderId="0" xfId="0" applyFill="1"/>
+<xf numFmtId="164" fontId="0" fillId="3" borderId="0" xfId="0" applyNumberFormat="1" applyFill="1"/>
+<xf numFmtId="3" fontId="0" fillId="3" borderId="0" xfId="0" applyNumberFormat="1" applyFill="1"/>
+<xf numFmtId="10" fontId="0" fillId="3" borderId="0" xfId="0" applyNumberFormat="1" applyFill="1"/>
+<xf numFmtId="4" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>
+<xf numFmtId="3" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>
+<xf numFmtId="0" fontId="4" fillId="0" borderId="0" xfId="0" applyFont="1" applyAlignment="1"><alignment wrapText="1" vertical="top"/></xf>
+<xf numFmtId="164" fontId="5" fillId="4" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/>
+<xf numFmtId="2" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/>
+<xf numFmtId="0" fontId="6" fillId="0" borderId="0" xfId="0" applyFont="1"/>
+<xf numFmtId="2" fontId="0" fillId="3" borderId="0" xfId="0" applyNumberFormat="1" applyFill="1"/>
+</cellXfs>
+<cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles>
+</styleSheet>`;
+
+function hoja() { return { filas: new Map(), cols: [], valid: [], merges: [], freeze: null }; }
+function poner(h, ref, celda) {
+  const m = /^([A-Z]+)(\d+)$/.exec(ref); const r = Number(m[2]);
+  if (!h.filas.has(r)) h.filas.set(r, new Map());
+  h.filas.get(r).set(colNum(m[1]), { ref, ...celda });
+}
+function hojaXml(h) {
+  const filas = [...h.filas.keys()].sort((a, b) => a - b).map((r) => {
+    const celdas = [...h.filas.get(r).entries()].sort((a, b) => a[0] - b[0]).map(([, c]) => {
+      const s = c.s ? ` s="${c.s}"` : "";
+      if (c.f !== undefined) {
+        const cache = c.v === undefined || c.v === null ? "" : typeof c.v === "string" ? `<v>${xesc(c.v)}</v>` : `<v>${c.v}</v>`;
+        return `<c r="${c.ref}"${s}${typeof c.v === "string" ? ' t="str"' : ""}><f>${xesc(c.f)}</f>${cache}</c>`;
+      }
+      if (typeof c.v === "number") return `<c r="${c.ref}"${s}><v>${c.v}</v></c>`;
+      if (c.v === undefined || c.v === null || c.v === "") return `<c r="${c.ref}"${s}/>`;
+      return `<c r="${c.ref}"${s} t="inlineStr"><is><t xml:space="preserve">${xesc(c.v)}</t></is></c>`;
+    }).join("");
+    return `<row r="${r}">${celdas}</row>`;
+  }).join("");
+  const vista = h.freeze ? `<sheetViews><sheetView workbookViewId="0"><pane xSplit="${h.freeze[0]}" ySplit="${h.freeze[1]}" topLeftCell="${colLetra(h.freeze[0])}${h.freeze[1] + 1}" activePane="bottomRight" state="frozen"/></sheetView></sheetViews>` : `<sheetViews><sheetView workbookViewId="0"/></sheetViews>`;
+  const cols = h.cols.length ? `<cols>${h.cols.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join("")}</cols>` : "";
+  const merges = h.merges.length ? `<mergeCells count="${h.merges.length}">${h.merges.map((m) => `<mergeCell ref="${m}"/>`).join("")}</mergeCells>` : "";
+  const valid = h.valid.length ? `<dataValidations count="${h.valid.length}">${h.valid.map((v) => `<dataValidation type="list" allowBlank="1" showErrorMessage="1" sqref="${v.ref}"><formula1>${xesc(v.lista)}</formula1></dataValidation>`).join("")}</dataValidations>` : "";
+  return `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<worksheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships">${vista}<sheetFormatPr defaultRowHeight="15"/>${cols}<sheetData>${filas}</sheetData>${merges}${valid}<pageMargins left="0.6" right="0.6" top="0.7" bottom="0.7" header="0.3" footer="0.3"/></worksheet>`;
+}
+function libroXlsx(hojas) {
+  const ct = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/><Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/>${hojas.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join("")}<Override PartName="/docProps/core.xml" ContentType="application/vnd.openxmlformats-package.core-properties+xml"/></Types>`;
+  const rels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/><Relationship Id="rId2" Type="http://schemas.openxmlformats.org/package/2006/relationships/metadata/core-properties" Target="docProps/core.xml"/></Relationships>`;
+  const libro = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<workbook xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"><bookViews><workbookView activeTab="0"/></bookViews><sheets>${hojas.map((h, i) => `<sheet name="${xesc(h.nombre)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join("")}</sheets><calcPr calcId="191029" fullCalcOnLoad="1"/></workbook>`;
+  const libroRels = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${hojas.map((_, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join("")}<Relationship Id="rId${hojas.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`;
+  const core = `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>
+<cp:coreProperties xmlns:cp="http://schemas.openxmlformats.org/package/2006/metadata/core-properties" xmlns:dc="http://purl.org/dc/elements/1.1/" xmlns:dcterms="http://purl.org/dc/terms/" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"><dc:title>Simulación de remuneraciones QuidelXpert</dc:title><dc:creator>QuidelXpert</dc:creator><dcterms:created xsi:type="dcterms:W3CDTF">${new Date().toISOString().slice(0, 19)}Z</dcterms:created></cp:coreProperties>`;
+  return zip([["[Content_Types].xml", ct], ["_rels/.rels", rels], ["docProps/core.xml", core], ["xl/workbook.xml", libro], ["xl/_rels/workbook.xml.rels", libroRels], ["xl/styles.xml", ESTILOS_XML], ...hojas.map((h, i) => [`xl/worksheets/sheet${i + 1}.xml`, hojaXml(h)])]);
+}
+
+/* Columnas de la hoja Parametros */
+const PCOL = { periodo: "A", uf: "B", utm: "C", imm: "D", topeAfpUF: "E", topeCesUF: "F", jornadaLegal: "G", sis: "H", aporteCI: "I", aporteCEV: "J", aporteCRP: "K", cesIndefTrab: "L", cesIndefEmp: "M", cesPlazoFijoEmp: "N", cesMas11Emp: "O", mutualBasica: "P" };
+const AFP_COL = { CAPITAL: "Q", CUPRUM: "R", HABITAT: "S", MODELO: "T", PLANVITAL: "U", PROVIDA: "V", UNO: "W" };
+const ITEM_INI = 24, ITEM_FIN = 60;
+
+/* Columnas de la hoja Calculo: [letra, encabezado, fórmula(r), valor(c, P, e), estilo] */
+function columnasCalculo() {
+  const D = (n) => "Datos!$B$" + n, Pr = (k, r) => "Parametros!" + PCOL[k] + r;
+  return [
+    ["A", "Período", (r) => "Parametros!A" + r, (c, P) => P.periodo, ST.normal],
+    ["B", "Sueldo", () => `ROUND(${D(8)}*${D(7)}/30,0)`, (c) => c.sueldo, ST.dinero],
+    ["C", "Valor hora", () => `IF(${D(6)}>0,${D(8)}/30*28/(${D(6)}*4),0)`, (c) => c.valorHora, ST.dec],
+    ["D", "Horas extra", (r) => `ROUND(C${r}*(1+${D(10)})*${D(9)},0)`, (c) => c.horasExtra, ST.dinero],
+    ["E", "Haberes imponibles (ítems)", () => "Datos!$F$3", (c) => c.otrosImp, ST.dinero],
+    ["F", "Tope gratificación", (r) => `ROUND(4.75*${Pr("imm", r)}/12,0)`, (c) => c.topeGrat, ST.dinero],
+    ["G", "Gratificación", (r) => `IF(${D(11)}="ART50",MIN(ROUND((B${r}+D${r}+E${r})*0.25,0),F${r}),IF(${D(11)}="MONTO",${D(12)},0))`, (c) => c.gratificacion, ST.dinero],
+    ["H", "Total imponible", (r) => `B${r}+D${r}+E${r}+G${r}`, (c) => c.totalImp, ST.dinero],
+    ["I", "Tope AFP $", (r) => `ROUND(${Pr("topeAfpUF", r)}*${Pr("uf", r)},0)`, (c) => c.topeAfp, ST.dinero],
+    ["J", "Tope cesantía $", (r) => `ROUND(${Pr("topeCesUF", r)}*${Pr("uf", r)},0)`, (c) => c.topeCes, ST.dinero],
+    ["K", "Base AFP y salud", (r) => `MIN(H${r},I${r})`, (c) => c.baseAfp, ST.dinero],
+    ["L", "Base cesantía", (r) => `MIN(H${r},J${r})`, (c) => c.baseCes, ST.dinero],
+    ["M", "Comisión AFP", (r) => `IF(${D(13)}="NINGUNA",0,INDEX(Parametros!$Q${r}:$W${r},1,MATCH(${D(13)},Parametros!$Q$1:$W$1,0)))`, (c) => c.comision / 100, ST.pct],
+    ["N", "Cotiza AFP (1=sí)", () => `IF(AND(${D(13)}<>"NINGUNA",${D(14)}<>"SI"),1,0)`, (c, P, e) => (e.afp !== "NINGUNA" && !e.pensionado ? 1 : 0), ST.normal],
+    ["O", "AFP", (r) => `N${r}*ROUND(K${r}*(0.1+M${r}),0)`, (c) => c.afp, ST.dinero],
+    ["P", "Salud 7%", (r) => `ROUND(K${r}*0.07,0)`, (c) => c.saludLegal, ST.dinero],
+    ["Q", "Plan Isapre $", (r) => `IF(${D(15)}="ISAPRE",ROUND(${D(16)}*${Pr("uf", r)},0),0)`, (c) => c.plan, ST.dinero],
+    ["R", "Salud", (r) => `MAX(P${r},Q${r})`, (c) => c.salud, ST.dinero],
+    ["S", "Cesantía trabajador", (r) => `IF(AND(${D(14)}<>"SI",${D(4)}="INDEFINIDO",${D(5)}<11),ROUND(L${r}*${Pr("cesIndefTrab", r)},0),0)`, (c) => c.cesTrab, ST.dinero],
+    ["T", "Rebaja APV B", (r) => `IF(${D(19)}="B",MIN(${D(18)},ROUND(50*${Pr("uf", r)},0)),0)`, (c) => c.apvRebaja, ST.dinero],
+    ["U", "Base tributable", (r) => `MAX(0,H${r}+Datos!$F$5-O${r}-P${r}-S${r}-T${r})`, (c) => c.tributable, ST.dinero],
+    ["V", "Impuesto único", (r) => `IF(U${r}<=0,0,MAX(0,ROUND(U${r}*VLOOKUP(U${r}/${Pr("utm", r)},Parametros!$AE$2:$AG$9,2,TRUE)-VLOOKUP(U${r}/${Pr("utm", r)},Parametros!$AE$2:$AG$9,3,TRUE)*${Pr("utm", r)},0)))`, (c) => c.impuesto, ST.dinero],
+    ["W", "Haberes no imponibles", () => "Datos!$F$4", (c) => c.noImp, ST.dinero],
+    ["X", "Asignación familiar", (r) => `IF(${D(17)}>0,${D(17)}*IF(H${r}<=Parametros!X${r},Parametros!Y${r},IF(H${r}<=Parametros!Z${r},Parametros!AA${r},IF(H${r}<=Parametros!AB${r},Parametros!AC${r},0))),0)`, (c) => c.asigFam.monto, ST.dinero],
+    ["Y", "Total haberes", (r) => `H${r}+W${r}+X${r}`, (c) => c.totalHaberes, ST.dinero],
+    ["Z", "Descuentos legales", (r) => `O${r}+R${r}+S${r}+V${r}`, (c) => c.legales, ST.dinero],
+    ["AA", "Otros descuentos", () => `Datos!$F$6+${D(18)}`, (c) => c.otrosDesc, ST.dinero],
+    ["AB", "Líquido a pagar", (r) => `Y${r}-Z${r}-AA${r}`, (c) => c.liquido, ST.dinero],
+    ["AC", "Tasa cesantía empleador", (r) => `IF(${D(14)}="SI",0,IF(${D(4)}="INDEFINIDO",IF(${D(5)}>=11,${Pr("cesMas11Emp", r)},${Pr("cesIndefEmp", r)}),${Pr("cesPlazoFijoEmp", r)}))`, (c) => c.emp.tasaCesEmp / 100, ST.pct],
+    ["AD", "Cesantía empleador", (r) => `ROUND(L${r}*AC${r},0)`, (c) => c.emp.cesEmp, ST.dinero],
+    ["AE", "SIS", (r) => `N${r}*ROUND(K${r}*${Pr("sis", r)},0)`, (c) => c.emp.sis, ST.dinero],
+    ["AF", "Aporte cuenta individual", (r) => `N${r}*ROUND(K${r}*${Pr("aporteCI", r)},0)`, (c) => c.emp.aporteCI, ST.dinero],
+    ["AG", "Seguro expectativa de vida", (r) => `N${r}*ROUND(K${r}*${Pr("aporteCEV", r)},0)`, (c) => c.emp.aporteCEV, ST.dinero],
+    ["AH", "Rentabilidad protegida", (r) => `N${r}*ROUND(K${r}*${Pr("aporteCRP", r)},0)`, (c) => c.emp.aporteCRP, ST.dinero],
+    ["AI", "Mutual", (r) => `ROUND(K${r}*(${Pr("mutualBasica", r)}+${D(20)}),0)`, (c) => c.emp.mutual, ST.dinero],
+    ["AJ", "Total aportes empleador", (r) => `SUM(AD${r}:AI${r})`, (c) => c.emp.total, ST.dinero],
+    ["AK", "Costo empresa", (r) => `Y${r}+AJ${r}`, (c) => c.costoEmpresa, ST.dinero],
+  ];
+}
+
+/* Construye el libro. periodos: lista ordenada; params: {periodo: P}; sel: período de la hoja Liquidacion. */
+function construirXlsx(e, periodos, params, sel, titulo) {
+  const calc = {}; periodos.forEach((p) => (calc[p] = calcular(e, params[p])));
+  const n = periodos.length, ultima = n + 1;
+
+  /* Datos */
+  const hd = hoja(); hd.cols = [34, 22, 4, 4, 30, 16];
+  poner(hd, "A1", { v: "Datos de la simulación", s: ST.titulo });
+  poner(hd, "A2", { v: "Cambia las celdas amarillas; todas las hojas se recalculan.", s: ST.nota });
+  const filasDatos = [
+    [3, "Período de la liquidación (AAAA-MM)", sel, ST.inTexto],
+    [4, "Tipo de contrato", e.tipoContrato, ST.inTexto],
+    [5, "Años en la empresa", e.anios, ST.inNum],
+    [6, "Jornada semanal (horas)", e.jornada, ST.inNum],
+    [7, "Días trabajados", e.dias, ST.inNum],
+    [8, "Sueldo base mensual", e.sueldoBase, ST.inDinero],
+    [9, "Horas extra", e.horasExtra, ST.inDec],
+    [10, "Recargo horas extra", e.recargo / 100, ST.inPct],
+    [11, "Gratificación (ART50 / MONTO / NINGUNA)", e.gratTipo, ST.inTexto],
+    [12, "Monto gratificación (si es MONTO)", e.gratMonto, ST.inDinero],
+    [13, "AFP", e.afp, ST.inTexto],
+    [14, "Pensionado (SI / NO)", e.pensionado ? "SI" : "NO", ST.inTexto],
+    [15, "Salud (FONASA / ISAPRE)", e.salud, ST.inTexto],
+    [16, "Plan Isapre (UF)", e.planUF, ST.inDec],
+    [17, "Cargas familiares", e.cargas, ST.inNum],
+    [18, "APV mensual", e.apv, ST.inDinero],
+    [19, "Régimen APV (A / B)", e.apvReg, ST.inTexto],
+    [20, "Mutual adicional", (Number(e.mutualAd) || 0) / 100, ST.inPct],
+    [21, "Isapre (si salud es ISAPRE)", isapreDe(e.isapre) ? isapreDe(e.isapre).nombre : "", ST.inTexto],
+  ];
+  filasDatos.forEach(([r, l, v, s]) => { poner(hd, "A" + r, { v: l }); poner(hd, "B" + r, { v, s }); });
+  hd.valid.push(
+    { ref: "B3", lista: `Parametros!$A$2:$A$${ultima}` },
+    { ref: "B4", lista: '"INDEFINIDO,PLAZO_FIJO,OBRA_FAENA"' },
+    { ref: "B11", lista: '"ART50,MONTO,NINGUNA"' },
+    { ref: "B13", lista: '"CAPITAL,CUPRUM,HABITAT,MODELO,PLANVITAL,PROVIDA,UNO,NINGUNA"' },
+    { ref: "B14", lista: '"SI,NO"' },
+    { ref: "B15", lista: '"FONASA,ISAPRE"' },
+    { ref: "B19", lista: '"A,B"' },
+    { ref: "B21", lista: '"' + ISAPRES.map((i) => i.nombre).join(",") + '"' },
+    { ref: `B${ITEM_INI}:B${ITEM_FIN}`, lista: '"HI,HN,D"' },
+    { ref: `C${ITEM_INI}:C${ITEM_FIN}`, lista: '"SI,NO"' },
+  );
+  const sum = (t, trib) => (e.items || []).filter((i) => i.tipo === t && (trib === undefined || !!i.tributable === trib)).reduce((s, i) => s + (Number(i.monto) || 0), 0);
+  [[3, "Haberes imponibles (HI)", `SUMIFS(D${ITEM_INI}:D${ITEM_FIN},B${ITEM_INI}:B${ITEM_FIN},"HI")`, sum("HI")],
+   [4, "Haberes no imponibles (HN)", `SUMIFS(D${ITEM_INI}:D${ITEM_FIN},B${ITEM_INI}:B${ITEM_FIN},"HN")`, sum("HN")],
+   [5, "No imponibles tributables", `SUMIFS(D${ITEM_INI}:D${ITEM_FIN},B${ITEM_INI}:B${ITEM_FIN},"HN",C${ITEM_INI}:C${ITEM_FIN},"SI")`, sum("HN", true)],
+   [6, "Descuentos (D)", `SUMIFS(D${ITEM_INI}:D${ITEM_FIN},B${ITEM_INI}:B${ITEM_FIN},"D")`, sum("D")],
+  ].forEach(([r, l, f, v]) => { poner(hd, "E" + r, { v: l, s: ST.negrita }); poner(hd, "F" + r, { f, v, s: ST.dinero }); });
+  poner(hd, "A22", { v: "Ítems de la liquidación", s: ST.grupo });
+  poner(hd, "E22", { v: "Tipo: HI haber imponible · HN haber no imponible · D descuento. Tributable aplica a HN. Agrega filas hasta la " + ITEM_FIN + ".", s: ST.nota });
+  ["Nombre", "Tipo", "Tributable", "Monto"].forEach((t, i) => poner(hd, colLetra(i) + "23", { v: t, s: ST.cabecera }));
+  hd.cols[2] = 12; hd.cols[3] = 16;
+  (e.items || []).slice(0, ITEM_FIN - ITEM_INI + 1).forEach((it, i) => {
+    const r = ITEM_INI + i;
+    poner(hd, "A" + r, { v: it.nombre || "", s: ST.inTexto });
+    poner(hd, "B" + r, { v: it.tipo, s: ST.inTexto });
+    poner(hd, "C" + r, { v: it.tipo === "HI" || it.tributable ? "SI" : "NO", s: ST.inTexto });
+    poner(hd, "D" + r, { v: Number(it.monto) || 0, s: ST.inDinero });
+  });
+
+  /* Parametros */
+  const hp = hoja(); hp.freeze = [1, 1];
+  const encP = [["A", "Período"], ["B", "UF"], ["C", "UTM"], ["D", "Ingreso mínimo"], ["E", "Tope AFP (UF)"], ["F", "Tope cesantía (UF)"], ["G", "Jornada legal"], ["H", "SIS"], ["I", "Aporte cuenta individual"], ["J", "Seguro expectativa de vida"], ["K", "Rentabilidad protegida"], ["L", "Cesantía trabajador indefinido"], ["M", "Cesantía empleador indefinido"], ["N", "Cesantía empleador plazo fijo"], ["O", "Cesantía empleador 11+ años"], ["P", "Mutual básica"], ...Object.entries(AFP_COL).map(([a, l]) => [l, a]), ["X", "AF tramo A hasta"], ["Y", "AF tramo A monto"], ["Z", "AF tramo B hasta"], ["AA", "AF tramo B monto"], ["AB", "AF tramo C hasta"], ["AC", "AF tramo C monto"], ["AE", "Impuesto: desde (UTM)"], ["AF", "Factor"], ["AG", "Rebaja (UTM)"]];
+  encP.forEach(([l, t]) => poner(hp, l + "1", { v: t, s: ST.cabecera }));
+  hp.cols = encP.reduce((a, [l]) => { a[colNum(l)] = l === "A" ? 11 : 14; return a; }, []).map((w) => w || 4);
+  periodos.forEach((p, i) => {
+    const r = i + 2, P = params[p];
+    poner(hp, "A" + r, { v: p });
+    poner(hp, "B" + r, { v: Number(P.uf), s: ST.uf }); poner(hp, "C" + r, { v: Number(P.utm), s: ST.dinero }); poner(hp, "D" + r, { v: Number(P.imm), s: ST.dinero });
+    poner(hp, "E" + r, { v: Number(P.topeAfpUF), s: ST.dec }); poner(hp, "F" + r, { v: Number(P.topeCesUF), s: ST.dec }); poner(hp, "G" + r, { v: Number(P.jornadaLegal || 42) });
+    ["sis", "aporteCI", "aporteCEV", "aporteCRP", "cesIndefTrab", "cesIndefEmp", "cesPlazoFijoEmp", "cesMas11Emp", "mutualBasica"].forEach((k) => poner(hp, PCOL[k] + r, { v: (Number(P[k]) || 0) / 100, s: ST.pct }));
+    Object.entries(AFP_COL).forEach(([a, l]) => poner(hp, l + r, { v: (Number((P.comisiones || {})[a]) || 0) / 100, s: ST.pct }));
+    (P.af || []).slice(0, 3).forEach((t, k) => { poner(hp, colLetra(colNum("X") + 2 * k) + r, { v: Number(t.hasta), s: ST.dinero }); poner(hp, colLetra(colNum("Y") + 2 * k) + r, { v: Number(t.monto), s: ST.dinero }); });
+  });
+  TRAMOS_IMPUESTO.forEach((t, i) => { const r = i + 2; poner(hp, "AE" + r, { v: t.desde, s: ST.dec }); poner(hp, "AF" + r, { v: t.factor, s: ST.pct }); poner(hp, "AG" + r, { v: t.rebaja, s: ST.dec }); });
+  poner(hp, "AE11", { v: "Tabla mensual de impuesto único de segunda categoría (SII), en UTM.", s: ST.nota });
+  poner(hp, "A" + (ultima + 2), { v: "Fuente: Previred y SII. Los meses derivados repiten tasas del mes verificado más cercano.", s: ST.nota });
+
+  /* Calculo (una fila por mes) */
+  const hc = hoja(); hc.freeze = [1, 1];
+  const cols = columnasCalculo();
+  hc.cols = cols.map(([l]) => (l === "A" ? 11 : 15));
+  cols.forEach(([l, t]) => poner(hc, l + "1", { v: t, s: ST.cabecera }));
+  periodos.forEach((p, i) => {
+    const r = i + 2;
+    cols.forEach(([l, , f, val, s]) => poner(hc, l + r, { f: f(r), v: val(calc[p], params[p], e), s: l === "AB" ? ST.dineroNeg : s }));
+  });
+
+  /* Liquidacion (vista del período elegido en Datos!B3) */
+  const hl = hoja(); hl.cols = [40, 18, 4, 30, 8];
+  const cs = calc[sel] || calc[periodos[periodos.length - 1]];
+  const filaSel = periodos.indexOf(sel) + 2;
+  poner(hl, "A1", { v: titulo || "QuidelXpert · Simulación de liquidación de sueldo", s: ST.titulo });
+  poner(hl, "A2", { v: "Período", s: ST.negrita }); poner(hl, "B2", { f: "Datos!B3", v: sel, s: ST.negrita });
+  poner(hl, "D2", { v: "Fila en Calculo", s: ST.nota }); poner(hl, "E2", { f: "MATCH(Datos!$B$3,Calculo!$A:$A,0)", v: filaSel });
+  const colV = Object.fromEntries(cols.map(([l, , , val]) => [l, val]));
+  let r = 4;
+  const linea = (t, l, s, extra) => { poner(hl, "A" + r, { v: t, s: s === ST.dineroNeg || s === ST.liquido ? ST.negrita : ST.normal }); poner(hl, "B" + r, { f: `INDEX(Calculo!${l}:${l},$E$2)`, v: colV[l](cs, params[sel], e), s: s || ST.dinero }); if (extra) poner(hl, "D" + r, { v: extra, s: ST.nota }); r++; };
+  const grupo = (t) => { r++; poner(hl, "A" + r, { v: t, s: ST.grupo }); r++; };
+  grupo("Haberes");
+  linea("Sueldo", "B"); linea("Horas extra", "D"); linea("Haberes imponibles (ítems)", "E"); linea("Gratificación", "G", ST.dinero, "Tope mensual art. 50: 4,75 IMM / 12");
+  linea("Total imponible", "H", ST.dineroNeg); linea("Haberes no imponibles (ítems)", "W"); linea("Asignación familiar", "X"); linea("Total haberes", "Y", ST.dineroNeg);
+  grupo("Descuentos legales");
+  linea("AFP", "O"); linea("Salud", "R");
+  poner(hl, "A" + (r - 1), { f: 'IF(Datos!$B$15="ISAPRE","Isapre "&Datos!$B$21,"Fonasa")', v: nombreSalud(e) }); linea("Seguro de cesantía", "S"); linea("Impuesto único", "V"); linea("Total descuentos legales", "Z", ST.dineroNeg);
+  grupo("Otros descuentos");
+  linea("Ítems de descuento y APV", "AA");
+  r++; linea("LÍQUIDO A PAGAR", "AB", ST.liquido);
+  grupo("Costo empleador");
+  linea("Seguro de cesantía", "AD"); linea("SIS", "AE"); linea("Aporte cuenta individual (Ley 21.735)", "AF"); linea("Seguro expectativa de vida", "AG"); linea("Rentabilidad protegida (CRP)", "AH"); linea("Mutual", "AI");
+  linea("Total aportes empleador", "AJ", ST.dineroNeg); linea("Costo total empresa", "AK", ST.dineroNeg);
+  grupo("Bases de cálculo");
+  linea("Base AFP y salud (con tope)", "K"); linea("Base seguro de cesantía", "L"); linea("Base tributable", "U");
+  if ((e.items || []).length) {
+    grupo("Detalle de ítems");
+    e.items.slice(0, ITEM_FIN - ITEM_INI + 1).forEach((it, i) => {
+      const fr = ITEM_INI + i;
+      poner(hl, "A" + r, { f: `Datos!A${fr}`, v: it.nombre || "" });
+      poner(hl, "B" + r, { f: `Datos!D${fr}`, v: Number(it.monto) || 0, s: ST.dinero });
+      poner(hl, "D" + r, { f: `IF(Datos!B${fr}="HI","Haber imponible",IF(Datos!B${fr}="HN","Haber no imponible",IF(Datos!B${fr}="D","Descuento","")))`, v: TIPOS_ITEM[it.tipo] || "", s: ST.nota });
+      r++;
+    });
+  }
+  r++;
+  poner(hl, "A" + r, { v: "Simulación referencial. Cambia los datos en la hoja Datos y el período en Datos!B3. Parámetros mensuales en la hoja Parametros; cálculo mes a mes en la hoja Calculo.", s: ST.nota });
+  hl.merges.push(`A${r}:E${r}`);
+
+  return libroXlsx([
+    { nombre: "Liquidacion", ...hl }, { nombre: "Datos", ...hd }, { nombre: "Calculo", ...hc }, { nombre: "Parametros", ...hp },
+  ]);
+}
+const TIPOS_ITEM = { HI: "Haber imponible", HN: "Haber no imponible", D: "Descuento" };
+
+/* --- PDF --- */
+const ANCHO_HELV = [278,278,355,556,556,889,667,191,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,278,278,584,584,584,556,1015,667,667,722,722,667,611,778,722,278,500,667,556,833,722,778,667,778,722,667,611,722,667,944,667,667,611,278,278,278,469,556,333,556,556,500,556,556,278,556,556,222,222,500,222,833,556,556,556,556,333,500,278,556,500,722,500,500,500,334,260,334,584];
+const ANCHO_HELVB = [278,333,474,556,556,889,722,238,333,333,389,584,278,333,278,278,556,556,556,556,556,556,556,556,556,556,333,333,584,584,584,611,975,722,722,722,722,667,611,778,722,278,556,722,611,833,722,778,667,778,722,667,611,722,667,944,667,667,611,333,278,333,584,556,333,556,611,556,611,556,333,611,611,278,278,556,278,889,611,611,611,611,389,556,333,611,556,778,556,556,500,389,280,389,584];
+const BASE_LATIN = { "á": "a", "é": "e", "í": "i", "ó": "o", "ú": "u", "ü": "u", "ñ": "n", "Á": "A", "É": "E", "Í": "I", "Ó": "O", "Ú": "U", "Ñ": "N", "Ü": "U" };
+const WINANSI_EXTRA = { "—": 0x97, "–": 0x96, "•": 0x95, "“": 0x93, "”": 0x94, "‘": 0x91, "’": 0x92, "€": 0x80, "…": 0x85 };
+function anchoTexto(s, tam, negrita) {
+  const t = negrita ? ANCHO_HELVB : ANCHO_HELV; let w = 0;
+  for (const ch of String(s)) {
+    const b = BASE_LATIN[ch] || ch, code = b.charCodeAt(0);
+    if (code >= 32 && code <= 126) w += t[code - 32];
+    else if (ch === "—") w += 1000; else if (ch === "–") w += 556; else if (ch === "×") w += 584; else if (ch === "·") w += 278; else w += 556;
+  }
+  return (w * tam) / 1000;
+}
+function pdfCadena(s) {
+  let o = "(";
+  for (const ch of String(s)) {
+    let code = WINANSI_EXTRA[ch] !== undefined ? WINANSI_EXTRA[ch] : ch.charCodeAt(0);
+    if (code > 255) code = 63;
+    if (ch === "(" || ch === ")" || ch === "\\") o += "\\" + ch;
+    else if (code < 32 || code > 126) o += "\\" + code.toString(8).padStart(3, "0");
+    else o += ch;
+  }
+  return o + ")";
+}
+const hex = (h) => [parseInt(h.slice(1, 3), 16) / 255, parseInt(h.slice(3, 5), 16) / 255, parseInt(h.slice(5, 7), 16) / 255].map((v) => v.toFixed(3)).join(" ");
+const C = { petroleo: "#053640", turquesa: "#0E8C93", neon: "#5FF5E8", claro: "#D9F6F3", texto: "#14262A", tenue: "#5B7A78", linea: "#B9DCD8", blanco: "#FFFFFF", fila: "#F1FAF9", alerta: "#9A5B00", rojo: "#B42335", ambar: "#E39A1E" };
+
+class Pdf {
+  constructor(ancho, alto) { this.W = ancho; this.H = alto; this.paginas = []; this.nueva(); }
+  nueva() { this.ops = []; this.paginas.push(this.ops); }
+  y(v) { return (this.H - v).toFixed(2); }
+  texto(x, y, s, o = {}) {
+    const tam = o.tam || 9, neg = !!o.negrita;
+    let xx = x; const w = anchoTexto(s, tam, neg);
+    if (o.alin === "der") xx = x - w; else if (o.alin === "centro") xx = x - w / 2;
+    this.ops.push(`BT /${neg ? "F2" : "F1"} ${tam} Tf ${hex(o.color || C.texto)} rg ${xx.toFixed(2)} ${this.y(y)} Td ${pdfCadena(s)} Tj ET`);
+    return w;
+  }
+  rect(x, y, w, h, relleno, borde) {
+    if (relleno) this.ops.push(`${hex(relleno)} rg ${x.toFixed(2)} ${this.y(y + h)} ${w.toFixed(2)} ${h.toFixed(2)} re f`);
+    if (borde) this.ops.push(`${hex(borde)} RG 0.6 w ${x.toFixed(2)} ${this.y(y + h)} ${w.toFixed(2)} ${h.toFixed(2)} re S`);
+  }
+  linea(x1, y1, x2, y2, color, grosor = 0.6) { this.ops.push(`${hex(color)} RG ${grosor} w ${x1.toFixed(2)} ${this.y(y1)} m ${x2.toFixed(2)} ${this.y(y2)} l S`); }
+  poli(puntos, color, grosor = 1.6) {
+    if (puntos.length < 2) return;
+    this.ops.push(`${hex(color)} RG ${grosor} w 1 j ` + puntos.map(([x, y], i) => `${x.toFixed(2)} ${this.y(y)} ${i ? "l" : "m"}`).join(" ") + " S");
+  }
+  circulo(x, y, r, color) {
+    const k = 0.5523 * r, yy = this.H - y;
+    this.ops.push(`${hex(color)} rg ${(x + r).toFixed(2)} ${yy.toFixed(2)} m ${(x + r).toFixed(2)} ${(yy + k).toFixed(2)} ${(x + k).toFixed(2)} ${(yy + r).toFixed(2)} ${x.toFixed(2)} ${(yy + r).toFixed(2)} c ${(x - k).toFixed(2)} ${(yy + r).toFixed(2)} ${(x - r).toFixed(2)} ${(yy + k).toFixed(2)} ${(x - r).toFixed(2)} ${yy.toFixed(2)} c ${(x - r).toFixed(2)} ${(yy - k).toFixed(2)} ${(x - k).toFixed(2)} ${(yy - r).toFixed(2)} ${x.toFixed(2)} ${(yy - r).toFixed(2)} c ${(x + k).toFixed(2)} ${(yy - r).toFixed(2)} ${(x + r).toFixed(2)} ${(yy - k).toFixed(2)} ${(x + r).toFixed(2)} ${yy.toFixed(2)} c f`);
+  }
+  partir(s, tam, maxW, negrita) {
+    const palabras = String(s).split(/\s+/), lineas = []; let act = "";
+    for (const p of palabras) { const prueba = act ? act + " " + p : p; if (anchoTexto(prueba, tam, negrita) > maxW && act) { lineas.push(act); act = p; } else act = prueba; }
+    if (act) lineas.push(act);
+    return lineas;
+  }
+  recortar(s, tam, maxW, negrita) {
+    s = String(s); if (anchoTexto(s, tam, negrita) <= maxW) return s;
+    while (s.length > 1 && anchoTexto(s + "…", tam, negrita) > maxW) s = s.slice(0, -1);
+    return s + "…";
+  }
+  bytes() {
+    const objs = [];
+    const add = (s) => { objs.push(s); return objs.length; };
+    const catalogo = add(null), paginas = add(null);
+    const f1 = add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica /Encoding /WinAnsiEncoding >>");
+    const f2 = add("<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica-Bold /Encoding /WinAnsiEncoding >>");
+    const kids = [];
+    this.paginas.forEach((ops) => {
+      const cont = ops.join("\n");
+      const c = add(`<< /Length ${cont.length} >>\nstream\n${cont}\nendstream`);
+      kids.push(add(`<< /Type /Page /Parent ${paginas} 0 R /MediaBox [0 0 ${this.W} ${this.H}] /Resources << /Font << /F1 ${f1} 0 R /F2 ${f2} 0 R >> >> /Contents ${c} 0 R >>`));
+    });
+    objs[catalogo - 1] = `<< /Type /Catalog /Pages ${paginas} 0 R >>`;
+    objs[paginas - 1] = `<< /Type /Pages /Kids [${kids.map((k) => k + " 0 R").join(" ")}] /Count ${kids.length} >>`;
+    const info = add(`<< /Title ${pdfCadena("Simulación QuidelXpert")} /Producer (QuidelXpert) >>`);
+    let out = "%PDF-1.4\n%âãÏÓ\n";
+    const offs = [];
+    objs.forEach((o, i) => { offs.push(out.length); out += `${i + 1} 0 obj\n${o}\nendobj\n`; });
+    const xref = out.length;
+    out += `xref\n0 ${objs.length + 1}\n0000000000 65535 f \n` + offs.map((o) => String(o).padStart(10, "0") + " 00000 n \n").join("");
+    out += `trailer\n<< /Size ${objs.length + 1} /Root ${catalogo} 0 R /Info ${info} 0 R >>\nstartxref\n${xref}\n%%EOF`;
+    const b = new Uint8Array(out.length); for (let i = 0; i < out.length; i++) b[i] = out.charCodeAt(i) & 0xff;
+    return b;
+  }
+}
+const fechaHoy = () => { const d = new Date(); return String(d.getDate()).padStart(2, "0") + "-" + String(d.getMonth() + 1).padStart(2, "0") + "-" + d.getFullYear(); };
+function cabeceraPdf(pdf, titulo, derecha, sub) {
+  pdf.rect(0, 0, pdf.W, 56, C.petroleo);
+  pdf.rect(0, 56, pdf.W, 2.5, C.turquesa);
+  const w = pdf.texto(32, 29, "Quidel", { tam: 18, negrita: true, color: C.neon });
+  pdf.texto(32 + w, 29, "Xpert", { tam: 18, negrita: true, color: C.blanco });
+  pdf.texto(32, 45, titulo, { tam: 8.5, color: C.claro });
+  pdf.texto(pdf.W - 32, 29, derecha, { tam: 12, negrita: true, color: C.blanco, alin: "der" });
+  pdf.texto(pdf.W - 32, 45, sub, { tam: 7.5, color: C.claro, alin: "der" });
+}
+function piePdf(pdf, texto) {
+  pdf.paginas.forEach((ops, i) => {
+    const prev = pdf.ops; pdf.ops = ops;
+    pdf.linea(32, pdf.H - 30, pdf.W - 32, pdf.H - 30, C.linea);
+    pdf.texto(32, pdf.H - 19, texto, { tam: 6.5, color: C.tenue });
+    pdf.texto(pdf.W - 32, pdf.H - 19, "Página " + (i + 1) + " de " + pdf.paginas.length, { tam: 6.5, color: C.tenue, alin: "der" });
+    pdf.ops = prev;
+  });
+}
+const NOTA_PDF = "Simulación referencial QuidelXpert según normativa chilena vigente para el mes. No reemplaza el proceso oficial de remuneraciones.";
+
+/* Liquidación compacta: haberes y descuentos en dos columnas, cabe en una hoja A4. */
+function construirPdfLiquidacion(e, P, periodo, c, hz) {
+  const pdf = new Pdf(595.28, 841.89), X0 = 32, X1 = 563.28, GAP = 14, CW = (X1 - X0 - GAP) / 2, XR = X0 + CW + GAP;
+  const LIM = pdf.H - 40;
+  cabeceraPdf(pdf, "Simulación de liquidación de sueldo", etiquetaPeriodo(periodo), "Generado el " + fechaHoy());
+  let y = 70;
+
+  /* Datos de la simulación: 3 columnas */
+  const datos = resumenEntrada(e), filasD = Math.ceil(datos.length / 3), altoD = filasD * 11 + 10;
+  pdf.rect(X0, y, X1 - X0, altoD, C.fila);
+  datos.forEach(([k, v], i) => {
+    const col = Math.floor(i / filasD), fila = i % filasD, xx = X0 + 8 + col * ((X1 - X0) / 3), yy = y + 13 + fila * 11;
+    pdf.texto(xx, yy, k, { tam: 7, color: C.tenue });
+    pdf.texto(xx + 64, yy, pdf.recortar(v, 7.5, (X1 - X0) / 3 - 74), { tam: 7.5 });
+  });
+  y += altoD + 10;
+
+  /* Bloque de columna: encabezado + filas; devuelve la y final */
+  const encabezadoCol = (x, yy, t) => { pdf.rect(x, yy, CW, 14, C.petroleo); pdf.texto(x + 6, yy + 10, t, { tam: 7.5, negrita: true, color: C.blanco }); return yy + 14 + 10; };
+  const filasCol = (x, yy, lineas, tasaEnLinea) => {
+    lineas.forEach(([nombre, monto, det, cls]) => {
+      if (cls === "grupo") { yy += 3; pdf.texto(x, yy, nombre.toUpperCase(), { tam: 6.8, negrita: true, color: C.turquesa }); yy += 10; return; }
+      const sub = cls === "sub";
+      if (sub) pdf.linea(x, yy - 7.5, x + CW, yy - 7.5, C.linea, 0.5);
+      if (tasaEnLinea && det) pdf.texto(x + CW - 62, yy, det, { tam: 6.8, color: C.tenue, alin: "der" });
+      pdf.texto(x, yy, pdf.recortar(nombre, 7.8, CW - (tasaEnLinea ? 120 : 62), sub), { tam: 7.8, negrita: sub });
+      if (monto !== null) pdf.texto(x + CW, yy, fmt(monto), { tam: 7.8, negrita: sub, alin: "der" });
+      if (det && !tasaEnLinea) { pdf.texto(x + 6, yy + 8, pdf.recortar(det, 6.3, CW - 70), { tam: 6.3, color: C.tenue }); yy += 8; }
+      yy += sub ? 13 : 11;
+    });
+    return yy;
+  };
+
+  const { g, emp } = lineasLiquidacion(e, c, P);
+  const iDesc = g.findIndex((l) => l[3] === "grupo" && l[0] === "Descuentos legales");
+  const izq = g.slice(1, iDesc), der = g.slice(iDesc + 1);
+  const yIni = y;
+  const yL = filasCol(X0, encabezadoCol(X0, yIni, "HABERES"), izq);
+  const yR = filasCol(XR, encabezadoCol(XR, yIni, "DESCUENTOS"), der);
+  y = Math.max(yL, yR);
+
+  /* Líquido */
+  pdf.rect(X0, y, X1 - X0, 26, C.claro, C.turquesa);
+  pdf.texto(X0 + 10, y + 16.5, "LÍQUIDO A PAGAR", { tam: 9, negrita: true, color: C.petroleo });
+  pdf.texto(X0 + 120, y + 16.5, "Haberes " + fmt(c.totalHaberes) + "  −  descuentos " + fmt(c.legales + c.otrosDesc), { tam: 7, color: C.tenue });
+  pdf.texto(X1 - 10, y + 17.5, fmt(c.liquido), { tam: 14, negrita: true, color: C.petroleo, alin: "der" });
+  y += 36;
+
+  /* Costo empleador | Parámetros del mes */
+  const yIni2 = y;
+  let yE = filasCol(X0, encabezadoCol(X0, yIni2, "COSTO EMPLEADOR"), emp.slice(1), true);
+  pdf.linea(X0, yE - 7.5, X0 + CW, yE - 7.5, C.turquesa, 0.8);
+  pdf.texto(X0, yE + 1, "Costo total empresa", { tam: 8.5, negrita: true });
+  pdf.texto(X0 + CW, yE + 1, fmt(c.costoEmpresa), { tam: 8.5, negrita: true, alin: "der" });
+  yE += 14;
+  const pars = [
+    ["UF", "$" + Number(P.uf).toLocaleString("es-CL", { minimumFractionDigits: 2 })], ["UTM", fmt(P.utm)], ["Ingreso mínimo", fmt(P.imm)],
+    ["Tope AFP y salud", String(P.topeAfpUF).replace(".", ",") + " UF = " + fmt(c.topeAfp)], ["Tope cesantía", String(P.topeCesUF).replace(".", ",") + " UF = " + fmt(c.topeCes)],
+    ["Tope gratificación mensual", fmt(c.topeGrat)], ["SIS", fmtP(P.sis)],
+    ["Aporte empleador Ley 21.735", fmtP((Number(P.aporteCI) || 0) + (Number(P.aporteCEV) || 0) + (Number(P.aporteCRP) || 0))], ["Jornada legal", (P.jornadaLegal || 42) + " horas"],
+  ];
+  let yP = encabezadoCol(XR, yIni2, "PARÁMETROS DEL MES");
+  pars.forEach(([k, v]) => { pdf.texto(XR, yP, k, { tam: 7.5, color: C.tenue }); pdf.texto(XR + CW, yP, v, { tam: 7.5, negrita: true, alin: "der" }); yP += 11; });
+  y = Math.max(yE, yP) + 2;
+
+  /* Observaciones y fuente */
+  const parrafo = (texto, tam, color, sangria) => pdf.partir(texto, tam, X1 - X0 - (sangria || 0)).forEach((l, i) => {
+    if (y + tam + 2 > LIM) { pdf.nueva(); y = 40; }
+    pdf.texto(X0 + (i && sangria ? sangria : 0), y, l, { tam, color }); y += tam + 3;
+  });
+  if (hz && hz.length) {
+    y += 2; pdf.texto(X0, y, "OBSERVACIONES", { tam: 6.8, negrita: true, color: C.turquesa }); y += 10;
+    hz.forEach((h) => parrafo("• " + h.t, 7.3, h.err ? C.rojo : C.alerta, 7));
+  }
+  y += 3;
+  parrafo("Fuente: " + (P.fuente || "parámetros ingresados manualmente") + ".", 6.3, C.tenue);
+  piePdf(pdf, NOTA_PDF);
+  return pdf.bytes();
+}
+
+function construirPdfComparativo(e, filasCmp) {
+  const pdf = new Pdf(841.89, 595.28), X0 = 32, X1 = 809.89;
+  const desde = etiquetaPeriodo(filasCmp[0].p), hasta = etiquetaPeriodo(filasCmp[filasCmp.length - 1].p);
+  cabeceraPdf(pdf, "Comparación de la simulación entre períodos", desde + " a " + hasta, "Generado el " + fechaHoy());
+  let y = 74;
+  const resumen = resumenEntrada(e).map(([k, v]) => k + ": " + v).join("   ·   ");
+  pdf.partir(resumen, 8, X1 - X0).forEach((l) => { pdf.texto(X0, y, l, { tam: 8, color: C.tenue }); y += 11; });
+  if ((e.items || []).length) {
+    const it = "Ítems: " + e.items.map((i) => i.nombre + " " + fmt(i.monto) + " (" + (i.tipo === "HI" ? "imponible" : i.tipo === "HN" ? "no imponible" : "descuento") + ")").join(", ");
+    pdf.partir(it, 8, X1 - X0).forEach((l) => { pdf.texto(X0, y, l, { tam: 8, color: C.tenue }); y += 11; });
+  }
+  y += 6;
+  const cols = [
+    ["Período", 82, (r) => etiquetaPeriodo(r.p), "izq"], ["Imponible", 76, (r) => fmt(r.c.totalImp)], ["AFP", 64, (r) => fmt(r.c.afp)], ["Salud", 64, (r) => fmt(r.c.salud)],
+    ["Cesantía", 58, (r) => fmt(r.c.cesTrab)], ["Impuesto", 64, (r) => fmt(r.c.impuesto)], ["Otros desc.", 56, (r) => fmt(r.c.otrosDesc)], ["Líquido", 78, (r) => fmt(r.c.liquido), "neg"],
+    ["Var. líquido", 70, (r, i, rs) => (i === 0 ? "—" : ((r.c.liquido - rs[i - 1].c.liquido) > 0 ? "+" : "") + fmt(r.c.liquido - rs[i - 1].c.liquido))], ["Aportes empl.", 72, (r) => fmt(r.c.emp.total)], ["Costo empresa", 93.89, (r) => fmt(r.c.costoEmpresa), "neg"],
+  ];
+  const encabezado = () => {
+    pdf.rect(X0, y, X1 - X0, 17, C.petroleo);
+    let x = X0; cols.forEach(([t, w, , a]) => { pdf.texto(a === "izq" ? x + 6 : x + w - 6, y + 11.5, t, { tam: 7.5, negrita: true, color: C.blanco, alin: a === "izq" ? "izq" : "der" }); x += w; });
+    y += 17;
+  };
+  encabezado();
+  filasCmp.forEach((r, i) => {
+    if (y + 14 > pdf.H - 40) { pdf.nueva(); y = 36; encabezado(); }
+    if (i % 2 === 1) pdf.rect(X0, y, X1 - X0, 14, C.fila);
+    let x = X0;
+    cols.forEach(([, w, f, a], k) => {
+      const txt = f(r, i, filasCmp);
+      const color = k === 8 && i > 0 ? (r.c.liquido - filasCmp[i - 1].c.liquido < 0 ? C.rojo : r.c.liquido - filasCmp[i - 1].c.liquido > 0 ? "#137A4B" : C.texto) : C.texto;
+      pdf.texto(a === "izq" ? x + 6 : x + w - 6, y + 10, txt, { tam: 8, negrita: a === "neg", color, alin: a === "izq" ? "izq" : "der" });
+      x += w;
+    });
+    y += 14;
+  });
+  pdf.linea(X0, y, X1, y, C.turquesa, 0.8);
+  const sumL = filasCmp.reduce((s, r) => s + r.c.liquido, 0), sumC = filasCmp.reduce((s, r) => s + r.c.costoEmpresa, 0);
+  y += 14;
+  pdf.texto(X0 + 6, y, "Total del período (" + filasCmp.length + " meses)", { tam: 8.5, negrita: true });
+  pdf.texto(X0 + cols.slice(0, 8).reduce((s, c) => s + c[1], 0) - 6, y, fmt(sumL), { tam: 8.5, negrita: true, alin: "der" });
+  pdf.texto(X1 - 6, y, fmt(sumC), { tam: 8.5, negrita: true, alin: "der" });
+  y += 18;
+
+  if (filasCmp.length >= 2) {
+    const alto = 150;
+    if (y + alto + 24 > pdf.H - 40) { pdf.nueva(); y = 36; }
+    pdf.texto(X0, y + 4, "LÍQUIDO Y COSTO EMPRESA POR MES", { tam: 9, negrita: true, color: C.turquesa }); y += 14;
+    const L = X0 + 70, R = X1 - 10, T = y + 6, B = y + alto - 22;
+    const vals = filasCmp.flatMap((r) => [r.c.liquido, r.c.costoEmpresa]);
+    const lo = Math.min(...vals), hi = Math.max(...vals), paso0 = pasoBonito((hi - lo) || hi || 1, 4);
+    const min = Math.max(0, Math.floor(lo / paso0) * paso0 - (hi === lo ? paso0 : 0)), max = Math.ceil(hi / paso0) * paso0 + (hi === lo ? paso0 : 0);
+    const px = (i) => L + (i * (R - L)) / (filasCmp.length - 1), py = (v) => T + (1 - (v - min) / (max - min)) * (B - T);
+    for (let v = min; v <= max + 0.5; v += paso0) { pdf.linea(L, py(v), R, py(v), C.linea, 0.4); pdf.texto(L - 6, py(v) + 3, fmt(v), { tam: 7, color: C.tenue, alin: "der" }); }
+    const paso = Math.max(1, Math.ceil(filasCmp.length / 12));
+    filasCmp.forEach((r, i) => { if (i % paso === 0 || i === filasCmp.length - 1) pdf.texto(px(i), B + 13, MESES[Number(r.p.slice(5)) - 1].slice(0, 3) + " " + r.p.slice(2, 4), { tam: 7, color: C.tenue, alin: "centro" }); });
+    [[(r) => r.c.costoEmpresa, C.ambar, "Costo empresa"], [(r) => r.c.liquido, C.turquesa, "Líquido"]].forEach(([k, col, nom], s) => {
+      pdf.poli(filasCmp.map((r, i) => [px(i), py(k(r))]), col, 1.8);
+      const u = filasCmp.length - 1; pdf.circulo(px(u), py(k(filasCmp[u])), 2.8, col);
+      const lx = L + s * 110; pdf.linea(lx, B + 28, lx + 16, B + 28, col, 2.5); pdf.texto(lx + 22, B + 31, nom, { tam: 8, color: C.texto });
+    });
+  }
+  piePdf(pdf, NOTA_PDF);
+  return pdf.bytes();
+}
+/* Comparación Simulación 1 vs Simulación 2 en el mismo mes (A4 vertical, una hoja). */
+function construirPdfVersus(eA, cA, nomA, eB, cB, nomB, P, periodo) {
+  const pdf = new Pdf(595.28, 841.89), X0 = 32, X1 = 563.28, LIM = pdf.H - 40;
+  cabeceraPdf(pdf, "Comparación de simulaciones: " + nomA + " vs " + nomB, etiquetaPeriodo(periodo), "Generado el " + fechaHoy());
+  let y = 70;
+  const salto = (h) => { if (y + h > LIM) { pdf.nueva(); y = 40; return true; } return false; };
+
+  /* Resumen: 4 tarjetas */
+  const vl = cB.liquido - cA.liquido, vc = cB.costoEmpresa - cA.costoEmpresa;
+  const tarjetas = [
+    ["Líquido · " + nomA, fmt(cA.liquido), "", C.texto],
+    ["Líquido · " + nomB, fmt(cB.liquido), "", C.texto],
+    ["Variación del líquido", fmtVar(vl), fmtVarPct(cA.liquido, cB.liquido), vl < 0 ? C.rojo : vl > 0 ? "#137A4B" : C.texto],
+    ["Variación costo empresa", fmtVar(vc), fmtVarPct(cA.costoEmpresa, cB.costoEmpresa), vc > 0 ? C.rojo : vc < 0 ? "#137A4B" : C.texto],
+  ];
+  const tw = (X1 - X0 - 3 * 8) / 4;
+  tarjetas.forEach(([t, v, pct, col], i) => {
+    const x = X0 + i * (tw + 8);
+    pdf.rect(x, y, tw, 40, i >= 2 ? C.claro : C.fila, i >= 2 ? C.turquesa : null);
+    pdf.texto(x + 8, y + 12, pdf.recortar(t, 7, tw - 14), { tam: 7, color: C.tenue });
+    pdf.texto(x + 8, y + 30, v, { tam: 12.5, negrita: true, color: col });
+    if (pct) pdf.texto(x + tw - 8, y + 30, pct, { tam: 8, color: col, alin: "der" });
+  });
+  y += 52;
+
+  /* Condiciones que cambian */
+  const W1 = 150, W2 = (X1 - X0 - W1) / 2;
+  const cab = (t1, t2, t3) => {
+    pdf.rect(X0, y, X1 - X0, 14, C.petroleo);
+    pdf.texto(X0 + 6, y + 10, t1, { tam: 7.5, negrita: true, color: C.blanco });
+    pdf.texto(X0 + W1 + 6, y + 10, t2, { tam: 7.5, negrita: true, color: C.blanco });
+    pdf.texto(X0 + W1 + W2 + 6, y + 10, t3, { tam: 7.5, negrita: true, color: C.blanco });
+    y += 14;
+  };
+  const dif = diferenciasCondiciones(eA, eB);
+  cab("CONDICIONES QUE CAMBIAN", pdf.recortar(nomA.toUpperCase(), 7.5, W2 - 12, true), pdf.recortar(nomB.toUpperCase(), 7.5, W2 - 12, true));
+  if (!dif.length) { y += 11; pdf.texto(X0 + 6, y, "Ambas simulaciones tienen las mismas condiciones.", { tam: 8, color: C.tenue }); y += 6; }
+  dif.forEach(([k, a, b], i) => {
+    salto(13);
+    if (i % 2 === 1) pdf.rect(X0, y, X1 - X0, 13, C.fila);
+    pdf.texto(X0 + 6, y + 9.3, k, { tam: 7.8, color: C.tenue });
+    pdf.texto(X0 + W1 + 6, y + 9.3, pdf.recortar(a, 7.8, W2 - 12), { tam: 7.8 });
+    pdf.texto(X0 + W1 + W2 + 6, y + 9.3, pdf.recortar(b, 7.8, W2 - 12), { tam: 7.8, negrita: true });
+    y += 13;
+  });
+  y += 12;
+
+  /* Detalle de la liquidación */
+  const cols = [["Concepto", 205, "izq"], [nomA, 82], [nomB, 82], ["Variación", 82], ["Var. %", X1 - X0 - 451]];
+  const encabezado = () => {
+    pdf.rect(X0, y, X1 - X0, 14, C.petroleo);
+    let x = X0;
+    cols.forEach(([t, w, a]) => { pdf.texto(a === "izq" ? x + 6 : x + w - 6, y + 10, pdf.recortar(t.toUpperCase(), 7.5, w - 10, true), { tam: 7.5, negrita: true, color: C.blanco, alin: a === "izq" ? "izq" : "der" }); x += w; });
+    y += 14;
+  };
+  encabezado();
+  filasComparacion(eA, cA, eB, cB).forEach(([t, a, b, cls]) => {
+    if (cls === "grupo") { if (salto(28)) encabezado(); y += 12; pdf.texto(X0 + 4, y, t.toUpperCase(), { tam: 7, negrita: true, color: C.turquesa }); y += 4; return; }
+    const alto = cls === "liq" ? 18 : 12.5;
+    if (salto(alto)) encabezado();
+    const neg = cls === "sub" || cls === "liq";
+    if (cls === "liq") pdf.rect(X0, y, X1 - X0, alto, C.claro);
+    else if (cls === "sub") pdf.linea(X0, y + 0.5, X1, y + 0.5, C.linea, 0.5);
+    const by = y + (cls === "liq" ? 12.2 : 9);
+    const tam = cls === "liq" ? 8.8 : 7.8, d = b - a;
+    const col = d === 0 ? C.tenue : (t === "Costo total empresa" || t === "Total aportes empleador" ? (d > 0 ? C.rojo : "#137A4B") : null);
+    let x = X0;
+    pdf.texto(x + (cls === "item" ? 12 : 6), by, pdf.recortar(t, tam, cols[0][1] - 16, neg), { tam, negrita: neg }); x += cols[0][1];
+    pdf.texto(x + cols[1][1] - 6, by, fmt(a), { tam, negrita: neg, alin: "der" }); x += cols[1][1];
+    pdf.texto(x + cols[2][1] - 6, by, fmt(b), { tam, negrita: neg, alin: "der" }); x += cols[2][1];
+    pdf.texto(x + cols[3][1] - 6, by, d === 0 ? "—" : fmtVar(d), { tam, negrita: neg, alin: "der", color: col || C.texto }); x += cols[3][1];
+    pdf.texto(x + cols[4][1] - 6, by, d === 0 ? "—" : fmtVarPct(a, b), { tam: tam - 0.5, alin: "der", color: col || C.tenue });
+    y += alto;
+  });
+  y += 10;
+  salto(20);
+  pdf.partir("Ambas simulaciones usan los parámetros de " + etiquetaPeriodo(periodo) + ": UF $" + Number(P.uf).toLocaleString("es-CL", { minimumFractionDigits: 2 }) + ", UTM " + fmt(P.utm) + ", ingreso mínimo " + fmt(P.imm) + ", tope AFP " + String(P.topeAfpUF).replace(".", ",") + " UF. Fuente: " + (P.fuente || "parámetros ingresados manualmente") + ".", 6.3, X1 - X0).forEach((l) => { salto(9); pdf.texto(X0, y, l, { tam: 6.3, color: C.tenue }); y += 9; });
+  piePdf(pdf, NOTA_PDF);
+  return pdf.bytes();
+}
+/* ===== FIN EXPORTADORES ===== */
+</script>
+
+<script>
+/* ===== APLICACIÓN ===== */
+const AFPS = ["CAPITAL", "CUPRUM", "HABITAT", "MODELO", "PLANVITAL", "PROVIDA", "UNO"];
+const PRESETS = [
+  { nombre: "Bono de producción", tipo: "HI", monto: 100000 },
+  { nombre: "Comisiones", tipo: "HI", monto: 150000 },
+  { nombre: "Bono de responsabilidad", tipo: "HI", monto: 50000 },
+  { nombre: "Aguinaldo", tipo: "HI", monto: 50000 },
+  { nombre: "Colación", tipo: "HN", monto: 60000 },
+  { nombre: "Movilización", tipo: "HN", monto: 40000 },
+  { nombre: "Viático", tipo: "HN", monto: 30000 },
+  { nombre: "Anticipo de sueldo", tipo: "D", monto: 100000 },
+  { nombre: "Préstamo empresa", tipo: "D", monto: 50000 },
+  { nombre: "Cuota sindical", tipo: "D", monto: 10000 },
+  { nombre: "Seguro complementario", tipo: "D", monto: 15000 },
+];
+const TIPOS = { HI: "Haber imponible", HN: "Haber no imponible", D: "Descuento" };
+const CAMPOS_PARAM = [
+  ["uf", "UF último día del mes", 0.01], ["utm", "UTM", 1], ["imm", "Ingreso mínimo", 1],
+  ["topeAfpUF", "Tope AFP y salud (UF)", 0.1], ["topeCesUF", "Tope cesantía (UF)", 0.1], ["jornadaLegal", "Jornada legal (horas)", 1],
+  ["sis", "SIS empleador (%)", 0.01], ["aporteCI", "Aporte empleador cuenta individual (%)", 0.01],
+  ["aporteCEV", "Seguro expectativa de vida (%)", 0.01], ["aporteCRP", "Rentabilidad protegida CRP (%)", 0.01],
+  ["cesIndefTrab", "Cesantía trabajador indefinido (%)", 0.1], ["cesIndefEmp", "Cesantía empleador indefinido (%)", 0.1],
+  ["cesPlazoFijoEmp", "Cesantía empleador plazo fijo (%)", 0.1], ["cesMas11Emp", "Cesantía empleador 11+ años (%)", 0.1],
+  ["mutualBasica", "Mutual básica (%)", 0.01],
+];
+
+const $ = (id) => document.getElementById(id);
+const S = {
+  params: {},          // periodo -> doc
+  periodos: [],        // ordenados
+  periodo: null,
+  items: [],
+  escenarios: [],
+  db: null, user: null, downloads: null,
+  puedeEditar: false,
+  editando: null,
+  cargado: false,
+};
+let idSeq = 1;
+const nuevoId = () => "i" + (idSeq++) + Math.random().toString(36).slice(2, 6);
+
+function toast(msg) {
+  const t = $("toast"); t.textContent = msg; t.hidden = false;
+  clearTimeout(toast._h); toast._h = setTimeout(() => (t.hidden = true), 2600);
+}
+function aviso(msg, tipo) {
+  const a = $("avisoGlobal");
+  if (!msg) { a.hidden = true; return; }
+  a.className = "aviso" + (tipo ? " " + tipo : ""); a.textContent = msg; a.hidden = false;
+}
+const hoyPeriodo = () => { const d = new Date(); return d.getFullYear() + "-" + String(d.getMonth() + 1).padStart(2, "0"); };
+
+/* --- entrada --- */
+function leerEntrada() {
+  const n = (id) => Number($(id).value) || 0;
+  return {
+    tipoContrato: $("tipoContrato").value, anios: n("anios"), jornada: n("jornada"), dias: Math.min(30, Math.max(0, n("dias"))),
+    sueldoBase: n("sueldoBase"), horasExtra: n("horasExtra"), recargo: n("recargo"),
+    gratTipo: $("gratTipo").value, gratMonto: n("gratMonto"),
+    afp: $("afp").value, pensionado: $("pensionado").checked, salud: $("salud").value, isapre: $("isapre").value, planUF: n("planUF"),
+    cargas: n("cargas"), apv: n("apv"), apvReg: $("apvReg").value, mutualAd: n("mutualAd"),
+    items: S.items.map((i) => ({ nombre: i.nombre, tipo: i.tipo, tributable: !!i.tributable, monto: Number(i.monto) || 0 })),
+  };
+}
+function aplicarEntrada(e) {
+  const set = (id, v) => { if (v !== undefined && $(id)) $(id).value = v; };
+  set("tipoContrato", e.tipoContrato); set("anios", e.anios); set("jornada", e.jornada); set("dias", e.dias);
+  set("sueldoBase", e.sueldoBase); set("horasExtra", e.horasExtra); set("recargo", e.recargo);
+  set("gratTipo", e.gratTipo); set("gratMonto", e.gratMonto); set("afp", e.afp); set("salud", e.salud); set("isapre", e.isapre || ""); set("planUF", e.planUF);
+  set("cargas", e.cargas); set("apv", e.apv); set("apvReg", e.apvReg); set("mutualAd", e.mutualAd);
+  $("pensionado").checked = !!e.pensionado;
+  S.items = (e.items || []).map((i) => ({ ...i, id: nuevoId() }));
+  sincronizarVisibles(); renderItems();
+}
+function sincronizarVisibles() {
+  $("campoGratMonto").hidden = $("gratTipo").value !== "MONTO";
+  $("campoPlan").hidden = $("salud").value !== "ISAPRE";
+  $("campoIsapre").hidden = $("salud").value !== "ISAPRE";
+  const isa = isapreDe($("isapre").value);
+  $("isapreInfo").textContent = isa ? "Código Previred " + isa.cod + " · registro N° " + isa.reg + " · " + isa.tipo + (isa.grupo ? " (" + isa.grupo + ")" : "") : "Elige una Isapre vigente";
+}
+function guardarBorrador() {
+  try { localStorage.setItem("qx-sim-borrador", JSON.stringify(leerEntrada())); } catch (_) {}
+}
+function leerBorrador() {
+  try { const t = localStorage.getItem("qx-sim-borrador"); return t ? JSON.parse(t) : null; } catch (_) { return null; }
+}
+
+/* --- ítems --- */
+function renderPresets() {
+  const c = $("presets"); c.innerHTML = "";
+  PRESETS.forEach((p) => {
+    const b = document.createElement("button");
+    b.type = "button"; b.className = "chip"; b.textContent = "+ " + p.nombre;
+    b.addEventListener("click", () => { S.items.push({ ...p, tributable: p.tipo === "HI", id: nuevoId() }); renderItems(); recalcular(); });
+    c.appendChild(b);
+  });
+}
+function renderItems() {
+  const c = $("items"); c.innerHTML = "";
+  if (!S.items.length) {
+    const p = document.createElement("p"); p.className = "vacio";
+    p.textContent = "Sin ítems. Agrega bonos, colación, anticipos u otros con los botones de arriba o con Agregar ítem.";
+    c.appendChild(p); return;
+  }
+  S.items.forEach((it) => {
+    const row = document.createElement("div"); row.className = "item";
+    const nombre = document.createElement("input"); nombre.type = "text"; nombre.value = it.nombre; nombre.dataset.k = "nombre"; nombre.id = "it-n-" + it.id; nombre.setAttribute("aria-label", "Nombre del ítem");
+    nombre.addEventListener("input", () => { it.nombre = nombre.value; recalcular(); });
+    const tipo = document.createElement("select"); tipo.id = "it-t-" + it.id; tipo.setAttribute("aria-label", "Tipo de ítem");
+    Object.entries(TIPOS).forEach(([k, v]) => { const o = document.createElement("option"); o.value = k; o.textContent = v; tipo.appendChild(o); });
+    tipo.value = it.tipo;
+    const tl = document.createElement("label"); tl.className = "trib";
+    const tc = document.createElement("input"); tc.type = "checkbox"; tc.id = "it-x-" + it.id; tc.checked = it.tipo === "HI" ? true : !!it.tributable; tc.disabled = it.tipo !== "HN";
+    tl.append(tc, document.createTextNode("Tributable"));
+    tc.addEventListener("change", () => { it.tributable = tc.checked; recalcular(); });
+    tipo.addEventListener("change", () => { it.tipo = tipo.value; if (it.tipo === "HI") it.tributable = true; renderItems(); recalcular(); });
+    const monto = document.createElement("input"); monto.type = "number"; monto.min = "0"; monto.step = "1000"; monto.className = "num"; monto.value = it.monto; monto.id = "it-m-" + it.id; monto.setAttribute("aria-label", "Monto");
+    monto.addEventListener("input", () => { it.monto = Number(monto.value) || 0; recalcular(); });
+    const del = document.createElement("button"); del.type = "button"; del.className = "mini peligro"; del.textContent = "Quitar"; del.setAttribute("aria-label", "Quitar " + it.nombre);
+    del.addEventListener("click", () => { S.items = S.items.filter((x) => x !== it); renderItems(); recalcular(); });
+    row.append(nombre, tipo, tl, monto, del); c.appendChild(row);
+  });
+}
+
+/* --- período --- */
+function poblarSelectoresPeriodo() {
+  const anios = [...new Set(S.periodos.map((p) => p.slice(0, 4)))];
+  const actual = new Date().getFullYear();
+  for (let y = actual - 1; y <= actual + 1; y++) if (!anios.includes(String(y))) anios.push(String(y));
+  anios.sort();
+  const sa = $("selAnio"), sm = $("selMes");
+  sa.innerHTML = anios.map((y) => `<option value="${y}">${y}</option>`).join("");
+  sm.innerHTML = MESES.map((m, i) => `<option value="${String(i + 1).padStart(2, "0")}">${m}</option>`).join("");
+  const opts = S.periodos.map((p) => `<option value="${p}">${etiquetaPeriodo(p)}</option>`).join("");
+  const d = $("cmpDesde").value, h = $("cmpHasta").value;
+  $("cmpDesde").innerHTML = opts; $("cmpHasta").innerHTML = opts;
+  if (S.periodos.length) {
+    $("cmpDesde").value = S.periodos.includes(d) ? d : S.periodos[Math.max(0, S.periodos.length - 12)];
+    $("cmpHasta").value = S.periodos.includes(h) ? h : S.periodos[S.periodos.length - 1];
+  }
+}
+function fijarPeriodo(p) {
+  S.periodo = p;
+  $("selAnio").value = p.slice(0, 4); $("selMes").value = p.slice(5, 7);
+  const P = S.params[p];
+  const est = $("estadoMes");
+  if (P) {
+    const e = P.estado || "manual";
+    est.className = "estado " + e;
+    est.textContent = e === "verificado" ? "Parámetros verificados" : e === "derivado" ? "Parámetros derivados" : "Parámetros manuales";
+    est.title = P.fuente || "";
+    const jl = P.jornadaLegal || 42;
+    $("jornadaNota").textContent = "Máximo legal del mes: " + jl + " h";
+  } else {
+    est.className = "estado falta"; est.textContent = "Sin parámetros"; est.title = "";
+  }
+  recalcular();
+}
+function periodoDesdeSelectores() { return $("selAnio").value + "-" + $("selMes").value; }
+
+/* --- liquidación --- */
+function filas(lista) {
+  return lista.map(([nombre, monto, det, cls]) =>
+    `<tr class="${cls || ""}"><td>${esc(nombre)}${det ? `<span class="d">${esc(det)}</span>` : ""}</td><td class="m">${monto === null ? "" : fmt(monto)}</td></tr>`).join("");
+}
+const esc = (s) => String(s).replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+
+function recalcular() {
+  sincronizarVisibles();
+  const cuerpo = $("liqCuerpo");
+  const P = S.params[S.periodo];
+  $("liqPeriodo").textContent = S.periodo ? etiquetaPeriodo(S.periodo) : "";
+  $("accionesLiq").hidden = true;
+  if (!S.cargado) { cuerpo.innerHTML = `<p class="vacio">Cargando parámetros del mes…</p>`; return; }
+  if (!P) {
+    const ultimo = S.periodos.filter((p) => p < S.periodo).pop();
+    cuerpo.innerHTML = `<p class="vacio">No hay parámetros cargados para ${etiquetaPeriodo(S.periodo)}.</p>` +
+      (ultimo ? `<div class="acciones"><button type="button" class="primario" id="btnUsarUltimo">Usar ${etiquetaPeriodo(ultimo)}</button></div>` : "") +
+      `<p class="vacio">Puedes crear el mes en la pestaña Parámetros copiando el último mes y corrigiendo UF y UTM.</p>`;
+    const b = $("btnUsarUltimo"); if (b) b.addEventListener("click", () => fijarPeriodo(ultimo));
+    renderComparar(); return;
+  }
+  const e = leerEntrada();
+  const c = calcular(e, P);
+  const { g, emp } = lineasLiquidacion(e, c, P);
+
+  const hz = hallazgos(e, P, c);
+  cuerpo.innerHTML =
+    `<table class="lineas">${filas(g)}</table>` +
+    `<div class="liquido"><span>Líquido a pagar</span><output>${fmt(c.liquido)}</output></div>` +
+    `<div class="costo"><span>Costo total empresa</span><b>${fmt(c.costoEmpresa)}</b></div>` +
+    (S.sim1 ? (() => { const c1 = calcular(S.sim1.entrada, P); return `<a class="vs-chip" href="#versus">Frente a ${esc($("nomSim1").value || "Simulación 1")}: ${fmtVar(c.liquido - c1.liquido)} líquido · ${fmtVar(c.costoEmpresa - c1.costoEmpresa)} costo empresa</a>`; })() : "") +
+    (hz.length ? `<ul class="hallazgos">${hz.map((x) => `<li class="${x.err ? "err" : ""}">${esc(x.t)}</li>`).join("")}</ul>` : "") +
+    `<details class="param"><summary>Detalle de costo empresa y parámetros del mes</summary>` +
+    `<table class="lineas">${filas(emp)}</table>` +
+    `<dl><dt>UF</dt><dd>${"$" + Number(P.uf).toLocaleString("es-CL", { minimumFractionDigits: 2 })}</dd><dt>UTM</dt><dd>${fmt(P.utm)}</dd>` +
+    `<dt>Ingreso mínimo</dt><dd>${fmt(P.imm)}</dd><dt>Tope AFP (${NF.format(P.topeAfpUF)} UF)</dt><dd>${fmt(c.topeAfp)}</dd>` +
+    `<dt>Tope cesantía (${String(P.topeCesUF).replace(".", ",")} UF)</dt><dd>${fmt(c.topeCes)}</dd><dt>Tope gratificación mensual</dt><dd>${fmt(c.topeGrat)}</dd>` +
+    `<dt>Fuente</dt><dd style="text-align:left;font-family:var(--font-body)">${esc(P.fuente || "Ingresado manualmente")}</dd></dl>` +
+    `</details>`;
+  $("accionesLiq").hidden = false;
+  guardarBorrador();
+  if (!$("v-comparar").hidden) renderComparar();
+  if (!$("v-versus").hidden) renderVersus();
+}
+
+/* --- comparar --- */
+function filasComparar() {
+  const d = $("cmpDesde").value, h = $("cmpHasta").value;
+  if (!d || !h) return [];
+  const [a, b] = d <= h ? [d, h] : [h, d];
+  const e = leerEntrada();
+  return S.periodos.filter((p) => p >= a && p <= b).map((p) => ({ p, c: calcular(e, S.params[p]) }));
+}
+function renderComparar() {
+  const t = $("cmpTabla"), gr = $("cmpGrafico");
+  const rows = filasComparar();
+  if (!rows.length) { t.innerHTML = ""; gr.innerHTML = `<p class="vacio">No hay meses con parámetros en ese rango.</p>`; return; }
+  let prev = null;
+  t.innerHTML = `<thead><tr><th>Período</th><th>Imponible</th><th>AFP</th><th>Salud</th><th>Cesantía</th><th>Impuesto</th><th>Líquido</th><th>Δ líquido</th><th>Costo empresa</th></tr></thead><tbody>` +
+    rows.map(({ p, c }) => {
+      const delta = prev === null ? null : c.liquido - prev; prev = c.liquido;
+      const dcls = delta > 0 ? "sube" : delta < 0 ? "baja" : "";
+      return `<tr class="click${p === S.periodo ? " activo" : ""}" data-p="${p}"><td>${etiquetaPeriodo(p)}</td><td>${fmt(c.totalImp)}</td><td>${fmt(c.afp)}</td><td>${fmt(c.salud)}</td><td>${fmt(c.cesTrab)}</td><td>${fmt(c.impuesto)}</td><td>${fmt(c.liquido)}</td><td class="${dcls}">${delta === null ? "—" : (delta > 0 ? "+" : "") + fmt(delta)}</td><td>${fmt(c.costoEmpresa)}</td></tr>`;
+    }).join("") + `</tbody>`;
+  t.querySelectorAll("tr.click").forEach((tr) => tr.addEventListener("click", () => { fijarPeriodo(tr.dataset.p); location.hash = "simulador"; }));
+  gr.innerHTML = graficoSvg(rows);
+}
+function graficoSvg(rows) {
+  if (rows.length < 2) return "";
+  const W = 760, H = 220, L = 78, R = 36, T = 14, B = 34;
+  const series = [
+    { k: (c) => c.costoEmpresa, color: "var(--alerta)", nombre: "Costo empresa" },
+    { k: (c) => c.liquido, color: "var(--neon)", nombre: "Líquido" },
+  ];
+  const vals = rows.flatMap(({ c }) => series.map((s) => s.k(c)));
+  const lo = Math.min(...vals), hi = Math.max(...vals), paso0 = pasoBonito((hi - lo) || hi || 1, 4);
+  const min = Math.max(0, Math.floor(lo / paso0) * paso0 - (hi === lo ? paso0 : 0)), max = Math.ceil(hi / paso0) * paso0 + (hi === lo ? paso0 : 0);
+  const x = (i) => L + (i * (W - L - R)) / (rows.length - 1);
+  const y = (v) => T + (1 - (v - min) / (max - min)) * (H - T - B);
+  let grid = "";
+  for (let v = min; v <= max + 0.5; v += paso0) {
+    grid += `<line x1="${L}" x2="${W - R}" y1="${y(v)}" y2="${y(v)}" stroke="var(--linea)" stroke-width="1"/>` +
+      `<text x="${L - 8}" y="${y(v) + 4}" text-anchor="end" font-size="11" fill="var(--tenue)" font-family="IBM Plex Mono, monospace">${fmt(v)}</text>`;
+  }
+  const paso = Math.max(1, Math.ceil(rows.length / 8));
+  const etiquetas = rows.map(({ p }, i) => (i % paso === 0 || i === rows.length - 1) ?
+    `<text x="${x(i)}" y="${H - 10}" text-anchor="middle" font-size="11" fill="var(--tenue)">${MESES[Number(p.slice(5)) - 1].slice(0, 3)} ${p.slice(2, 4)}</text>` : "").join("");
+  const lineas = series.map((s) => {
+    const pts = rows.map(({ c }, i) => `${x(i)},${y(s.k(c))}`).join(" ");
+    const last = rows.length - 1;
+    return `<polyline points="${pts}" fill="none" stroke="${s.color}" stroke-width="2.2" stroke-linejoin="round"/>` +
+      `<circle cx="${x(last)}" cy="${y(s.k(rows[last].c))}" r="4" fill="${s.color}"/>`;
+  }).join("");
+  return `<svg viewBox="0 0 ${W} ${H}" role="img" aria-label="Líquido y costo empresa por mes">${grid}${etiquetas}${lineas}</svg>` +
+    `<div class="leyenda">${series.map((s) => `<span><i style="background:${s.color}"></i>${s.nombre}</span>`).join("")}</div>`;
+}
+
+/* --- descargas --- */
+function csv(filas) {
+  return filas.map((f) => f.map((v) => { const s = String(v ?? ""); return /[";\n]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }).join(";")).join("\r\n");
+}
+async function guardarArchivo(nombre, contenido, binario) {
+  if (!S.downloads) { toast("La descarga no está disponible en esta vista."); return; }
+  try { await S.downloads.save({ filename: nombre, data: binario ? new Blob([contenido]) : "\uFEFF" + contenido }); toast("Archivo listo: " + nombre); }
+  catch (err) { if (err && err.code !== "declined") toast("No se pudo descargar el archivo (" + (err.code || "error") + ")."); }
+}
+function descargarCsvLiquidacion(e, c) {
+  const f = [["Concepto", "Monto"], ["Período", etiquetaPeriodo(S.periodo)], ["Sueldo", c.sueldo], ["Horas extra", c.horasExtra]];
+  c.items.hImp.forEach((i) => f.push([i.nombre, i.monto]));
+  f.push(["Gratificación", c.gratificacion], ["Total imponible", c.totalImp]);
+  c.items.hNoImp.forEach((i) => f.push([i.nombre, i.monto]));
+  f.push(["Asignación familiar", c.asigFam.monto], ["Total haberes", c.totalHaberes], ["AFP", c.afp], ["Salud", c.salud], ["Seguro de cesantía", c.cesTrab], ["Impuesto único", c.impuesto], ["APV", c.apv]);
+  c.items.desc.forEach((i) => f.push([i.nombre, i.monto]));
+  f.push(["Líquido", c.liquido], ["Aportes empleador", c.emp.total], ["Costo empresa", c.costoEmpresa]);
+  guardarArchivo("liquidacion-simulada-" + S.periodo + ".csv", csv(f));
+}
+
+function exportarExcel(periodos, sel, nombre, titulo) {
+  if (!periodos.length) { toast("No hay meses con parámetros para exportar."); return; }
+  try {
+    const selOk = periodos.includes(sel) ? sel : periodos[periodos.length - 1];
+    guardarArchivo(nombre, construirXlsx(leerEntrada(), periodos, S.params, selOk, titulo), true);
+  } catch (err) { console.error(err); toast("No se pudo generar el Excel."); }
+}
+function exportarPdfLiquidacion() {
+  const P = S.params[S.periodo]; if (!P) { toast("Elige un mes con parámetros."); return; }
+  try {
+    const e = leerEntrada(), c = calcular(e, P);
+    guardarArchivo("liquidacion-simulada-" + S.periodo + ".pdf", construirPdfLiquidacion(e, P, S.periodo, c, hallazgos(e, P, c)), true);
+  } catch (err) { console.error(err); toast("No se pudo generar el PDF."); }
+}
+function exportarPdfComparativo() {
+  const rows = filasComparar(); if (!rows.length) { toast("No hay meses en el rango elegido."); return; }
+  try { guardarArchivo("comparacion-" + rows[0].p + "-a-" + rows[rows.length - 1].p + ".pdf", construirPdfComparativo(leerEntrada(), rows), true); }
+  catch (err) { console.error(err); toast("No se pudo generar el PDF."); }
+}
+
+/* --- simulación 1 vs 2 --- */
+function guardarSim1() {
+  try {
+    if (S.sim1) localStorage.setItem("qx-sim1", JSON.stringify({ ...S.sim1, n1: $("nomSim1").value, n2: $("nomSim2").value }));
+    else localStorage.removeItem("qx-sim1");
+  } catch (_) {}
+}
+function leerSim1() {
+  try { const t = localStorage.getItem("qx-sim1"); if (!t) return; const d = JSON.parse(t); S.sim1 = { entrada: d.entrada }; if (d.n1) $("nomSim1").value = d.n1; if (d.n2) $("nomSim2").value = d.n2; } catch (_) {}
+}
+function renderEscSim1() {
+  const opts = `<option value="">${S.escenarios.length ? "Elegir simulación…" : "No hay simulaciones guardadas"}</option>` +
+    S.escenarios.map((d) => `<option value="${esc(d.id)}">${esc(d.data().nombre)}</option>`).join("");
+  $("escSim1").innerHTML = opts; $("escSim2").innerHTML = opts;
+}
+const OPC_VS = {
+  gratTipo: [["ART50", "Art. 50 (25%, tope 4,75 IMM)"], ["MONTO", "Monto fijo"], ["NINGUNA", "Sin gratificación"]],
+  tipoContrato: [["INDEFINIDO", "Indefinido"], ["PLAZO_FIJO", "Plazo fijo"], ["OBRA_FAENA", "Obra o faena"]],
+  afp: Object.entries(NOMBRE_AFP).map(([k, v]) => [k, k === "NINGUNA" ? "Sin cotización AFP" : v]),
+  salud: [["FONASA", "Fonasa (7%)"], ["ISAPRE", "Isapre"]],
+  isapre: [["", "Elegir Isapre…"], ...ISAPRES.map((i) => [i.cod, i.nombre + (i.tipo === "Cerrada" ? " (cerrada)" : "")])],
+  apvReg: [["B", "B (rebaja impuesto)"], ["A", "A (bonificación fiscal)"]],
+};
+const CAMPOS_VS = [
+  ["sueldoBase", "Sueldo base", "num", 1000], ["dias", "Días trabajados", "num", 1], ["horasExtra", "Horas extra", "num", 0.5],
+  ["recargo", "Recargo horas extra (%)", "num", 5], ["gratTipo", "Gratificación", "sel"], ["gratMonto", "Monto gratificación (si es fijo)", "num", 1000],
+  ["tipoContrato", "Tipo de contrato", "sel"], ["anios", "Años en la empresa", "num", 1], ["jornada", "Jornada semanal (horas)", "num", 1],
+  ["afp", "AFP", "sel"], ["pensionado", "Pensionado", "chk"], ["salud", "Salud", "sel"], ["isapre", "Isapre", "sel"],
+  ["planUF", "Plan Isapre (UF)", "num", 0.01], ["cargas", "Cargas familiares", "num", 1], ["apv", "APV mensual", "num", 1000],
+  ["apvReg", "Régimen APV", "sel"], ["mutualAd", "Mutual adicional (%)", "num", 0.01],
+];
+const claveItem = (i) => (i.nombre || "").trim().toLowerCase() + "|" + i.tipo;
+
+function controlVs(sim, campo, valor) {
+  const [k, , tipo, paso] = campo, id = "vs" + sim + "-" + k;
+  if (tipo === "sel") return `<select id="${id}" data-sim="${sim}" data-k="${k}">${OPC_VS[k].map(([v, t]) => `<option value="${esc(v)}"${String(valor ?? "") === v ? " selected" : ""}>${esc(t)}</option>`).join("")}</select>`;
+  if (tipo === "chk") return `<label class="trib"><input type="checkbox" id="${id}" data-sim="${sim}" data-k="${k}"${valor ? " checked" : ""}> Sí</label>`;
+  return `<input class="num" type="number" step="${paso}" min="0" id="${id}" data-sim="${sim}" data-k="${k}" value="${Number(valor) || 0}">`;
+}
+function valorControl(el) { return el.type === "checkbox" ? el.checked : el.tagName === "SELECT" ? el.value : Number(el.value) || 0; }
+
+/* Editor de condiciones: se construye una vez y no se redibuja mientras escribes. */
+function renderEditorVs() {
+  const ed = $("vsEditor");
+  if (!S.sim1) { ed.innerHTML = ""; return; }
+  const eA = S.sim1.entrada, eB = leerEntrada();
+  const n1 = $("nomSim1").value || "Simulación 1", n2 = $("nomSim2").value || "Simulación 2";
+  const filasCampos = CAMPOS_VS.map((c) => {
+    const k = c[0];
+    return `<tr data-fila="${k}"><td>${c[1]}</td><td>${controlVs(1, c, eA[k])}</td><td>${controlVs(2, c, eB[k])}</td></tr>`;
+  }).join("");
+  const mapa = new Map();
+  (eA.items || []).forEach((i) => { const k = claveItem(i); if (!mapa.has(k)) mapa.set(k, { nombre: i.nombre, tipo: i.tipo, tributable: !!i.tributable, m1: 0, m2: 0 }); mapa.get(k).m1 += Number(i.monto) || 0; });
+  (eB.items || []).forEach((i) => { const k = claveItem(i); if (!mapa.has(k)) mapa.set(k, { nombre: i.nombre, tipo: i.tipo, tributable: !!i.tributable, m1: 0, m2: 0 }); mapa.get(k).m2 += Number(i.monto) || 0; });
+  S.vsItems = [...mapa.entries()].map(([clave, r], n) => ({ ...r, clave, n }));
+  const filasItems = S.vsItems.map((r) => `<tr data-item="${r.n}">
+      <td><div class="vs-it"><input type="text" id="vsi-n-${r.n}" data-it="${r.n}" data-c="nombre" value="${esc(r.nombre)}" aria-label="Nombre del ítem">
+      <select id="vsi-t-${r.n}" data-it="${r.n}" data-c="tipo" aria-label="Tipo">${Object.entries(TIPOS).map(([v, t]) => `<option value="${v}"${r.tipo === v ? " selected" : ""}>${t}</option>`).join("")}</select>
+      <label class="trib"><input type="checkbox" id="vsi-x-${r.n}" data-it="${r.n}" data-c="tributable"${r.tipo === "HI" || r.tributable ? " checked" : ""}${r.tipo !== "HN" ? " disabled" : ""}> Trib.</label>
+      <button type="button" class="mini peligro" data-quitar="${r.n}" aria-label="Quitar ítem">Quitar</button></div></td>
+      <td><input class="num" type="number" min="0" step="1000" id="vsi-1-${r.n}" data-it="${r.n}" data-c="m1" value="${r.m1}"></td>
+      <td><input class="num" type="number" min="0" step="1000" id="vsi-2-${r.n}" data-it="${r.n}" data-c="m2" value="${r.m2}"></td></tr>`).join("");
+  ed.innerHTML = `<div class="panel" style="margin-top:14px"><h2 id="vsTituloEd">Editar condiciones · ${etiquetaPeriodo(S.periodo)}</h2>
+    <p class="vacio" style="padding-top:0">Cambia cualquier valor en la Simulación 1 o en la 2; el resultado se recalcula al instante. Las filas resaltadas son las que difieren. Lo que cambies en la Simulación 2 también queda en el Simulador.</p>
+    <div class="tabla-scroll"><table class="datos vs vs-editor"><thead><tr><th>Condición</th><th id="vsCab1">${esc(n1)}</th><th id="vsCab2">${esc(n2)}</th></tr></thead><tbody>${filasCampos}
+    <tr class="grupo"><td colspan="3">Ítems (bonos, asignaciones y descuentos)</td></tr>${filasItems || `<tr><td colspan="3" class="cero">Sin ítems en ninguna simulación.</td></tr>`}</tbody></table></div>
+    <div class="chips" style="margin-top:12px" id="vsPresets"></div>
+    <div class="acciones"><button type="button" id="vsAgregarItem">Agregar ítem a ambas</button><button type="button" id="vsCopiar12">Copiar Simulación 1 → 2</button><button type="button" id="vsCopiar21">Copiar Simulación 2 → 1</button></div></div>`;
+  PRESETS.forEach((p) => {
+    const b = document.createElement("button"); b.type = "button"; b.className = "chip"; b.textContent = "+ " + p.nombre;
+    b.addEventListener("click", () => agregarItemVs({ ...p, tributable: p.tipo === "HI" }));
+    $("vsPresets").appendChild(b);
+  });
+  $("vsAgregarItem").addEventListener("click", () => agregarItemVs({ nombre: "Nuevo ítem", tipo: "HI", tributable: true, monto: 0 }, true));
+  $("vsCopiar12").addEventListener("click", () => { aplicarEntrada(JSON.parse(JSON.stringify(S.sim1.entrada))); recalcular(); renderEditorVs(); toast("Simulación 2 igual a la 1"); });
+  $("vsCopiar21").addEventListener("click", () => { S.sim1 = { entrada: leerEntrada() }; guardarSim1(); recalcular(); renderEditorVs(); toast("Simulación 1 igual a la 2"); });
+  ed.querySelectorAll("[data-quitar]").forEach((b) => b.addEventListener("click", () => {
+    const r = S.vsItems[Number(b.dataset.quitar)];
+    S.sim1.entrada.items = (S.sim1.entrada.items || []).filter((i) => claveItem(i) !== r.clave);
+    S.items = S.items.filter((i) => claveItem(i) !== r.clave);
+    cambioItemsVs(true);
+  }));
+  marcarDiferenciasVs();
+}
+function agregarItemVs(base, enfocar) {
+  let nombre = base.nombre, n = 2;
+  const existe = (nm) => [...(S.sim1.entrada.items || []), ...S.items].some((i) => claveItem(i) === claveItem({ nombre: nm, tipo: base.tipo }));
+  while (existe(nombre)) nombre = base.nombre + " " + n++;
+  S.sim1.entrada.items = [...(S.sim1.entrada.items || []), { nombre, tipo: base.tipo, tributable: !!base.tributable, monto: base.monto || 0 }];
+  S.items.push({ id: nuevoId(), nombre, tipo: base.tipo, tributable: !!base.tributable, monto: base.monto || 0 });
+  cambioItemsVs(true);
+  if (enfocar) { const r = S.vsItems.find((x) => x.nombre === nombre); const el = r && $("vsi-n-" + r.n); if (el) { el.focus(); el.select(); } }
+}
+function cambioItemsVs(reconstruir) {
+  guardarSim1(); renderItems(); recalcular();
+  if (reconstruir) renderEditorVs(); else marcarDiferenciasVs();
+}
+/* Fija el monto de un ítem (por nombre y tipo) en una lista, sumando duplicados en uno. */
+function fijarMontoItem(lista, r, monto, conId) {
+  const idx = lista.map((i, k) => (claveItem(i) === r.clave ? k : -1)).filter((k) => k >= 0);
+  if (idx.length) { lista[idx[0]].monto = monto; return lista.filter((_, k) => !idx.slice(1).includes(k)); }
+  const nuevo = { nombre: r.nombre, tipo: r.tipo, tributable: !!r.tributable, monto };
+  if (conId) nuevo.id = nuevoId();
+  return [...lista, nuevo];
+}
+function alEditarVs(ev) {
+  const el = ev.target;
+  if (el.dataset.k) {
+    const k = el.dataset.k, v = valorControl(el);
+    if (el.dataset.sim === "1") { S.sim1.entrada = { ...S.sim1.entrada, [k]: v }; guardarSim1(); recalcular(); }
+    else { if (k === "pensionado") $("pensionado").checked = v; else $(k).value = v; recalcular(); }
+    marcarDiferenciasVs();
+    return;
+  }
+  if (el.dataset.it !== undefined) {
+    const r = S.vsItems[Number(el.dataset.it)], campo = el.dataset.c;
+    if (campo === "m1") { r.m1 = Number(el.value) || 0; S.sim1.entrada.items = fijarMontoItem(S.sim1.entrada.items || [], r, r.m1, false); cambioItemsVs(false); return; }
+    if (campo === "m2") { r.m2 = Number(el.value) || 0; S.items = fijarMontoItem(S.items, r, r.m2, true); cambioItemsVs(false); return; }
+    const aplicar = (lista) => lista.forEach((i) => {
+      if (claveItem(i) !== r.clave) return;
+      if (campo === "nombre") i.nombre = el.value;
+      if (campo === "tipo") { i.tipo = el.value; if (i.tipo === "HI") i.tributable = true; }
+      if (campo === "tributable") i.tributable = el.checked;
+    });
+    aplicar(S.sim1.entrada.items || []); aplicar(S.items);
+    if (campo === "nombre") r.nombre = el.value;
+    if (campo === "tipo") r.tipo = el.value;
+    if (campo === "tributable") r.tributable = el.checked;
+    r.clave = claveItem(r);
+    cambioItemsVs(campo === "tipo");
+  }
+}
+function marcarDiferenciasVs() {
+  if (!S.sim1 || !$("vsEditor").firstChild) return;
+  const eA = S.sim1.entrada, eB = leerEntrada();
+  CAMPOS_VS.forEach(([k]) => { const tr = document.querySelector(`#vsEditor tr[data-fila="${k}"]`); if (tr) tr.classList.toggle("difiere", String(eA[k] ?? "") !== String(eB[k] ?? "")); });
+  (S.vsItems || []).forEach((r) => { const tr = document.querySelector(`#vsEditor tr[data-item="${r.n}"]`); if (tr) tr.classList.toggle("difiere", r.m1 !== r.m2); });
+  const n1 = $("nomSim1").value || "Simulación 1", n2 = $("nomSim2").value || "Simulación 2";
+  if ($("vsCab1")) { $("vsCab1").textContent = n1; $("vsCab2").textContent = n2; }
+}
+
+function renderVersus() {
+  const res = $("vsResultado"), P = S.params[S.periodo];
+  $("btnIntercambiar").disabled = $("btnPdfVs").disabled = $("btnQuitarSim1").disabled = !S.sim1;
+  if (!S.sim1) {
+    $("vsEditor").innerHTML = "";
+    res.innerHTML = `<div class="panel" style="margin-top:14px"><p class="vacio">Aún no hay Simulación 1. Presiona <b>Fijar condiciones actuales como Simulación 1</b> o elige un escenario guardado. Después podrás editar las dos simulaciones aquí mismo.</p></div>`;
+    return;
+  }
+  if (!$("vsEditor").firstChild) renderEditorVs();
+  if ($("vsTituloEd")) $("vsTituloEd").textContent = "Editar condiciones · " + etiquetaPeriodo(S.periodo);
+  if (!P) { res.innerHTML = `<div class="panel" style="margin-top:14px"><p class="vacio">No hay parámetros para ${etiquetaPeriodo(S.periodo)}. Elige otro mes arriba.</p></div>`; return; }
+  const eA = S.sim1.entrada, eB = leerEntrada(), cA = calcular(eA, P), cB = calcular(eB, P);
+  const n1 = $("nomSim1").value || "Simulación 1", n2 = $("nomSim2").value || "Simulación 2";
+  const vl = cB.liquido - cA.liquido, vc = cB.costoEmpresa - cA.costoEmpresa;
+  const cls = (d, inverso) => (d === 0 ? "" : (d > 0) !== !!inverso ? "sube" : "baja");
+  const avisos = [...hallazgos(eA, P, cA).map((h) => n1 + ": " + h.t), ...hallazgos(eB, P, cB).map((h) => n2 + ": " + h.t)];
+  $("vsTarjetas").innerHTML =
+    `<div class="tarjetas">` +
+    `<div class="tarjeta"><span>Líquido · ${esc(n1)}</span><b>${fmt(cA.liquido)}</b><small>Costo empresa ${fmt(cA.costoEmpresa)}</small></div>` +
+    `<div class="tarjeta"><span>Líquido · ${esc(n2)}</span><b>${fmt(cB.liquido)}</b><small>Costo empresa ${fmt(cB.costoEmpresa)}</small></div>` +
+    `<div class="tarjeta var"><span>Variación del líquido</span><b>${fmtVar(vl)}</b><small class="${cls(vl)}">${fmtVarPct(cA.liquido, cB.liquido)}</small></div>` +
+    `<div class="tarjeta var"><span>Variación costo empresa</span><b>${fmtVar(vc)}</b><small class="${cls(vc, true)}">${fmtVarPct(cA.costoEmpresa, cB.costoEmpresa)}</small></div>` +
+    `</div>` + (avisos.length ? `<ul class="hallazgos">${avisos.map((t) => `<li>${esc(t)}</li>`).join("")}</ul>` : "");
+  res.innerHTML =
+    `<div class="panel" style="margin-top:14px"><h2>Detalle de la liquidación</h2><div class="tabla-scroll"><table class="datos vs"><thead><tr><th>Concepto</th><th>${esc(n1)}</th><th>${esc(n2)}</th><th>Variación</th><th>Var. %</th></tr></thead><tbody>` +
+    filasComparacion(eA, cA, eB, cB).map(([t, a, b, k]) => {
+      if (k === "grupo") return `<tr class="grupo"><td colspan="5">${esc(t)}</td></tr>`;
+      const d = b - a, inv = t === "Costo total empresa" || t === "Total aportes empleador";
+      const marca = k === "liq" || inv ? cls(d, inv) : "";
+      return `<tr class="${k === "item" ? "vs-item" : k}"><td>${esc(t)}</td><td>${fmt(a)}</td><td>${fmt(b)}</td><td class="${d === 0 ? "cero" : marca}">${d === 0 ? "—" : fmtVar(d)}</td><td class="${d === 0 ? "cero" : marca}">${d === 0 ? "—" : fmtVarPct(a, b)}</td></tr>`;
+    }).join("") + `</tbody></table></div></div>`;
+}
+function exportarPdfVersus() {
+  const P = S.params[S.periodo]; if (!S.sim1 || !P) { toast("Primero fija la Simulación 1 y elige un mes con parámetros."); return; }
+  try {
+    const eA = S.sim1.entrada, eB = leerEntrada();
+    const n1 = $("nomSim1").value || "Simulación 1", n2 = $("nomSim2").value || "Simulación 2";
+    guardarArchivo("comparacion-simulaciones-" + S.periodo + ".pdf", construirPdfVersus(eA, calcular(eA, P), n1, eB, calcular(eB, P), n2, P, S.periodo), true);
+  } catch (err) { console.error(err); toast("No se pudo generar el PDF."); }
+}
+
+/* --- comparativas guardadas e historial --- */
+const ENTRADA_VACIA = () => ({ tipoContrato: "INDEFINIDO", anios: 0, jornada: (S.params[S.periodo] || {}).jornadaLegal || 42, dias: 30, sueldoBase: 0, horasExtra: 0, recargo: 50, gratTipo: "ART50", gratMonto: 0, afp: "HABITAT", pensionado: false, salud: "FONASA", isapre: "", planUF: 0, cargas: 0, apv: 0, apvReg: "B", mutualAd: 0, items: [] });
+const slug = (t) => t.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 80);
+const fechaCorta = (iso) => { if (!iso) return "—"; const d = new Date(iso); return isNaN(d) ? "—" : d.toLocaleDateString("es-CL", { day: "2-digit", month: "2-digit", year: "numeric" }) + " " + d.toLocaleTimeString("es-CL", { hour: "2-digit", minute: "2-digit" }); };
+
+async function guardarComparativa() {
+  if (!S.sim1) { toast("Primero fija la Simulación 1."); return; }
+  if (!S.db) { toast("Guardar requiere abrir el simulador con tu sesión."); return; }
+  const n1 = $("nomSim1").value || "Simulación 1", n2 = $("nomSim2").value || "Simulación 2";
+  let nombre = $("nomComp").value.trim();
+  if (!nombre) { nombre = n1 + " vs " + n2 + " · " + etiquetaPeriodo(S.periodo); $("nomComp").value = nombre; }
+  const id = slug(nombre) || "comparativa";
+  const e1 = S.sim1.entrada, e2 = leerEntrada(), P = S.params[S.periodo];
+  const c1 = P ? calcular(e1, P) : null, c2 = P ? calcular(e2, P) : null;
+  const previo = (S.comparativas || []).find((d) => d.id === id);
+  try {
+    await S.db.collection("comparativas").doc(id).set({
+      nombre, periodo: S.periodo, n1, n2, e1, e2,
+      liq1: c1 ? c1.liquido : null, liq2: c2 ? c2.liquido : null, costo1: c1 ? c1.costoEmpresa : null, costo2: c2 ? c2.costoEmpresa : null,
+      creado: (previo && previo.data().creado) || new Date().toISOString(), actualizado: new Date().toISOString(),
+    });
+    toast((previo ? "Comparativa actualizada: " : "Comparativa guardada: ") + nombre);
+  } catch (err) { toast(err && err.code === "invalid_argument" ? "No tienes permiso para guardar." : "No se pudo guardar la comparativa."); }
+}
+function limpiarComparativa() {
+  aplicarEntrada(ENTRADA_VACIA());
+  S.sim1 = { entrada: ENTRADA_VACIA() };
+  $("nomSim1").value = "Simulación 1"; $("nomSim2").value = "Simulación 2"; $("nomComp").value = ""; $("nombreEsc").value = "";
+  $("confirmLimpiarVs").hidden = true;
+  guardarSim1(); recalcular(); renderEditorVs(); renderVersus();
+  toast("Comparativa en blanco. Completa la Simulación 1 y 2.");
+  const el = $("vs1-sueldoBase"); if (el) el.focus();
+}
+function abrirComparativa(d) {
+  const v = d.data();
+  if (v.periodo && S.params[v.periodo]) fijarPeriodo(v.periodo);
+  S.sim1 = { entrada: v.e1 };
+  aplicarEntrada(v.e2);
+  $("nomSim1").value = v.n1 || "Simulación 1"; $("nomSim2").value = v.n2 || "Simulación 2"; $("nomComp").value = v.nombre;
+  guardarSim1(); recalcular();
+  location.hash = "versus"; renderEditorVs(); renderVersus();
+  toast("Comparativa abierta: " + v.nombre);
+}
+function abrirSimulacion(d) {
+  const v = d.data();
+  aplicarEntrada(v.entrada); $("nombreEsc").value = v.nombre;
+  if (v.periodo && S.params[v.periodo]) fijarPeriodo(v.periodo); else recalcular();
+  location.hash = "simulador";
+  toast("Simulación abierta: " + v.nombre);
+}
+/* Botón de eliminar en dos pasos (sin diálogos del navegador). */
+function botonEliminar(alConfirmar) {
+  const b = document.createElement("button"); b.type = "button"; b.className = "mini peligro"; b.textContent = "Eliminar";
+  b.disabled = !S.puedeEditar;
+  let armado = false, t;
+  b.addEventListener("click", async () => {
+    if (!armado) { armado = true; b.textContent = "¿Confirmar?"; t = setTimeout(() => { armado = false; b.textContent = "Eliminar"; }, 3500); return; }
+    clearTimeout(t); b.disabled = true;
+    try { await alConfirmar(); toast("Eliminado"); } catch (_) { b.disabled = false; toast("No se pudo eliminar."); }
+  });
+  return b;
+}
+function montosDe(entrada, periodo) {
+  const P = S.params[periodo];
+  return P ? calcular(entrada, P) : null;
+}
+function renderHistorial() {
+  const q = ($("buscarHist").value || "").trim().toLowerCase();
+  const coincide = (nombre, periodo) => !q || nombre.toLowerCase().includes(q) || (periodo || "").includes(q) || (periodo ? etiquetaPeriodo(periodo).toLowerCase().includes(q) : false);
+  const tc = $("tablaComp"), ts = $("tablaHistSim");
+  if (!S.db) {
+    const m = `<tbody><tr><td>El historial se guarda en este navegador.</td></tr></tbody>`;
+    tc.innerHTML = m; ts.innerHTML = m; return;
+  }
+  const comps = (S.comparativas || []).filter((d) => coincide(d.data().nombre || "", d.data().periodo));
+  tc.innerHTML = `<thead><tr><th>Comparativa</th><th>Período</th><th>Líquido 1</th><th>Líquido 2</th><th>Variación</th><th>Var. costo empresa</th><th>Guardada</th><th></th></tr></thead><tbody></tbody>`;
+  const bc = tc.querySelector("tbody");
+  if (!comps.length) bc.innerHTML = `<tr><td colspan="8">${q ? "Ninguna comparativa coincide con la búsqueda." : "Aún no hay comparativas. Guárdalas desde la pestaña Simulación 1 vs 2."}</td></tr>`;
+  comps.forEach((d) => {
+    const v = d.data(), c1 = montosDe(v.e1, v.periodo), c2 = montosDe(v.e2, v.periodo);
+    const l1 = c1 ? c1.liquido : v.liq1, l2 = c2 ? c2.liquido : v.liq2, k1 = c1 ? c1.costoEmpresa : v.costo1, k2 = c2 ? c2.costoEmpresa : v.costo2;
+    const tr = document.createElement("tr");
+    const dl = l2 - l1, dk = k2 - k1;
+    tr.innerHTML = `<td>${esc(v.nombre)}<small>${esc(v.n1 || "Simulación 1")} vs ${esc(v.n2 || "Simulación 2")}</small></td><td>${v.periodo ? etiquetaPeriodo(v.periodo) : "—"}</td>` +
+      `<td>${l1 != null ? fmt(l1) : "—"}</td><td>${l2 != null ? fmt(l2) : "—"}</td>` +
+      `<td class="${dl > 0 ? "sube" : dl < 0 ? "baja" : ""}">${l1 != null && l2 != null ? fmtVar(dl) + " (" + fmtVarPct(l1, l2) + ")" : "—"}</td>` +
+      `<td>${k1 != null && k2 != null ? fmtVar(dk) : "—"}</td><td>${fechaCorta(v.actualizado)}</td><td class="acc"></td>`;
+    const acc = tr.querySelector(".acc");
+    const ab = document.createElement("button"); ab.type = "button"; ab.className = "mini"; ab.textContent = "Abrir"; ab.addEventListener("click", () => abrirComparativa(d));
+    const pdfb = document.createElement("button"); pdfb.type = "button"; pdfb.className = "mini"; pdfb.textContent = "PDF";
+    pdfb.addEventListener("click", () => {
+      const P = S.params[v.periodo]; if (!P) { toast("No hay parámetros para el mes de esta comparativa."); return; }
+      guardarArchivo("comparativa-" + slug(v.nombre) + ".pdf", construirPdfVersus(v.e1, calcular(v.e1, P), v.n1 || "Simulación 1", v.e2, calcular(v.e2, P), v.n2 || "Simulación 2", P, v.periodo), true);
+    });
+    acc.append(ab, pdfb, botonEliminar(() => S.db.collection("comparativas").doc(d.id).delete()));
+    bc.appendChild(tr);
+  });
+
+  const sims = (S.escenarios || []).filter((d) => coincide(d.data().nombre || "", d.data().periodo))
+    .sort((a, b) => String(b.data().actualizado || "").localeCompare(String(a.data().actualizado || "")));
+  ts.innerHTML = `<thead><tr><th>Simulación</th><th>Período</th><th>Sueldo base</th><th>Ítems</th><th>Líquido</th><th>Costo empresa</th><th>Guardada</th><th></th></tr></thead><tbody></tbody>`;
+  const bs = ts.querySelector("tbody");
+  if (!sims.length) bs.innerHTML = `<tr><td colspan="8">${q ? "Ninguna simulación coincide con la búsqueda." : "Aún no hay simulaciones. Guárdalas desde el Simulador, en Simulaciones guardadas."}</td></tr>`;
+  sims.forEach((d) => {
+    const v = d.data(), c = montosDe(v.entrada, v.periodo);
+    const tr = document.createElement("tr");
+    tr.innerHTML = `<td>${esc(v.nombre)}<small>${esc(NOMBRE_AFP[v.entrada.afp] || "")} · ${esc(nombreSalud(v.entrada))}</small></td><td>${v.periodo ? etiquetaPeriodo(v.periodo) : "—"}</td>` +
+      `<td>${fmt(v.entrada.sueldoBase || 0)}</td><td>${(v.entrada.items || []).length}</td><td>${c ? fmt(c.liquido) : v.liquido != null ? fmt(v.liquido) : "—"}</td>` +
+      `<td>${c ? fmt(c.costoEmpresa) : v.costoEmpresa != null ? fmt(v.costoEmpresa) : "—"}</td><td>${fechaCorta(v.actualizado)}</td><td class="acc"></td>`;
+    const acc = tr.querySelector(".acc");
+    const ab = document.createElement("button"); ab.type = "button"; ab.className = "mini"; ab.textContent = "Abrir"; ab.addEventListener("click", () => abrirSimulacion(d));
+    const pdfb = document.createElement("button"); pdfb.type = "button"; pdfb.className = "mini"; pdfb.textContent = "PDF";
+    pdfb.addEventListener("click", () => {
+      const P = S.params[v.periodo]; if (!P) { toast("No hay parámetros para el mes de esta simulación."); return; }
+      const cc = calcular(v.entrada, P);
+      guardarArchivo("simulacion-" + slug(v.nombre) + ".pdf", construirPdfLiquidacion(v.entrada, P, v.periodo, cc, hallazgos(v.entrada, P, cc)), true);
+    });
+    acc.append(ab, pdfb, botonEliminar(() => S.db.collection("escenarios").doc(d.id).delete()));
+    bs.appendChild(tr);
+  });
+}
+
+/* --- parámetros --- */
+function renderTablaParam() {
+  const t = $("tablaParam");
+  if (!S.periodos.length) { t.innerHTML = `<tbody><tr><td>No hay meses cargados todavía.</td></tr></tbody>`; return; }
+  t.innerHTML = `<thead><tr><th>Período</th><th>UF</th><th>UTM</th><th>Ingreso mínimo</th><th>Tope AFP</th><th>SIS</th><th>Aporte empleador</th><th>Jornada</th><th>Estado</th></tr></thead><tbody>` +
+    [...S.periodos].reverse().map((p) => {
+      const P = S.params[p];
+      const ap = (Number(P.aporteCI) || 0) + (Number(P.aporteCEV) || 0) + (Number(P.aporteCRP) || 0);
+      return `<tr class="click${p === S.editando ? " activo" : ""}" data-p="${p}"><td>${etiquetaPeriodo(p)}</td><td>${Number(P.uf).toLocaleString("es-CL", { minimumFractionDigits: 2 })}</td><td>${fmt(P.utm)}</td><td>${fmt(P.imm)}</td><td>${String(P.topeAfpUF).replace(".", ",")} UF</td><td>${fmtP(P.sis)}</td><td>${fmtP(ap)}</td><td>${P.jornadaLegal || 42} h</td><td><span class="estado ${P.estado || "manual"}">${P.estado || "manual"}</span></td></tr>`;
+    }).join("") + `</tbody>`;
+  t.querySelectorAll("tr.click").forEach((tr) => tr.addEventListener("click", () => abrirEditor(tr.dataset.p)));
+}
+function abrirEditor(p, base) {
+  S.editando = p;
+  const P = base || S.params[p];
+  $("formParam").hidden = false; $("confirmBorrar").hidden = true;
+  $("tituloParam").textContent = (S.params[p] ? "Parámetros de " : "Nuevo mes: ") + etiquetaPeriodo(p);
+  const ro = !S.puedeEditar;
+  $("camposParam").innerHTML = CAMPOS_PARAM.map(([k, label, step]) =>
+    `<label class="campo"><span>${label}</span><input class="num" type="number" step="${step}" id="pp-${k}" value="${P[k] ?? 0}" ${ro ? "disabled" : ""}></label>`).join("") +
+    `<label class="campo" style="grid-column:1/-1"><span>Fuente</span><input type="text" id="pp-fuente" value="${esc(P.fuente || "")}" ${ro ? "disabled" : ""}></label>`;
+  $("camposComision").innerHTML = AFPS.map((a) =>
+    `<label class="campo"><span>${NOMBRE_AFP[a]}</span><input class="num" type="number" step="0.01" id="pc-${a}" value="${(P.comisiones || {})[a] ?? 0}" ${ro ? "disabled" : ""}></label>`).join("");
+  const af = P.af || [{ hasta: 0, monto: 0 }, { hasta: 0, monto: 0 }, { hasta: 0, monto: 0 }];
+  $("camposAF").innerHTML = ["A", "B", "C"].map((l, i) =>
+    `<label class="campo"><span>Tramo ${l}: renta hasta</span><input class="num" type="number" step="1" id="pa-h${i}" value="${af[i].hasta}" ${ro ? "disabled" : ""}></label>` +
+    `<label class="campo"><span>Tramo ${l}: monto por carga</span><input class="num" type="number" step="1" id="pa-m${i}" value="${af[i].monto}" ${ro ? "disabled" : ""}></label>`).join("");
+  $("btnGuardarParam").disabled = ro; $("btnBorrarParam").disabled = ro || !S.params[p];
+  $("btnGuardarParam").title = ro ? "Solo el dueño o editores pueden cambiar parámetros" : "";
+  renderTablaParam();
+  $("formParam").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+async function guardarParam(ev) {
+  ev.preventDefault();
+  if (!S.db || !S.puedeEditar || !S.editando) return;
+  const doc = { periodo: S.editando, estado: "manual" };
+  CAMPOS_PARAM.forEach(([k]) => (doc[k] = Number($("pp-" + k).value) || 0));
+  doc.fuente = $("pp-fuente").value.trim();
+  doc.comisiones = Object.fromEntries(AFPS.map((a) => [a, Number($("pc-" + a).value) || 0]));
+  doc.af = [0, 1, 2].map((i) => ({ hasta: Number($("pa-h" + i).value) || 0, monto: Number($("pa-m" + i).value) || 0 }));
+  const prev = S.params[S.editando];
+  if (prev && prev.estado && prev.estado !== "manual") {
+    const igual = CAMPOS_PARAM.every(([k]) => Number(prev[k]) === doc[k]) && JSON.stringify(prev.comisiones) === JSON.stringify(doc.comisiones) && JSON.stringify(prev.af) === JSON.stringify(doc.af);
+    if (igual) doc.estado = prev.estado;
+  }
+  $("btnGuardarParam").disabled = true;
+  try { await S.db.collection("parametros").doc(S.editando).set(doc); toast("Mes guardado: " + etiquetaPeriodo(S.editando)); }
+  catch (err) { toast(err && err.code === "invalid_argument" ? "No tienes permiso para cambiar parámetros." : "No se pudo guardar (" + (err && err.code || "error") + ")."); }
+  finally { $("btnGuardarParam").disabled = !S.puedeEditar; }
+}
+async function borrarParam() {
+  if (!S.db || !S.editando) return;
+  try { await S.db.collection("parametros").doc(S.editando).delete(); toast("Mes eliminado"); $("formParam").hidden = true; S.editando = null; }
+  catch (err) { toast("No se pudo eliminar (" + (err && err.code || "error") + ")."); }
+}
+function crearMes() {
+  const v = $("nuevoMes").value.trim();
+  if (!/^\d{4}-(0[1-9]|1[0-2])$/.test(v)) { toast("Escribe el mes como AAAA-MM, por ejemplo 2026-11."); return; }
+  if (S.params[v]) { abrirEditor(v); return; }
+  const ultimo = S.periodos.filter((p) => p < v).pop() || S.periodos[S.periodos.length - 1];
+  const base = ultimo ? { ...S.params[ultimo], fuente: "Copiado de " + etiquetaPeriodo(ultimo) + " — actualizar UF y UTM" } : {};
+  abrirEditor(v, base);
+}
+
+/* --- escenarios --- */
+function renderEscenarios() {
+  const c = $("listaEsc"); c.innerHTML = "";
+  if (!S.db) { c.innerHTML = `<p class="vacio">Los escenarios se guardan en este navegador.</p>`; return; }
+  if (!S.escenarios.length) { c.innerHTML = `<p class="vacio">Aún no hay simulaciones guardadas. Escribe un nombre y presiona Guardar simulación para reutilizar estos datos e ítems.</p>`; return; }
+  S.escenarios.forEach((s) => {
+    const d = s.data();
+    const row = document.createElement("div"); row.className = "item"; row.style.gridTemplateColumns = "minmax(0,1fr) auto auto";
+    const n = document.createElement("span"); n.textContent = d.nombre + " · " + fmt(d.entrada.sueldoBase) + " base · " + (d.entrada.items || []).length + " ítems";
+    const ab = document.createElement("button"); ab.type = "button"; ab.className = "mini"; ab.textContent = "Abrir";
+    ab.addEventListener("click", () => { aplicarEntrada(d.entrada); $("nombreEsc").value = d.nombre; if (d.periodo && S.params[d.periodo]) fijarPeriodo(d.periodo); else recalcular(); toast("Escenario cargado: " + d.nombre); });
+    const del = document.createElement("button"); del.type = "button"; del.className = "mini peligro"; del.textContent = "Eliminar";
+    del.disabled = !S.puedeEditar;
+    del.addEventListener("click", async () => { try { await S.db.collection("escenarios").doc(s.id).delete(); toast("Escenario eliminado"); } catch (err) { toast("No se pudo eliminar."); } });
+    row.append(n, ab, del); c.appendChild(row);
+  });
+}
+async function guardarEscenario() {
+  const nombre = $("nombreEsc").value.trim();
+  if (!nombre) { toast("Escribe un nombre para el escenario."); $("nombreEsc").focus(); return; }
+  if (!S.db) { toast("Guardar escenarios requiere abrir el simulador con tu sesión."); return; }
+  const id = nombre.toLowerCase().normalize("NFD").replace(/[̀-ͯ]/g, "").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 60) || "escenario";
+  const ent = leerEntrada(), P = S.params[S.periodo], c = P ? calcular(ent, P) : null;
+  const previo = S.escenarios.find((d) => d.id === id);
+  try { await S.db.collection("escenarios").doc(id).set({ nombre, periodo: S.periodo, entrada: ent, liquido: c ? c.liquido : null, costoEmpresa: c ? c.costoEmpresa : null, creado: (previo && previo.data().creado) || new Date().toISOString(), actualizado: new Date().toISOString() }); toast((previo ? "Simulación actualizada: " : "Simulación guardada: ") + nombre); }
+  catch (err) { toast(err && err.code === "invalid_argument" ? "No tienes permiso para guardar escenarios." : "No se pudo guardar el escenario."); }
+}
+
+/* --- vistas --- */
+function mostrarVista() {
+  const v = (location.hash || "#simulador").slice(1);
+  const vista = ["simulador", "versus", "comparar", "historial", "parametros"].includes(v) ? v : "simulador";
+  ["simulador", "versus", "comparar", "historial", "parametros"].forEach((x) => ($("v-" + x).hidden = x !== vista));
+  if (vista === "historial") renderHistorial();
+  document.querySelectorAll("nav.tabs a").forEach((a) => { if (a.dataset.vista === vista) a.setAttribute("aria-current", "page"); else a.removeAttribute("aria-current"); });
+  if (vista === "comparar") renderComparar();
+  if (vista === "versus") { renderEditorVs(); renderVersus(); }
+  if (vista === "parametros") renderTablaParam();
+}
+
+/* --- datos --- */
+function alRecibirParametros(snap) {
+  S.params = {};
+  snap.docs.forEach((d) => { const v = d.data(); if (v && /^\d{4}-\d{2}$/.test(d.id)) S.params[d.id] = v; });
+  S.periodos = Object.keys(S.params).sort();
+  S.cargado = true;
+  poblarSelectoresPeriodo();
+  if (!S.periodo || (!S.params[S.periodo] && !alRecibirParametros.elegido)) {
+    const hoy = hoyPeriodo();
+    const elegido = S.params[hoy] ? hoy : (S.periodos.filter((p) => p <= hoy).pop() || S.periodos[S.periodos.length - 1] || hoy);
+    alRecibirParametros.elegido = true;
+    fijarPeriodo(elegido);
+  } else fijarPeriodo(S.periodo);
+  if (!S.periodos.length) aviso("Todavía no hay parámetros cargados. Crea el primer mes en la pestaña Parámetros.", "alerta");
+  else if (!S.params[hoyPeriodo()]) aviso("Aún no están publicados los parámetros de " + etiquetaPeriodo(hoyPeriodo()) + ". Se muestra el último mes disponible; puedes crearlo en Parámetros cuando Previred publique la UF.", "alerta");
+  else aviso("");
+  if (!$("v-parametros").hidden) renderTablaParam();
+}
+
+function poblarIsapres() {
+  const g = (t) => ISAPRES.filter((i) => i.tipo === t).map((i) => `<option value="${i.cod}">${i.nombre}</option>`).join("");
+  $("isapre").innerHTML = `<option value="">Elegir Isapre…</option><optgroup label="Isapres abiertas">${g("Abierta")}</optgroup><optgroup label="Isapres cerradas">${g("Cerrada")}</optgroup>`;
+}
+async function iniciar() {
+  poblarIsapres();
+  renderPresets();
+  const b = leerBorrador();
+  if (b) aplicarEntrada(b);
+  else { S.items = [{ id: nuevoId(), nombre: "Colación", tipo: "HN", tributable: false, monto: 60000 }, { id: nuevoId(), nombre: "Bono de producción", tipo: "HI", tributable: true, monto: 100000 }]; renderItems(); }
+  S.periodo = hoyPeriodo();
+  poblarSelectoresPeriodo(); fijarPeriodo(S.periodo);
+  mostrarVista();
+
+  $("formSim").addEventListener("input", recalcular);
+  $("formSim").addEventListener("change", recalcular);
+  $("formSim").addEventListener("submit", (ev) => ev.preventDefault());
+  $("selMes").addEventListener("change", () => fijarPeriodo(periodoDesdeSelectores()));
+  $("selAnio").addEventListener("change", () => fijarPeriodo(periodoDesdeSelectores()));
+  $("btnItem").addEventListener("click", () => { S.items.push({ id: nuevoId(), nombre: "Nuevo ítem", tipo: "HI", tributable: true, monto: 0 }); renderItems(); recalcular(); const u = S.items[S.items.length - 1]; const el = $("it-n-" + u.id); if (el) { el.focus(); el.select(); } });
+  $("btnInverso").addEventListener("click", () => {
+    const P = S.params[S.periodo]; if (!P) { toast("Elige un mes con parámetros."); return; }
+    const objetivo = Number($("liqObjetivo").value) || 0;
+    const base = sueldoDesdeLiquido(objetivo, leerEntrada(), P);
+    $("sueldoBase").value = base; recalcular(); toast("Sueldo base para " + fmt(objetivo) + " líquido: " + fmt(base));
+  });
+  $("btnGuardarEsc").addEventListener("click", guardarEscenario);
+  leerSim1(); renderEscSim1();
+  $("btnFijarSim1").addEventListener("click", () => { S.sim1 = { entrada: leerEntrada() }; guardarSim1(); renderEditorVs(); renderVersus(); recalcular(); toast("Simulación 1 fijada. Cambia el Simulador para crear la Simulación 2."); });
+  $("btnEditarSim2").addEventListener("click", () => { location.hash = "simulador"; $("sueldoBase").focus(); });
+  $("btnIntercambiar").addEventListener("click", () => {
+    if (!S.sim1) return;
+    const actual = leerEntrada(); aplicarEntrada(S.sim1.entrada); S.sim1 = { entrada: actual };
+    const n1 = $("nomSim1").value; $("nomSim1").value = $("nomSim2").value; $("nomSim2").value = n1;
+    guardarSim1(); recalcular(); renderEditorVs(); renderVersus(); toast("Simulaciones intercambiadas");
+  });
+  $("btnQuitarSim1").addEventListener("click", () => { S.sim1 = null; guardarSim1(); renderEditorVs(); renderVersus(); recalcular(); });
+  $("btnPdfVs").addEventListener("click", exportarPdfVersus);
+  $("vsEditor").addEventListener("input", alEditarVs);
+  $("vsEditor").addEventListener("change", (ev) => { if (ev.target.tagName === "SELECT" || ev.target.type === "checkbox") alEditarVs(ev); });
+  $("escSim1").addEventListener("change", () => {
+    const d = S.escenarios.find((x) => x.id === $("escSim1").value); if (!d) return;
+    S.sim1 = { entrada: d.data().entrada }; $("nomSim1").value = d.data().nombre; $("escSim1").value = "";
+    guardarSim1(); renderEditorVs(); renderVersus(); recalcular(); toast("Simulación 1: " + d.data().nombre);
+  });
+  ["nomSim1", "nomSim2"].forEach((id) => $(id).addEventListener("input", () => { guardarSim1(); marcarDiferenciasVs(); renderVersus(); }));
+  $("btnCsvLiq").addEventListener("click", () => { const P = S.params[S.periodo]; if (!P) return; const e = leerEntrada(); descargarCsvLiquidacion(e, calcular(e, P)); });
+  $("btnXlsxLiq").addEventListener("click", () => exportarExcel(S.periodos, S.periodo, "liquidacion-simulada-" + S.periodo + ".xlsx"));
+  $("btnPdfLiq").addEventListener("click", () => exportarPdfLiquidacion());
+  $("btnGuardarComp").addEventListener("click", guardarComparativa);
+  $("btnLimpiarVs").addEventListener("click", () => ($("confirmLimpiarVs").hidden = false));
+  $("btnCancelLimpiarVs").addEventListener("click", () => ($("confirmLimpiarVs").hidden = true));
+  $("btnConfirmLimpiarVs").addEventListener("click", limpiarComparativa);
+  $("buscarHist").addEventListener("input", renderHistorial);
+  $("escSim2").addEventListener("change", () => {
+    const d = S.escenarios.find((x) => x.id === $("escSim2").value); if (!d) return;
+    aplicarEntrada(d.data().entrada); $("nomSim2").value = d.data().nombre; $("escSim2").value = "";
+    guardarSim1(); recalcular(); renderEditorVs(); renderVersus(); toast("Simulación 2: " + d.data().nombre);
+  });
+  $("btnLimpiar").addEventListener("click", () => {
+    aplicarEntrada({ tipoContrato: "INDEFINIDO", anios: 0, jornada: (S.params[S.periodo] || {}).jornadaLegal || 42, dias: 30, sueldoBase: 0, horasExtra: 0, recargo: 50, gratTipo: "ART50", gratMonto: 0, afp: "HABITAT", pensionado: false, salud: "FONASA", isapre: "", planUF: 0, cargas: 0, apv: 0, apvReg: "B", mutualAd: 0, items: [] });
+    $("nombreEsc").value = ""; recalcular(); $("sueldoBase").focus();
+  });
+  $("cmpDesde").addEventListener("change", renderComparar);
+  $("cmpHasta").addEventListener("change", renderComparar);
+  $("btnCsvCmp").addEventListener("click", () => {
+    const rows = filasComparar(); if (!rows.length) return;
+    const f = [["Período", "Imponible", "AFP", "Salud", "Cesantía", "Impuesto", "Líquido", "Costo empresa"]].concat(rows.map(({ p, c }) => [p, c.totalImp, c.afp, c.salud, c.cesTrab, c.impuesto, c.liquido, c.costoEmpresa]));
+    guardarArchivo("comparacion-periodos.csv", csv(f));
+  });
+  $("btnXlsxCmp").addEventListener("click", () => {
+    const rows = filasComparar(); if (!rows.length) { toast("No hay meses en el rango elegido."); return; }
+    const ps = rows.map((r) => r.p);
+    exportarExcel(ps, ps.includes(S.periodo) ? S.periodo : ps[ps.length - 1], "comparacion-" + ps[0] + "-a-" + ps[ps.length - 1] + ".xlsx", "QuidelXpert · Comparación " + etiquetaPeriodo(ps[0]) + " a " + etiquetaPeriodo(ps[ps.length - 1]));
+  });
+  $("btnPdfCmp").addEventListener("click", exportarPdfComparativo);
+  $("formParam").addEventListener("submit", guardarParam);
+  $("btnCerrarParam").addEventListener("click", () => { $("formParam").hidden = true; S.editando = null; renderTablaParam(); });
+  $("btnBorrarParam").addEventListener("click", () => ($("confirmBorrar").hidden = false));
+  $("btnCancelBorrar").addEventListener("click", () => ($("confirmBorrar").hidden = true));
+  $("btnConfirmBorrar").addEventListener("click", borrarParam);
+  $("btnNuevoMes").addEventListener("click", crearMes);
+  window.addEventListener("hashchange", mostrarVista);
+
+  if (!window.claude || !window.claude.use) { S.cargado = true; aviso("Abre el simulador desde Claude para cargar los parámetros mensuales.", "error"); recalcular(); renderEscenarios(); return; }
+  const [db, user, downloads] = await Promise.all([claude.use("db"), claude.use("user"), claude.use("downloads")]);
+  S.db = db; S.user = user; S.downloads = downloads;
+  S.puedeEditar = !!(user && (user.canEdit() || user.isOwner()));
+  if (!db) { S.cargado = true; aviso("No se pudo abrir la base de parámetros en esta vista. Recarga la página.", "error"); recalcular(); renderEscenarios(); return; }
+  db.collection("parametros").onSnapshot(alRecibirParametros, (err) => aviso("Se perdió la conexión con la base de parámetros (" + err.code + "). Recarga la página.", "error"));
+  db.collection("escenarios").orderBy("nombre").onSnapshot((snap) => { S.escenarios = snap.docs; renderEscenarios(); renderEscSim1(); if (!$("v-historial").hidden) renderHistorial(); }, () => {});
+  db.collection("comparativas").orderBy("actualizado", "desc").onSnapshot((snap) => { S.comparativas = snap.docs; if (!$("v-historial").hidden) renderHistorial(); }, () => {});
+  renderEscenarios();
+}
+iniciar();
+</script>
+
+</body></html>

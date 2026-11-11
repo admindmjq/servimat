@@ -1,0 +1,731 @@
+<!doctype html><html lang="es"><head><script>window.CLAUDE_LOCAL = {"app": "licencia-medica", "titulo": "Guía Licencia Médica", "carpeta": "Artefactos/Licencia Médica"};</script><script src="/comun/claude-local.js"></script><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Guía Licencia Médica</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@500;600;700&family=IBM+Plex+Mono:wght@500;600&family=Source+Sans+3:wght@400;600;700&display=swap">
+<style>
+/* Layout: barra de herramientas fija arriba; debajo, dos hojas de papel (Sección C y C.4) que replican la grilla de casillas del formulario. */
+:root{
+  --bg:#e9efec; --fg:#1c2a26; --muted:#5a6b65; --accent:#2c6c5e; --accent-fg:#ffffff;
+  --chrome:#ffffff; --line:#c9d6d1; --warn:#a4501a; --ok:#2e7d4f;
+  /* El papel no cambia con el tema: es la hoja impresa */
+  --paper:#f5f8ec; --form:#3a7869; --form-soft:#d3e4dc; --cell:#fbfcf5; --pen:#1a3a8f;
+  --tip:#9a4712; --tipbg:#fff0dc; --reserved:#c4dad1;
+  --f-display:"Barlow Condensed","Arial Narrow",Arial,sans-serif;
+  --f-body:"Source Sans 3","Segoe UI",system-ui,sans-serif;
+  --f-mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+  --cw:21px; --ch:26px;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#111917; --fg:#e2ebe7; --muted:#9bb0a8; --accent:#7cc6b1; --accent-fg:#0d1815;
+  --chrome:#18221f; --line:#2b3a36; --warn:#f0a36b; --ok:#7fd3a0; color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#111917; --fg:#e2ebe7; --muted:#9bb0a8; --accent:#7cc6b1; --accent-fg:#0d1815;
+  --chrome:#18221f; --line:#2b3a36; --warn:#f0a36b; --ok:#7fd3a0; color-scheme:dark}
+
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.45}
+.wrap{max-width:960px;margin:0 auto;padding-inline:16px;padding-block:0 48px}
+
+/* ---------- barra ---------- */
+.bar{position:sticky;top:env(safe-area-inset-top,0px);z-index:20;background:var(--chrome);border-bottom:1px solid var(--line)}
+.bar-in{max-width:960px;margin:0 auto;padding:10px 16px;display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center;justify-content:space-between}
+.brand{display:flex;flex-direction:column;min-width:0}
+.brand b{font-family:var(--f-display);font-size:22px;letter-spacing:.02em;text-transform:uppercase;line-height:1.1}
+.brand span{color:var(--muted);font-size:13px}
+.actions{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.btn{font:600 14px var(--f-body);padding:8px 14px;border-radius:6px;border:1px solid var(--line);background:transparent;color:var(--fg);cursor:pointer}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.btn:focus-visible,.toggle input:focus-visible+span{outline:2px solid var(--accent);outline-offset:2px}
+.btn[disabled]{opacity:.55;cursor:progress}
+.toggle{display:flex;align-items:center;gap:8px;font-weight:600;font-size:14px;cursor:pointer;user-select:none}
+.toggle input{accent-color:var(--accent);width:16px;height:16px}
+.status{font-size:13px;color:var(--muted);min-height:1.2em}
+.status.err{color:var(--warn)}
+.status.ok{color:var(--ok)}
+.bar-in{position:relative}
+.pick{position:absolute;right:16px;top:calc(100% + 6px);z-index:30;width:min(340px,calc(100vw - 32px));background:var(--chrome);color:var(--fg);border:1px solid var(--line);border-radius:8px;box-shadow:0 10px 30px rgba(10,30,25,.18);padding:14px 16px;display:flex;flex-direction:column;gap:10px}
+.pick h3{margin:0;font:600 17px/1.1 var(--f-display);letter-spacing:.04em;text-transform:uppercase}
+.pick-opts{display:flex;flex-direction:column;gap:2px}
+.pick-opt{display:flex;gap:10px;align-items:flex-start;padding:7px 8px;border-radius:6px;cursor:pointer}
+.pick-opt:hover{background:var(--bg)}
+.pick-opt input{accent-color:var(--accent);width:16px;height:16px;margin-top:2px;flex:none}
+.pick-opt b{display:block;font-size:14px}
+.pick-opt small{color:var(--muted);font-size:12.5px}
+.pick-all{border-bottom:1px solid var(--line);padding-bottom:9px;margin-bottom:2px}
+.pick-err{margin:0;color:var(--warn);font-size:13px}
+.pick-foot{display:flex;justify-content:flex-end;gap:8px;flex-wrap:wrap}
+
+.intro{display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:12px 28px;margin:22px 0 18px;color:var(--muted);font-size:14px}
+.intro p{margin:0;max-width:62ch}
+.intro strong{color:var(--fg)}
+.side-label{font-family:var(--f-display);font-weight:600;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-size:14px;margin:26px 0 8px;display:flex;gap:10px;align-items:baseline}
+.side-label a{color:var(--accent);font-size:13px;letter-spacing:.04em}
+
+/* ---------- hoja ---------- */
+.scroller{overflow-x:auto;border-radius:4px;box-shadow:0 1px 2px rgba(0,0,0,.08),0 8px 24px rgba(20,50,40,.10)}
+.sheet{position:relative;width:880px;background:var(--paper);color:var(--form);padding:22px 24px 26px;font-family:var(--f-display);font-weight:600;font-size:12.5px;line-height:1.2;text-transform:uppercase;overflow:hidden}
+.sheet *{text-transform:inherit}
+.wm{position:absolute;inset:0;display:flex;align-items:center;justify-content:center;pointer-events:none;z-index:5}
+.wm span{transform:rotate(-28deg);font:700 64px/1 var(--f-display);letter-spacing:.06em;color:rgba(170,60,40,.13);white-space:nowrap;text-align:center}
+.wm small{display:block;font-size:26px;letter-spacing:.12em;margin-top:8px}
+
+.head{display:grid;grid-template-columns:150px 1fr 190px;gap:14px;align-items:start;border-bottom:1.5px solid var(--form);padding-bottom:10px;margin-bottom:12px}
+.seal{border:1.5px solid var(--form);padding:8px;font-size:11px;line-height:1.15;text-align:center;letter-spacing:.04em}
+.head h1{margin:0;text-align:center;font-size:26px;letter-spacing:.03em;text-transform:none;color:var(--form)}
+.head .plazos{margin:6px 0 0;font:500 10px/1.3 var(--f-body);text-transform:none;text-align:center;color:var(--form)}
+.folio{font-size:16px;text-align:right}
+.folio i{font-style:normal;display:block;font:500 10px var(--f-body);text-transform:none}
+
+.sec{font-size:15px;letter-spacing:.02em;margin:14px 0 6px;color:var(--form)}
+.sec small{font:500 10px var(--f-body);text-transform:none;margin-left:6px}
+.row{display:flex;flex-wrap:wrap;gap:8px 18px;align-items:flex-end;margin:6px 0}
+.row.tight{gap:6px 10px}
+.fld{display:flex;flex-direction:column;gap:3px;align-items:flex-start}
+.fld>.lb{font-size:11px;letter-spacing:.03em}
+.fld>.lb.c{text-align:center}
+.inl{display:flex;align-items:center;gap:6px}
+.dash{font-size:16px}
+.sub3{display:grid;grid-template-columns:repeat(3,1fr);font-size:10px;text-align:center;width:calc(var(--cw)*6 + 2px)}
+.sub2{display:grid;grid-template-columns:repeat(2,1fr);font-size:10px;text-align:center;width:calc(var(--cw)*4 + 2px)}
+
+/* casillas */
+.bx{position:relative;display:inline-flex;flex:none;width:max-content;height:var(--ch);border:1px solid var(--form);background:var(--cell)}
+.bx .c{width:var(--cw);height:100%;border-right:1px solid var(--form);display:flex;align-items:center;justify-content:center;font:600 15px/1 var(--f-mono);color:var(--pen);text-transform:uppercase}
+.bx .c:last-of-type{border-right:0}
+.bx input{position:absolute;inset:0;width:100%;height:100%;border:0;background:transparent;color:transparent;caret-color:var(--pen);font:600 15px/1 var(--f-mono);letter-spacing:calc(var(--cw) - 9px);padding:0 0 0 6px;text-transform:uppercase;outline:none}
+.bx input::selection{background:rgba(26,58,143,.25);color:transparent}
+.bx:focus-within{box-shadow:0 0 0 2px rgba(26,58,143,.35)}
+.bx.res{background:var(--reserved)}
+.bx.res input{cursor:not-allowed}
+
+.ln{border:0;border-bottom:1px solid var(--form);background:transparent;font:600 14px var(--f-mono);color:var(--pen);padding:3px 2px;outline:none;text-transform:uppercase;min-width:0}
+.ln:focus{border-bottom:2px solid var(--pen)}
+.sig{font-family:var(--f-body);font-style:italic;text-transform:none;font-weight:600}
+
+.cols{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:8px}
+.panel{border:1.5px solid var(--form);padding:10px 12px;display:flex;flex-direction:column;gap:8px;min-width:0}
+.panel h3{margin:0;font-size:14px;letter-spacing:.02em;color:var(--form)}
+.legend{display:flex;gap:10px;align-items:flex-start}
+.legend ul{list-style:none;margin:0;padding:0;font-size:11px;line-height:1.35}
+.legend li{width:fit-content;cursor:pointer;border-radius:2px;padding:0 2px}
+.legend li:hover{background:var(--form-soft)}
+.legend li.on{color:var(--pen);background:rgba(26,58,143,.08)}
+.hr{border-top:1px solid var(--form);margin:4px 0}
+.auth{display:grid;grid-template-columns:1fr 260px;gap:18px;align-items:end;margin:12px 0 4px;font-size:12.5px}
+.sigbox{display:flex;flex-direction:column;gap:3px;text-align:center;font-size:11px}
+.sigbox .ln{text-align:center}
+.stub{margin:16px -24px 0;padding:8px 24px;background:var(--form);color:var(--paper);font-size:18px;letter-spacing:.04em;text-align:center}
+
+/* tablas */
+table.grid{border-collapse:collapse;width:100%;font-size:10.5px;text-align:center}
+table.grid th{border:1px solid var(--form);padding:3px 4px;font-weight:600;line-height:1.15;vertical-align:middle}
+table.grid td{border:1px solid var(--form);padding:0;height:24px;background:var(--cell)}
+table.grid td input{width:100%;height:24px;border:0;background:transparent;font:600 12.5px var(--f-mono);color:var(--pen);text-align:center;outline:none;padding:0 3px;text-transform:uppercase}
+table.grid td input:focus{background:rgba(26,58,143,.07)}
+table.grid .k{font-size:10px;background:var(--form-soft)}
+.c3{display:grid;grid-template-columns:1fr 168px;gap:14px;align-items:start}
+.c3 aside{display:flex;flex-direction:column;gap:10px;font:500 10.5px/1.35 var(--f-body);text-transform:none}
+.money{display:flex;align-items:center;border:1px solid var(--form);background:var(--cell);height:26px;padding-left:6px;font:600 13px var(--f-mono)}
+.money input{border:0;background:transparent;width:100%;font:600 13px var(--f-mono);color:var(--pen);outline:none;padding:0 4px}
+.note{font:500 10px/1.3 var(--f-body);text-transform:none}
+
+/* guía */
+.tip{display:none;font:600 11.5px/1.35 var(--f-body);text-transform:none;color:var(--tip);background:var(--tipbg);border-left:3px solid var(--tip);padding:4px 8px;margin:4px 0;letter-spacing:0;max-width:100%}
+.guide-on .tip{display:block}
+.tip b{font-weight:700}
+
+.chk{font:600 11px var(--f-body);text-transform:none;margin-left:6px}
+.chk.ok{color:#2e7d4f}.chk.bad{color:#b23a1d}
+
+.ref{display:grid;grid-template-columns:2.2fr 1fr 1fr 1.2fr;gap:12px;border:1.5px solid var(--form);padding:8px 12px;margin:8px 0}
+.ref .lb{display:block;font-size:10.5px}
+.ref b{display:block;min-height:18px;font:600 14px var(--f-mono);color:var(--pen);overflow-wrap:anywhere}
+
+.hist{background:var(--chrome);border:1px solid var(--line);border-radius:8px;padding:14px 16px;margin:0 0 6px;display:flex;flex-direction:column;gap:10px}
+.hist-head{display:flex;justify-content:space-between;align-items:baseline;flex-wrap:wrap;gap:4px 12px}
+.hist h2{margin:0;font:600 20px/1.1 var(--f-display);letter-spacing:.04em;text-transform:uppercase}
+.hist-where{font-size:12.5px;color:var(--muted)}
+.hist-row{display:flex;flex-wrap:wrap;gap:8px;align-items:center}
+.txt{flex:1 1 240px;min-width:0;font:15px var(--f-body);padding:8px 10px;border:1px solid var(--line);border-radius:6px;background:var(--bg);color:var(--fg)}
+.txt:focus-visible{outline:2px solid var(--accent);outline-offset:1px}
+.hist-cur{margin:0;font-size:13px;color:var(--muted)}
+.hist-cur b{color:var(--fg)}
+.hist-list{list-style:none;margin:0;padding:0;max-height:330px;overflow:auto;border-top:1px solid var(--line)}
+.hist-list li{display:flex;justify-content:space-between;gap:8px 12px;align-items:center;flex-wrap:wrap;padding:9px 2px;border-bottom:1px solid var(--line)}
+.hi-main{min-width:0;flex:1 1 260px}
+.hi-main b{overflow-wrap:anywhere}
+.hi-main span{display:block;font-size:12.5px;color:var(--muted);font-variant-numeric:tabular-nums}
+.hi-act{display:flex;gap:6px;align-items:center;flex-wrap:wrap}
+.btn.sm{padding:5px 10px;font-size:13px}
+.btn.danger{color:var(--warn);border-color:var(--warn)}
+.pill{font-size:11px;font-weight:700;color:var(--accent);border:1px solid var(--accent);border-radius:99px;padding:0 8px;margin-left:6px;vertical-align:1px}
+.empty{color:var(--muted);font-size:14px;padding:10px 2px;margin:0}
+
+footer{margin-top:28px;color:var(--muted);font-size:13px;max-width:70ch}
+
+@media (max-width:640px){.brand b{font-size:19px}.btn{padding:7px 11px}}
+@media (prefers-reduced-motion:no-preference){.btn{transition:border-color .15s}}
+</style>
+
+<header class="bar">
+  <div class="bar-in">
+    <div class="brand"><b>Guía de llenado · Licencia Médica</b><span>Formulario papel · Sección C del empleador · 2 hojas</span></div>
+    <div class="actions">
+      <label class="toggle"><input type="checkbox" id="opt-guide" checked><span>Mostrar guía</span></label>
+      <button class="btn" id="btn-example" type="button">Cargar ejemplo</button>
+      <button class="btn" id="btn-clear" type="button">Limpiar</button>
+      <button class="btn primary" id="btn-pdf" type="button" aria-expanded="false" aria-controls="pdf-pick">Descargar PDF</button>
+    </div>
+    <div class="pick" id="pdf-pick" role="dialog" aria-labelledby="pick-h" hidden>
+      <h3 id="pick-h">¿Qué hojas descargar?</h3>
+      <div class="pick-opts">
+        <label class="pick-opt pick-all"><input type="checkbox" id="pick-all" checked><span><b>Documento completo</b><small>Las 2 hojas en un solo PDF</small></span></label>
+        <label class="pick-opt"><input type="checkbox" class="pick-sh" id="pick-2" value="sheet-c" checked><span><b>Hoja 1 · Sección C</b><small>Empleador, previsión y remuneraciones</small></span></label>
+        <label class="pick-opt"><input type="checkbox" class="pick-sh" id="pick-3" value="sheet-c4" checked><span><b>Hoja 2 · Sección C.4</b><small>Licencias anteriores y firma del empleador</small></span></label>
+      </div>
+      <p class="pick-err" id="pick-err" hidden>Marca al menos una hoja.</p>
+      <div class="pick-foot">
+        <button class="btn" id="pick-cancel" type="button">Cancelar</button>
+        <button class="btn primary" id="pick-go" type="button">Descargar</button>
+      </div>
+    </div>
+  </div>
+</header>
+
+<main class="wrap guide-on" id="root">
+  <div class="intro">
+    <p><strong>Cómo usarla.</strong> Escribe directo en las casillas: un carácter por casilla, en mayúsculas. En los códigos (tipo de licencia, actividad, entidad pagadora) puedes hacer clic sobre la opción de la leyenda y se anota sola.</p>
+    <p><strong>Para enviar.</strong> Viene cargado un ejemplo con datos ficticios. Activa o desactiva la guía (notas naranjas) y descarga el PDF con las 2 hojas del empleador (Sección C y C.4), o solo la que necesites. Todas llevan la marca de agua de ejemplo. Con <strong>Guardar en historial</strong> quedan los formularios guardados para abrirlos después.</p>
+  </div>
+  <section class="hist" aria-labelledby="hist-h">
+    <div class="hist-head"><h2 id="hist-h">Historial</h2><span class="hist-where" id="hist-where">Cargando historial…</span></div>
+    <div class="hist-row">
+      <input class="txt" id="hist-name" placeholder="Nombre del registro (ej. González · licencia 05/10/26)" aria-label="Nombre del registro">
+      <button class="btn primary" id="hist-save" type="button">Guardar en historial</button>
+      <button class="btn" id="hist-new" type="button" hidden>Guardar como nuevo</button>
+    </div>
+    <p class="hist-cur" id="hist-cur" hidden></p>
+    <input class="txt" id="hist-q" type="search" placeholder="Buscar por nombre, trabajador o RUN" aria-label="Buscar en el historial" style="flex:none">
+    <ul class="hist-list" id="hist-list"></ul>
+  </section>
+  <p class="status" id="status" role="status"></p>
+
+  <!-- ======================= REVERSO ======================= -->
+  <div class="side-label" id="reverso">Hoja 1 · Sección C del empleador <a href="#hoja3">ir a la hoja 2</a></div>
+  <div class="scroller">
+  <section class="sheet" id="sheet-c">
+    <div class="wm"><span>EJEMPLO DE LLENADO<small>SIN VALIDEZ LEGAL</small></span></div>
+    <div class="sec" style="margin-top:0">Sección C: responsabilidad exclusiva del empleador</div>
+    <p class="tip"><b>Quién llena:</b> el empleador (o el trabajador independiente). Debe presentar la licencia ante COMPIN o ISAPRE dentro de 3 días hábiles desde que la recibe (Art. 13).</p>
+
+    <div class="panel" style="margin-top:8px">
+      <h3>Licencia que se tramita <small style="font:500 10px var(--f-body);text-transform:none">datos copiados del frente de la licencia</small></h3>
+      <div class="row" style="margin:0">
+        <div class="fld"><div class="inl"><div class="bx" data-k="r_fol1" data-n="1"></div><span class="dash">-</span><div class="bx" data-k="r_fol" data-n="8"></div></div><span class="lb">Nº de licencia (folio)</span></div>
+        <div class="fld" style="flex:1;min-width:220px;align-items:stretch"><input class="ln" id="r_nom"><span class="lb">Nombre del trabajador</span></div>
+      </div>
+      <div class="row" style="margin:0">
+        <div class="fld"><div class="inl"><div class="bx" data-k="r_run" data-n="8"></div><span class="dash">-</span><div class="bx" data-k="r_dv" data-n="1"></div><span class="chk" data-run="r_run|r_dv" data-html2canvas-ignore></span></div><span class="lb">RUN del trabajador</span></div>
+        <div class="fld"><div class="bx" data-k="r_fini" data-n="6"></div><div class="sub3"><span>Día</span><span>Mes</span><span>Año</span></div><span class="lb">Fecha inicio de reposo</span></div>
+        <div class="fld"><div class="bx" data-k="r_dias" data-n="3"></div><span class="lb">Nº de días</span></div>
+        <div class="legend"><div class="bx" data-k="r_tipo" data-n="1"></div>
+          <ul data-set="r_tipo" style="columns:2;column-gap:14px">
+            <li style="cursor:default">Tipo de licencia</li>
+            <li data-v="1">1 = Enf. o accidente común</li>
+            <li data-v="2">2 = Prórroga med. preventiva</li>
+            <li data-v="3">3 = Maternal pre y post natal</li>
+            <li data-v="4">4 = Enf. grave niño &lt; 1 año</li>
+            <li data-v="5">5 = Acc. trabajo o trayecto</li>
+            <li data-v="6">6 = Enfermedad profesional</li>
+            <li data-v="7">7 = Patología del embarazo</li>
+          </ul></div>
+      </div>
+      <p class="tip">Copia estos datos desde el frente de la licencia que entregó el trabajador (folio, RUN, inicio, días y tipo de licencia). No forman parte de la Sección C oficial: sirven para identificar estas hojas y el registro en el historial. El tipo de licencia define qué casilla de entidad pagadora se marca más abajo.</p>
+    </div>
+
+    <div class="sec">C.1. Identificación del empleador o trabajador independiente</div>
+    <div class="fld"><div class="bx" data-k="c1_nom" data-n="38"></div><span class="lb">Nombre o razón social</span></div>
+    <div class="row">
+      <div class="fld"><div class="inl"><div class="bx" data-k="c1_rut" data-n="8"></div><span class="dash">-</span><div class="bx" data-k="c1_dv" data-n="1"></div><span class="chk" data-run="c1_rut|c1_dv" data-html2canvas-ignore></span></div><span class="lb">RUT</span></div>
+      <div class="fld"><div class="inl"><div class="bx" data-k="c1_tcod" data-n="2"></div><div class="bx" data-k="c1_tel" data-n="8"></div></div><span class="lb">Teléfono</span></div>
+      <div class="fld"><span class="lb">Fecha recepción licencia por el empleador</span><div class="bx" data-k="c1_frec" data-n="6"></div><div class="sub3"><span>Día</span><span>Mes</span><span>Año</span></div></div>
+    </div>
+    <p class="tip"><b>Fecha de recepción:</b> el día en que el trabajador entregó la licencia. Desde aquí corren los 3 días hábiles para tramitarla.</p>
+    <div class="fld"><div class="bx" data-k="c1_dir" data-n="38"></div><span class="lb">Dirección donde cumple funciones el trabajador</span></div>
+    <div class="row">
+      <div class="fld"><div class="bx" data-k="c1_com" data-n="16"></div><span class="lb">Comuna</span></div>
+      <div class="fld"><div class="bx" data-k="c1_ciu" data-n="14"></div><span class="lb">Ciudad</span></div>
+      <div class="fld"><div class="bx res" data-k="c1_ccom" data-n="4" data-ro="1"></div><span class="lb">Código comunal uso COMPIN</span></div>
+    </div>
+    <div class="cols">
+      <div class="panel"><h3>Actividad laboral del trabajador</h3>
+        <div class="legend"><div class="bx" data-k="c1_act" data-n="2"></div>
+          <ul data-set="c1_act">
+            <li data-v="0">0 = Agricultura, servicios agrícolas, silvicultura y pesca</li>
+            <li data-v="1">1 = Minas, petróleos y canteras</li>
+            <li data-v="2">2 = Industrias manufactureras</li>
+            <li data-v="3">3 = Construcción</li>
+            <li data-v="4">4 = Electricidad, gas y agua</li>
+            <li data-v="5">5 = Comercio</li>
+            <li data-v="6">6 = Transporte, almacenamiento y comunicaciones</li>
+            <li data-v="7">7 = Finanzas, seguros, bienes muebles y servicios técnicos, profesionales y otros</li>
+            <li data-v="8">8 = Servicios estatales, sociales, personales e internacionales</li>
+            <li data-v="9">9 = Actividad no especificada</li>
+            <li data-v="10">10 = Contrato plazo fijo</li>
+          </ul></div></div>
+      <div class="panel"><h3>Ocupación</h3>
+        <div class="legend"><div class="bx" data-k="c1_ocu" data-n="2"></div>
+          <ul data-set="c1_ocu">
+            <li data-v="11">11 = Ejecutivo directivo</li>
+            <li data-v="12">12 = Profesor</li>
+            <li data-v="13">13 = Otro profesional</li>
+            <li data-v="14">14 = Técnico</li>
+            <li data-v="15">15 = Vendedor</li>
+            <li data-v="16">16 = Administrativo</li>
+            <li data-v="17">17 = Operario, trabajador manual</li>
+            <li data-v="18">18 = Trabajador de casa particular</li>
+            <li data-v="19">19 = Otro (especificar)</li>
+          </ul></div>
+        <input class="ln" id="c1_otro" aria-label="Otra ocupación">
+        <p class="tip">Anota <b>un</b> código de cada lista. Si eliges 19, describe la ocupación en la línea.</p>
+      </div>
+    </div>
+
+    <div class="sec">C.2. Identificación del régimen previsional del trabajador y entidad pagadora del subsidio</div>
+    <div class="cols">
+      <div class="panel"><h3>Régimen previsional</h3>
+        <div class="legend"><div class="bx" data-k="c2_reg" data-n="1"></div><ul data-set="c2_reg"><li data-v="1">1 = D.L. 3501 IPS</li><li data-v="2">2 = D.L. 3500 A.F.P.</li></ul></div>
+        <div class="row tight">
+          <div class="fld"><div class="bx" data-k="c2_cod" data-n="2"></div><span class="lb">Código</span></div>
+          <div class="fld"><div class="bx" data-k="c2_letra" data-n="1"></div><span class="lb">Letra (caja prev.)</span></div>
+          <div class="fld" style="flex:1;min-width:140px;align-items:stretch"><input class="ln" id="c2_nomprev"><span class="lb">Nombre Int. Prev.</span></div>
+        </div>
+        <p class="tip">AFP: marca 2 y escribe el nombre de la AFP. IPS (ex INP): marca 1 e indica la letra de la caja. El código del ejemplo es ilustrativo; usa el de la tabla oficial.</p>
+        <div class="fld"><span class="lb">Fecha primera afiliación entidad previsional</span><div class="bx" data-k="c2_fafil" data-n="6"></div><div class="sub3"><span>Día</span><span>Mes</span><span>Año</span></div></div>
+      </div>
+      <div class="panel"><h3>Calidad del trabajador</h3>
+        <div class="legend"><div class="bx" data-k="c2_cal" data-n="1"></div>
+          <ul data-set="c2_cal">
+            <li data-v="1">1 = Trabajador sector público afecto a la Ley Nº 18.834</li>
+            <li data-v="2">2 = Trabajador sector público no afecto a la Ley Nº 18.834</li>
+            <li data-v="3">3 = Trabajador dependiente sector privado</li>
+            <li data-v="4">4 = Trabajador independiente</li>
+          </ul></div>
+        <div class="hr"></div>
+        <h3>Seguro de desempleo</h3>
+        <div class="legend"><div class="bx" data-k="c2_afc" data-n="1"></div><ul data-set="c2_afc"><li style="cursor:default">Trabajador afiliado a AFC</li><li data-v="1">1 = Sí</li><li data-v="2">2 = No</li></ul></div>
+        <div class="legend"><div class="bx" data-k="c2_indef" data-n="1"></div><ul data-set="c2_indef"><li style="cursor:default">Contrato de duración indefinida</li><li data-v="1">1 = Sí</li><li data-v="2">2 = No</li></ul></div>
+        <div class="row tight">
+          <div class="fld"><span class="lb">Fecha contrato de trabajo</span><div class="bx" data-k="c2_fcont" data-n="6"></div><div class="sub3"><span>Día</span><span>Mes</span><span>Año</span></div></div>
+          <div class="fld"><span class="lb">Recepción por CCAF</span><div class="bx res" data-k="c2_fccaf" data-n="6" data-ro="1"></div><div class="sub3"><span>Día</span><span>Mes</span><span>Año</span></div></div>
+        </div>
+        <p class="tip">"Fecha recepción licencia por CCAF" la completa la Caja; el empleador la deja en blanco.</p>
+      </div>
+    </div>
+
+    <div class="panel" style="margin-top:12px">
+      <h3>Entidad que debe pagar el subsidio o mantener la remuneración</h3>
+      <div class="cols" style="margin-top:0">
+        <div class="legend"><div class="bx" data-k="c2_ent1" data-n="1"></div><ul data-set="c2_ent1"><li style="cursor:default">Subsidio licencia tipo 1-2-3-4 o 7</li><li data-v="A">A = COMPIN</li><li data-v="B">B = ISAPRE</li><li data-v="C">C = C.C.A.F.</li><li data-v="D">D = Empleador</li></ul></div>
+        <div class="legend"><div class="bx" data-k="c2_ent2" data-n="1"></div><ul data-set="c2_ent2"><li style="cursor:default">Subsidio licencia tipo 5 o 6</li><li data-v="E">E = COMPIN</li><li data-v="F">F = Mutual</li><li data-v="G">G = ISL</li><li data-v="H">H = Empleador</li></ul></div>
+      </div>
+      <div class="fld"><div class="bx" data-k="c2_nent" data-n="27"></div><span class="lb">Nombre entidad pagadora del subsidio</span></div>
+      <p class="tip">Se marca <b>solo una</b> de las dos casillas, según el tipo de licencia (indicado arriba en "Licencia que se tramita"). Trabajador en ISAPRE → B. En FONASA → C si la empresa está afiliada a una Caja de Compensación, si no → A. Accidente laboral o enfermedad profesional → E a H.</p>
+    </div>
+
+    <div class="sec">C.3. Informe de remuneraciones, rentas y/o subsidios</div>
+    <p class="note" style="margin:0 0 6px">Los trabajadores del sector privado y los del sector público deben registrar anotaciones en las columnas C, D y E cuando corresponda. Los del sector público que cotizan para desahucio y los traspasados en virtud del D.F.L. 1-3063/80 además deben registrar remuneraciones en la columna B.</p>
+    <div class="c3">
+      <div>
+        <div class="lb" style="text-align:center;margin-bottom:3px">(Información de meses anteriores a la fecha de la incapacidad)</div>
+        <table class="grid" data-table="t1" data-rows="6"></table>
+        <div class="lb" style="text-align:center;margin:10px 0 3px">(Información de meses anteriores a la fecha de la incapacidad)</div>
+        <table class="grid" data-table="t2" data-rows="6"></table>
+      </div>
+      <aside>
+        <div class="fld"><span class="lb" style="font:600 11px var(--f-display);text-transform:uppercase;text-align:center">% Desahucio</span><div class="inl" style="justify-content:center"><div class="bx" data-k="c3_desa1" data-n="2"></div><span class="dash">,</span><div class="bx" data-k="c3_desa2" data-n="2"></div></div></div>
+        <span>Remuneración imponible mes anterior al inicio de la licencia médica (tope 90 U.F.) para trabajador afiliado a AFC.</span>
+        <div class="money">$<input id="c3_afc" inputmode="numeric"></div>
+        <span>La información debe corresponder a los 3 meses anteriores al séptimo u octavo mes que precede al inicio de la licencia médica, según se trate de trabajador dependiente o independiente, respectivamente.</span>
+        <span>Las remuneraciones informadas deben corresponder a los días efectivamente trabajados.</span>
+      </aside>
+    </div>
+    <p class="tip"><b>Tabla 1:</b> los últimos 3 meses antes del inicio del reposo (aquí jul, ago y sep 2026). <b>Tabla 2:</b> los 3 meses anteriores al séptimo mes previo al inicio (dependiente) u octavo (independiente). Columna C: total imponible para pensión y salud, con su tope. Columnas D y E solo si en ese mes hubo subsidio por licencia. Columna B y % desahucio solo sector público.</p>
+
+  </section>
+  </div>
+
+  <!-- ======================= HOJA 3 ======================= -->
+  <div class="side-label" id="hoja3">Hoja 2 · Sección C.4 y firma del empleador <a href="#reverso">volver a la hoja 1</a></div>
+  <div class="scroller">
+  <section class="sheet" id="sheet-c4">
+    <div class="wm"><span>EJEMPLO DE LLENADO<small>SIN VALIDEZ LEGAL</small></span></div>
+    <div class="sec" style="margin-top:0">Sección C (continuación): responsabilidad exclusiva del empleador</div>
+    <div class="ref">
+      <div><span class="lb">Trabajador</span><b data-mirror="nom"></b></div>
+      <div><span class="lb">RUN</span><b data-mirror="run"></b></div>
+      <div><span class="lb">Nº licencia</span><b data-mirror="folio"></b></div>
+      <div><span class="lb">Inicio reposo · días</span><b data-mirror="ini"></b></div>
+    </div>
+    <p class="tip">Este recuadro se completa solo con los datos de "Licencia que se tramita" (hoja 1), para identificar la hoja si se imprime por separado.</p>
+
+    <div class="sec">C.4. Licencias anteriores en los últimos 6 meses <small>(información obligatoria del empleador o trabajador independiente)</small></div>
+    <div class="legend" style="margin:6px 0 10px"><div class="bx" data-k="c4_tiene" data-n="1"></div><ul data-set="c4_tiene" style="display:flex;gap:14px;flex-wrap:wrap"><li style="cursor:default">Registra licencias anteriores:</li><li data-v="1">1 = Sí</li><li data-v="2">2 = No</li></ul></div>
+    <table class="grid" data-table="t4" data-rows="6"></table>
+    <p class="tip">Si el trabajador tuvo otras licencias en los últimos 6 meses, marca 1 y anota cada una con total de días y fechas desde/hasta (DD MM AA). Si no tuvo, marca 2 y deja la tabla en blanco.</p>
+    <p class="note" style="margin:12px 0 0;font-size:11px">Art. 13 – El empleador deberá presentar la licencia médica ante el COMPIN o ISAPRE correspondiente, dentro de los tres días hábiles siguientes de recepcionado el documento.</p>
+
+    <div class="auth" style="grid-template-columns:1fr 360px;margin-top:40px">
+      <div></div>
+      <div class="sigbox"><input class="ln sig" id="c4_firma"><span>Nombre, firma y timbre del empleador o trabajador independiente</span></div>
+    </div>
+  </section>
+  </div>
+
+  <footer>Réplica de guía con fines instructivos. Los datos del ejemplo son ficticios. La licencia válida es siempre el formulario oficial o la licencia médica electrónica emitida por el profesional.</footer>
+</main>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
+<script>
+(function(){
+  const STORE = "guia-licencia-v1";
+  const $ = (s, r=document) => r.querySelector(s);
+  const $$ = (s, r=document) => Array.from(r.querySelectorAll(s));
+  const root = $("#root");
+  const statusEl = $("#status");
+
+  /* ---------- tablas ---------- */
+  function buildTables(){
+    const head13 = `<thead>
+      <tr><th rowspan="3" style="width:13%">Código<br>institución<br>previsional</th><th colspan="3">Mes al cual corresponden<br>las remuneraciones</th><th colspan="2">Remuneraciones imponibles excepto las ocasionales que correspondan a un período superior a un mes (Art. 10 DFL Nº 44, 1978)</th><th colspan="2">Subsidio por<br>incapacidad laboral</th></tr>
+      <tr><th>Mes</th><th>Año</th><th>Nº días</th><th>Imponible desahucio trab. corp. municipal y públicos</th><th>Total remuneraciones imponibles para pensiones y salud</th><th>Monto</th><th>Nº días</th></tr>
+      <tr><th class="k" colspan="3">A</th><th class="k">B</th><th class="k">C</th><th class="k">D</th><th class="k">E</th></tr></thead>`;
+    $$("table[data-table]").forEach(t => {
+      const id = t.dataset.table, rows = +t.dataset.rows;
+      let html = "", cols;
+      if (id === "t4"){
+        html = `<thead><tr><th rowspan="2">Total días</th><th colspan="3">Desde</th><th colspan="3">Hasta</th></tr>
+          <tr><th>Día</th><th>Mes</th><th>Año</th><th>Día</th><th>Mes</th><th>Año</th></tr></thead>`;
+        cols = ["dias","d1","m1","a1","d2","m2","a2"];
+      } else {
+        html = head13;
+        cols = ["cod","mes","ano","dias","b","c","d","e"];
+      }
+      html += "<tbody>";
+      for (let r=0;r<rows;r++){
+        html += "<tr>" + cols.map(c => `<td><input id="${id}_${r}_${c}" aria-label="${id} fila ${r+1} ${c}"></td>`).join("") + "</tr>";
+      }
+      t.innerHTML = html + "</tbody>";
+    });
+  }
+
+  /* ---------- casillas ---------- */
+  function buildBoxes(){
+    $$(".bx[data-k]").forEach(bx => {
+      const n = +bx.dataset.n, k = bx.dataset.k;
+      let h = "";
+      for (let i=0;i<n;i++) h += '<span class="c"></span>';
+      bx.innerHTML = h + `<input id="${k}" maxlength="${n}" autocomplete="off" spellcheck="false" aria-label="${k}"${bx.dataset.ro ? " readonly tabindex=\"-1\"" : ""}>`;
+    });
+  }
+  function paint(inp){
+    const bx = inp.parentElement;
+    if (!bx || !bx.classList.contains("bx")) return;
+    const v = inp.value.toUpperCase();
+    $$(".c", bx).forEach((c,i) => c.textContent = v[i] || "");
+  }
+
+  /* ---------- RUN ---------- */
+  function dv(num){
+    let s=0,m=2;
+    for (let i=num.length-1;i>=0;i--){ s += (+num[i])*m; m = m===7?2:m+1; }
+    const r = 11 - (s % 11);
+    return r===11?"0":r===10?"K":String(r);
+  }
+  function checkRuns(){
+    $$("[data-run]").forEach(el => {
+      const [a,b] = el.dataset.run.split("|");
+      const num = $("#"+a).value.replace(/\D/g,""), d = $("#"+b).value.toUpperCase();
+      if (!num || !d){ el.textContent=""; el.className="chk"; return; }
+      const good = dv(num) === d;
+      el.textContent = good ? "RUN válido" : "Revisar dígito verificador";
+      el.className = "chk " + (good ? "ok" : "bad");
+    });
+  }
+
+  /* ---------- leyendas ---------- */
+  function syncLegends(){
+    $$("ul[data-set]").forEach(ul => {
+      const v = ($("#"+ul.dataset.set)||{}).value || "";
+      $$("li[data-v]", ul).forEach(li => li.classList.toggle("on", v !== "" && li.dataset.v === v.toUpperCase()));
+    });
+  }
+
+  /* ---------- estado ---------- */
+  const allInputs = () => $$(".sheet input").filter(i => i.id && !i.readOnly);
+  function collect(){ const o={}; allInputs().forEach(i => { if (i.value) o[i.id]=i.value; }); return o; }
+  function apply(data){
+    allInputs().forEach(i => { i.value = data[i.id] || ""; });
+    $$(".bx input").forEach(paint); checkRuns(); syncLegends(); mirror();
+  }
+  function save(){ try{ localStorage.setItem(STORE, JSON.stringify({v:collect(), guide:$("#opt-guide").checked, cur:current})); }catch(e){} }
+
+  /* ---------- hoja 3: referencia al trabajador ---------- */
+  const val = id => (($("#"+id)||{}).value || "").toUpperCase().trim();
+  const fmtD = d => d.length === 6 ? d.slice(0,2)+"/"+d.slice(2,4)+"/"+d.slice(4) : d;
+  const runTxt = () => val("r_run") ? val("r_run") + (val("r_dv") ? "-" + val("r_dv") : "") : "";
+  function mirror(){
+    const set = (sel, t) => { const el = $('[data-mirror="'+sel+'"]'); if (el) el.textContent = t; };
+    set("nom", val("r_nom"));
+    set("run", runTxt());
+    set("folio", val("r_fol") ? (val("r_fol1") ? val("r_fol1") + "-" : "") + val("r_fol") : "");
+    const ini = fmtD(val("r_fini")), d = val("r_dias").replace(/^0+/, "");
+    set("ini", [ini, d ? d + " días" : ""].filter(Boolean).join(" · "));
+  }
+
+  const EX = {
+    r_fol1:"2", r_fol:"10000001", r_nom:"CAMILA ANDREA GONZALEZ MUÑOZ", r_run:"12345678", r_dv:"5",
+    r_fini:"051026", r_dias:"007", r_tipo:"1",
+    c1_nom:"COMERCIAL EJEMPLO SPA", c1_rut:"76123456", c1_dv:"0", c1_tcod:"41", c1_tel:"22222222", c1_frec:"061026",
+    c1_dir:"AV PRINCIPAL 1000 LOCAL 12", c1_com:"CONCEPCION", c1_ciu:"CONCEPCION", c1_act:"5", c1_ocu:"15",
+    c2_reg:"2", c2_cod:"03", c2_nomprev:"AFP EJEMPLO", c2_fafil:"010312", c2_cal:"3", c2_afc:"1", c2_indef:"1", c2_fcont:"010620",
+    c2_ent1:"B", c2_nent:"ISAPRE EJEMPLO",
+    c3_afc:"850.000", c4_tiene:"2", c4_firma:"Comercial Ejemplo SpA · Juan Pérez, RR.HH."
+  };
+  [["07","2026"],["08","2026"],["09","2026"]].forEach(([m,a],r)=>Object.assign(EX,{[`t1_${r}_cod`]:"03",[`t1_${r}_mes`]:m,[`t1_${r}_ano`]:a,[`t1_${r}_dias`]:"30",[`t1_${r}_c`]:"850.000"}));
+  [["12","2025"],["01","2026"],["02","2026"]].forEach(([m,a],r)=>Object.assign(EX,{[`t2_${r}_cod`]:"03",[`t2_${r}_mes`]:m,[`t2_${r}_ano`]:a,[`t2_${r}_dias`]:"30",[`t2_${r}_c`]:"820.000"}));
+
+  /* ---------- guía ---------- */
+  function setGuide(on){ root.classList.toggle("guide-on", on); $("#opt-guide").checked = on; }
+
+  /* ---------- PDF ---------- */
+  let downloads = null;
+  if (window.claude && window.claude.use) {
+    window.claude.use("downloads").then(d => { downloads = d; }).catch(()=>{});
+  }
+  function setStatus(msg, cls){ statusEl.textContent = msg; statusEl.className = "status" + (cls ? " " + cls : ""); }
+
+  async function makePdf(ids){
+    if (!window.html2canvas || !window.jspdf){ setStatus("No se pudo cargar el generador de PDF. Recarga la página e inténtalo de nuevo.", "err"); return; }
+    const btn = $("#btn-pdf"); btn.disabled = true; setStatus("Generando PDF…");
+    try{
+      if (document.fonts && document.fonts.ready) await document.fonts.ready;
+      const { jsPDF } = window.jspdf;
+      const pdf = new jsPDF({ unit:"mm", format:"legal", orientation:"portrait" });
+      const pw = pdf.internal.pageSize.getWidth(), ph = pdf.internal.pageSize.getHeight(), m = 8;
+      const sheets = ids.map(id => document.getElementById(id));
+      for (let i=0;i<sheets.length;i++){
+        const s = sheets[i];
+        const canvas = await html2canvas(s, {
+          scale: 2, backgroundColor: "#f5f8ec", useCORS: true, windowWidth: 1100,
+          onclone: (doc) => {
+            doc.querySelectorAll(".sheet input").forEach(inp => {
+              if (inp.closest(".bx")) { inp.remove(); return; }
+              const sp = doc.createElement("span");
+              sp.textContent = inp.value || " ";
+              sp.className = inp.className;
+              sp.style.display = "block";
+              if (inp.closest("td")) { sp.style.cssText = "display:flex;align-items:center;justify-content:center;height:24px;font:600 12.5px 'IBM Plex Mono',monospace;color:#1a3a8f;text-transform:uppercase"; }
+              else if (inp.closest(".money")) { sp.style.cssText = "display:block;padding:0 4px;font:600 13px 'IBM Plex Mono',monospace;color:#1a3a8f"; }
+              inp.replaceWith(sp);
+            });
+          }
+        });
+        const img = canvas.toDataURL("image/jpeg", 0.92);
+        let w = pw - 2*m, h = canvas.height * w / canvas.width;
+        if (h > ph - 2*m){ h = ph - 2*m; w = canvas.width * h / canvas.height; }
+        if (i > 0) pdf.addPage("legal","portrait");
+        pdf.addImage(img, "JPEG", (pw - w)/2, m, w, h);
+      }
+      const blob = pdf.output("blob");
+      if (!downloads && window.claude && window.claude.use) { try { downloads = await window.claude.use("downloads"); } catch(e){} }
+      if (!downloads){ setStatus("La descarga no está disponible en este navegador.", "err"); return; }
+      const who = (val("r_nom") || "formulario").toLowerCase().normalize("NFD").replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 40);
+      const all = ["sheet-c","sheet-c4"];
+      const part = ids.length === all.length ? "" : (ids[0] === "sheet-c" ? "-seccion-c" : "-seccion-c4");
+      const name = (root.classList.contains("guide-on") ? "licencia-medica-guia-de-llenado" : "licencia-medica-" + who) + part + ".pdf";
+      await downloads.save({ filename: name, data: blob });
+      setStatus("PDF listo: " + name, "ok");
+    } catch(e){
+      const code = e && e.code;
+      if (code === "declined") setStatus("Descarga cancelada.");
+      else if (code === "rate_limited") setStatus("Ya hay una descarga pendiente de confirmar. Revisa el aviso abierto.", "err");
+      else setStatus("No se pudo generar el PDF" + (e && e.message ? ": " + e.message : "") + ".", "err");
+    } finally { btn.disabled = false; }
+  }
+
+  /* ---------- historial ---------- */
+  let current = null;           // {id, nombre} del registro abierto
+  let entries = [];             // [{id, ...data}]
+  let store = null;             // {kind, put, del}
+  let confirmId = null;
+  const LOCAL_HIST = "guia-licencia-hist-v1";
+  const histList = $("#hist-list"), histWhere = $("#hist-where");
+
+  function setCurrent(c){
+    current = c;
+    $("#hist-cur").hidden = !c;
+    $("#hist-new").hidden = !c;
+    $("#hist-save").textContent = c ? "Guardar cambios" : "Guardar en historial";
+    if (c){ $("#hist-cur").innerHTML = ""; $("#hist-cur").append("Editando: ", Object.assign(document.createElement("b"), {textContent: c.nombre})); $("#hist-name").value = c.nombre; }
+    else $("#hist-name").value = "";
+    renderHist();
+  }
+  function fmtStamp(iso){
+    try { return new Date(iso).toLocaleString("es-CL", {day:"2-digit", month:"2-digit", year:"numeric", hour:"2-digit", minute:"2-digit"}); }
+    catch(e){ return iso; }
+  }
+  function renderHist(){
+    if (!store) return;
+    const q = $("#hist-q").value.trim().toLowerCase();
+    const list = entries.filter(e => !q || [e.nombre, e.trabajador, e.run].join(" ").toLowerCase().includes(q));
+    histList.innerHTML = "";
+    if (!list.length){
+      const p = document.createElement("p"); p.className = "empty";
+      p.textContent = entries.length ? "Ningún registro coincide con la búsqueda." : "Aún no hay registros. Llena el formulario y pulsa Guardar en historial.";
+      histList.append(p); return;
+    }
+    list.forEach(e => {
+      const li = document.createElement("li");
+      const main = document.createElement("div"); main.className = "hi-main";
+      const b = document.createElement("b"); b.textContent = e.nombre || "Sin nombre"; main.append(b);
+      if (current && current.id === e.id){ const pill = document.createElement("span"); pill.className = "pill"; pill.textContent = "abierto"; pill.style.display = "inline"; b.after(pill); }
+      const sub = document.createElement("span");
+      sub.textContent = [e.trabajador, e.run && "RUN " + e.run, e.inicio && "inicio " + e.inicio, "guardado " + fmtStamp(e.guardado)].filter(Boolean).join(" · ");
+      main.append(sub);
+      const act = document.createElement("div"); act.className = "hi-act";
+      const mk = (txt, cls, fn) => { const x = document.createElement("button"); x.type = "button"; x.className = "btn sm " + (cls||""); x.textContent = txt; x.addEventListener("click", fn); return x; };
+      if (confirmId === e.id){
+        const t = document.createElement("span"); t.textContent = "¿Eliminar?"; t.style.fontSize = "13px";
+        act.append(t, mk("Sí, eliminar", "danger", () => removeEntry(e)), mk("No", "", () => { confirmId = null; renderHist(); }));
+      } else {
+        act.append(mk("Abrir", "", () => openEntry(e)), mk("Eliminar", "", () => { confirmId = e.id; renderHist(); }));
+      }
+      li.append(main, act); histList.append(li);
+    });
+  }
+  function openEntry(e){
+    apply(e.v || {}); setGuide(e.guide !== false); setCurrent({id: e.id, nombre: e.nombre}); save();
+    setStatus("Abierto: " + (e.nombre || "registro") + ".", "ok");
+    $("#reverso").scrollIntoView({behavior: matchMedia("(prefers-reduced-motion: reduce)").matches ? "auto" : "smooth"});
+  }
+  async function removeEntry(e){
+    confirmId = null;
+    try { await store.del(e.id); if (current && current.id === e.id) setCurrent(null); setStatus("Eliminado del historial: " + (e.nombre || "registro") + "."); save(); }
+    catch(err){ setStatus("No se pudo eliminar. Inténtalo de nuevo en un momento.", "err"); renderHist(); }
+  }
+  function defaultName(){
+    const n = val("r_nom");
+    const ini = fmtD(val("r_fini"));
+    return n ? n + (ini ? " · licencia " + ini : "") : "Licencia sin nombre";
+  }
+  async function saveEntry(asNew){
+    if (!store){ setStatus("El historial aún no está listo.", "err"); return; }
+    const nombre = $("#hist-name").value.trim() || defaultName();
+    const id = (!asNew && current) ? current.id : store.newId();
+    const data = {
+      kind: "licencia", nombre,
+      trabajador: val("r_nom"),
+      run: runTxt(),
+      inicio: fmtD(val("r_fini")),
+      guardado: new Date().toISOString(),
+      guide: $("#opt-guide").checked,
+      v: collect()
+    };
+    const btns = [$("#hist-save"), $("#hist-new")]; btns.forEach(b => b.disabled = true);
+    try {
+      await store.put(id, data);
+      setCurrent({id, nombre}); save();
+      setStatus("Guardado en el historial: " + nombre + ".", "ok");
+    } catch(err){
+      const code = err && err.code;
+      setStatus(code === "quota_exceeded" ? "El historial está lleno. Elimina registros antiguos y vuelve a guardar." : "No se pudo guardar en el historial. Inténtalo de nuevo.", "err");
+    } finally { btns.forEach(b => b.disabled = false); }
+  }
+
+  function useLocal(note){
+    let ok = true;
+    try { localStorage.getItem(LOCAL_HIST); } catch(e){ ok = false; }
+    if (!ok){ histWhere.textContent = "El historial no está disponible en esta vista."; $("#hist-save").disabled = true; return; }
+    const read = () => { try { return JSON.parse(localStorage.getItem(LOCAL_HIST) || "[]"); } catch(e){ return []; } };
+    const write = arr => localStorage.setItem(LOCAL_HIST, JSON.stringify(arr));
+    const refresh = () => { entries = read().sort((a,b) => (b.guardado||"").localeCompare(a.guardado||"")); renderHist(); };
+    store = {
+      kind: "local",
+      newId: () => "h" + Date.now().toString(36) + Math.random().toString(36).slice(2,6),
+      put: async (id, data) => { const arr = read().filter(x => x.id !== id); arr.push(Object.assign({id}, data)); write(arr); refresh(); },
+      del: async (id) => { write(read().filter(x => x.id !== id)); refresh(); }
+    };
+    histWhere.textContent = note || "Guardado solo en este navegador.";
+    refresh();
+  }
+  async function initHistory(){
+    if (!(window.claude && window.claude.use)) { useLocal(); return; }
+    let db = null, uid = null;
+    try {
+      const [d, u] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+      db = d; uid = u ? await u.id() : null;
+    } catch(e){}
+    if (!db || !uid){ useLocal("Guardado en este navegador."); return; }
+    const col = db.collection("data/users/" + uid);
+    store = {
+      kind: "db",
+      newId: () => col.doc().id,
+      put: async (id, data) => { await col.doc(id).set(data); },
+      del: async (id) => { await col.doc(id).delete(); }
+    };
+    histWhere.textContent = "Guardado en tu cuenta · privado, solo tú lo ves.";
+    renderHist();
+    col.where("kind", "==", "licencia").orderBy("guardado", "desc").onSnapshot(
+      snap => { entries = snap.docs.map(d => Object.assign({id: d.id}, d.data())); renderHist(); },
+      err => { histWhere.textContent = "No se pudo leer el historial guardado. Recarga la página."; }
+    );
+  }
+  $("#hist-save").addEventListener("click", () => saveEntry(false));
+  $("#hist-new").addEventListener("click", () => saveEntry(true));
+  $("#hist-q").addEventListener("input", renderHist);
+
+  /* ---------- init ---------- */
+  buildTables(); buildBoxes();
+
+  document.addEventListener("input", e => {
+    const t = e.target;
+    if (!(t instanceof HTMLInputElement) || !t.closest(".sheet")) return;
+    if (t.closest(".bx")) { const p = t.selectionStart; t.value = t.value.toUpperCase(); try{ t.setSelectionRange(p,p);}catch(_){} paint(t); }
+    checkRuns(); syncLegends(); mirror(); save();
+  });
+  $$("ul[data-set]").forEach(ul => ul.addEventListener("click", e => {
+    const li = e.target.closest("li[data-v]"); if (!li) return;
+    const inp = $("#"+ul.dataset.set); inp.value = li.dataset.v; paint(inp); syncLegends(); save();
+  }));
+  $("#opt-guide").addEventListener("change", e => { setGuide(e.target.checked); save(); });
+  $("#btn-example").addEventListener("click", () => { apply(EX); setCurrent(null); save(); setStatus("Ejemplo cargado (datos ficticios). Para guardarlo, usa Guardar en historial."); });
+  $("#btn-clear").addEventListener("click", () => { apply({}); setCurrent(null); save(); setStatus("Formulario en blanco."); });
+  /* selector de hojas */
+  const pick = $("#pdf-pick"), pickBtn = $("#btn-pdf"), pickAll = $("#pick-all"), pickSh = $$(".pick-sh");
+  function syncAll(){ const n = pickSh.filter(c => c.checked).length; pickAll.checked = n === pickSh.length; pickAll.indeterminate = n > 0 && n < pickSh.length; $("#pick-err").hidden = n > 0; }
+  function openPick(open){ pick.hidden = !open; pickBtn.setAttribute("aria-expanded", String(open)); if (open) { $("#pick-err").hidden = true; $("#pick-go").focus(); } }
+  pickBtn.addEventListener("click", () => openPick(pick.hidden));
+  pickAll.addEventListener("change", () => { pickSh.forEach(c => c.checked = pickAll.checked); syncAll(); });
+  pickSh.forEach(c => c.addEventListener("change", syncAll));
+  $("#pick-cancel").addEventListener("click", () => { openPick(false); pickBtn.focus(); });
+  $("#pick-go").addEventListener("click", () => {
+    const ids = pickSh.filter(c => c.checked).map(c => c.value);
+    if (!ids.length){ $("#pick-err").hidden = false; return; }
+    openPick(false); makePdf(ids);
+  });
+  document.addEventListener("keydown", e => { if (e.key === "Escape" && !pick.hidden){ openPick(false); pickBtn.focus(); } });
+  document.addEventListener("click", e => { if (!pick.hidden && !pick.contains(e.target) && e.target !== pickBtn) openPick(false); });
+
+  let saved = null;
+  try { saved = JSON.parse(localStorage.getItem(STORE) || "null"); } catch(e){}
+  if (saved && saved.v) { apply(saved.v); setGuide(saved.guide !== false); if (saved.cur) setCurrent(saved.cur); }
+  else { apply(EX); setGuide(true); }
+  initHistory();
+})();
+</script>
+
+</body></html>
