@@ -1,5 +1,5 @@
 /* Separador de Anexos — trabajo sin conexión. La versión cambia en cada publicación. */
-const VERSION = '60a593a3ba8b';
+const VERSION = '09d7ab4b0744';
 const CACHE = 'anexos-' + VERSION;
 const SHELL = [
  "./",

@@ -1,4 +1,4 @@
-/* Separador de Anexos — acceso con la misma cuenta de herramientas.quidelxpert.cl (Firebase del cotizador).
+/* Separador de Anexos — acceso con la misma cuenta del Cotizador SERVIMAT (Firebase servimat-e2f18).
    Entra el administrador y quien tenga «anexos: true» en su ficha de usuarios. Los datos de trabajadores
    no pasan por Firebase: quedan en el navegador de cada PC. */
 import { initializeApp } from 'https://www.gstatic.com/firebasejs/10.14.1/firebase-app.js';
@@ -17,7 +17,7 @@ const ADMIN_EMAIL = 'danielmjqcontacto@quidelxpert.cl';
 const OK_KEY = 'anexos-acceso-ok';
 
 const $ = id => document.getElementById(id);
-const fbApp = initializeApp(FIREBASE_CONFIG);  // misma app que el cotizador: comparte la sesión en herramientas.quidelxpert.cl
+const fbApp = initializeApp(FIREBASE_CONFIG);  // misma app que el cotizador: misma cuenta que el cotizador
 const auth = getAuth(fbApp);
 auth.languageCode = 'es';
 const db = getFirestore(fbApp);
