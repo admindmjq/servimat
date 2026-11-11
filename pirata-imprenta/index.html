@@ -1,0 +1,123 @@
+<!doctype html><html lang="es"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Pirata para imprenta</title>
+<link rel="icon" href="pirata_vector_editable.svg">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,600&family=Atkinson+Hyperlegible:wght@400;700&display=swap">
+<style>
+/* Layout: dos fichas de impresión lado a lado; la imagen manda y los botones quedan justo debajo. */
+:root {
+  --bg: #F7F5F2; --surface: #FFFFFF; --fg: #23262B; --muted: #5F646C;
+  --line: #DAD8D3; --accent: #C8171F; --on-accent: #FFFFFF; --sheet: #FFFFFF;
+  --display: "Fraunces", Georgia, serif;
+  --body: "Atkinson Hyperlegible", system-ui, sans-serif;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #17191D; --surface: #212429; --fg: #EFEFEC; --muted: #AEB2B9;
+    --line: #3A3E45; --accent: #EE4B52; --on-accent: #17191D; --sheet: #FFFFFF; color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #17191D; --surface: #212429; --fg: #EFEFEC; --muted: #AEB2B9;
+  --line: #3A3E45; --accent: #EE4B52; --on-accent: #17191D; --sheet: #FFFFFF; color-scheme: dark;
+}
+body { background: var(--bg); color: var(--fg); font: 16px/1.5 var(--body); }
+.wrap {
+  max-width: 880px; margin: 0 auto; padding-block: 32px 48px;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  display: grid; gap: 24px;
+}
+h1 { font: 600 clamp(28px, 6vw, 40px)/1.1 var(--display); margin: 0 0 8px; text-wrap: balance; }
+p { margin: 0; }
+.lead { color: var(--muted); max-width: 62ch; }
+.grid { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; align-items: start; }
+@media (max-width: 640px) { .grid { grid-template-columns: minmax(0, 1fr); } }
+.card { background: var(--surface); border: 1px solid var(--line); border-radius: 6px; padding: 16px; display: grid; gap: 12px; min-width: 0; }
+.sheet { background: var(--sheet); border-radius: 3px; display: flex; align-items: flex-end; justify-content: center; height: 260px; padding: 12px; }
+.sheet img { max-height: 100%; width: auto; display: block; }
+h2 { font: 600 22px/1.2 var(--display); margin: 0; font-variant-numeric: tabular-nums; }
+.tag { font-size: 14px; font-weight: 700; color: var(--accent); }
+.note { font-size: 15px; color: var(--muted); }
+.actions { display: grid; gap: 8px; }
+button {
+  font: 700 16px/1.2 var(--body); padding: 12px 14px; border-radius: 6px; cursor: pointer; width: 100%;
+  border: 1px solid var(--accent); background: transparent; color: var(--accent);
+}
+button.main { background: var(--accent); color: var(--on-accent); }
+button:focus-visible { outline: 3px solid var(--fg); outline-offset: 2px; }
+button:disabled { opacity: .6; cursor: wait; }
+.extra { display: grid; gap: 8px; justify-items: start; }
+.extra button { width: auto; }
+#status { min-height: 1.5em; font-weight: 700; }
+</style>
+
+<main class="wrap">
+  <header>
+    <h1>Pirata para imprenta</h1>
+    <p class="lead">Baja el PDF de la versión que elijas y llévalo a la imprenta. Va a tamaño real, así que debe imprimirse al 100 %.</p>
+  </header>
+
+  <p id="status" role="status" aria-live="polite"></p>
+
+  <section class="grid">
+    <article class="card">
+      <div class="sheet"><img src="pirata_60x58cm_proporcional_150dpi.png" alt="Pirata con sus proporciones originales" style="height:206px"></div>
+      <span class="tag">Recomendada</span>
+      <h2>60 × 58 cm</h2>
+      <p class="note">Mantiene la forma original del dibujo, sin deformar.</p>
+      <div class="actions">
+        <button class="main" data-file="pirata_60x58cm_proporcional.pdf">Descargar PDF</button>
+        <button data-file="pirata_60x58cm_proporcional_150dpi.png">Descargar PNG</button>
+      </div>
+    </article>
+
+    <article class="card">
+      <div class="sheet"><img src="pirata_60x70cm_exacto_150dpi.png" alt="Pirata estirado a 60 por 70 centímetros" style="height:236px"></div>
+      <span class="tag">Medida exacta</span>
+      <h2>60 × 70 cm</h2>
+      <p class="note">Cumple la medida, pero queda estirado un 21 % a lo alto.</p>
+      <div class="actions">
+        <button class="main" data-file="pirata_60x70cm_exacto.pdf">Descargar PDF</button>
+        <button data-file="pirata_60x70cm_exacto_150dpi.png">Descargar PNG</button>
+      </div>
+    </article>
+  </section>
+
+  <section class="extra">
+    <p class="note">Si la imprenta necesita ajustar el dibujo, pásale el archivo editable.</p>
+    <button data-file="pirata_vector_editable.svg">Descargar SVG editable</button>
+  </section>
+</main>
+
+<script>
+(function () {
+  var statusEl = document.getElementById("status");
+  function say(t) { statusEl.textContent = t; }
+  document.querySelectorAll("button[data-file]").forEach(function (btn) {
+    btn.addEventListener("click", async function () {
+      var file = btn.dataset.file;
+      btn.disabled = true;
+      say("Preparando " + file + "…");
+      try {
+        var res = await fetch(file);
+        if (!res.ok) throw { code: "fetch" };
+        var url = URL.createObjectURL(await res.blob());
+        var a = document.createElement("a");
+        a.href = url; a.download = file;
+        document.body.appendChild(a); a.click(); a.remove();
+        setTimeout(function () { URL.revokeObjectURL(url); }, 30000);
+        say("Listo: " + file + " se envió a tus descargas.");
+      } catch (e) {
+        var code = e && e.code;
+        if (code === "fetch") say("No se pudo cargar " + file + ". Recarga la página y prueba otra vez.");
+        else say("No se pudo descargar " + file + ". Recarga la página y prueba otra vez.");
+      } finally {
+        btn.disabled = false;
+      }
+    });
+  });
+})();
+</script>
+
+</body></html>

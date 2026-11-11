@@ -1,0 +1,516 @@
+<!doctype html><html lang="es"><head><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Saldos de Vacaciones Zara Chile</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wght@500;600;700;800&family=Public+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
+<style>
+/* Layout: control bar de archivos arriba, luego franja de KPIs, resumen por categoría, centros, costo oficina y listado; tablas densas tipo planilla de RR.HH. */
+:root{
+  --bg:#f5f6f4; --surface:#ffffff; --surface-2:#eceeea; --line:#d9ddd6;
+  --ink:#1b2320; --ink-2:#4c5752; --ink-3:#7a8580;
+  --accent:#1f5c4f; --accent-soft:#dcebe6;
+  --warn:#a35a00; --warn-soft:#fbecd6;
+  --crit:#b3261e; --crit-soft:#fbe1de;
+  --ok:#2e7d4f; --ok-soft:#dff1e5;
+  --b1:#9fc7bc; --b2:#4f9583; --b3:#e0a24a; --b4:#c4473d;
+  --display:"Archivo","Arial Narrow",Arial,sans-serif;
+  --body:"Public Sans",system-ui,-apple-system,"Segoe UI",sans-serif;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,Consolas,monospace;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){
+  --bg:#121715; --surface:#1a201e; --surface-2:#232b28; --line:#333d39;
+  --ink:#e6ebe8; --ink-2:#aab5b0; --ink-3:#7f8a85;
+  --accent:#7cc4b0; --accent-soft:#1f3a33;
+  --warn:#f0b35c; --warn-soft:#3a2c17;
+  --crit:#f2867c; --crit-soft:#3d1f1c;
+  --ok:#7fd29e; --ok-soft:#1c3326;
+  --b1:#3b6b60; --b2:#69b19d; --b3:#d9a050; --b4:#e0675c;
+  color-scheme:dark}}
+:root[data-theme="dark"]{
+  --bg:#121715; --surface:#1a201e; --surface-2:#232b28; --line:#333d39;
+  --ink:#e6ebe8; --ink-2:#aab5b0; --ink-3:#7f8a85;
+  --accent:#7cc4b0; --accent-soft:#1f3a33;
+  --warn:#f0b35c; --warn-soft:#3a2c17;
+  --crit:#f2867c; --crit-soft:#3d1f1c;
+  --ok:#7fd29e; --ok-soft:#1c3326;
+  --b1:#3b6b60; --b2:#69b19d; --b3:#d9a050; --b4:#e0675c;
+  color-scheme:dark}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background:var(--bg);color:var(--ink);font-family:var(--body);font-size:14px;line-height:1.45}
+.wrap{max-width:1280px;margin:0 auto;padding-block:20px 48px;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));display:flex;flex-direction:column;gap:22px}
+h1,h2,h3{font-family:var(--display);margin:0;text-wrap:balance;letter-spacing:-.01em}
+h1{font-size:clamp(22px,3.2vw,30px);font-weight:800}
+h2{font-size:18px;font-weight:700}
+.eyebrow{font-size:11px;letter-spacing:.09em;text-transform:uppercase;color:var(--ink-3);font-weight:600}
+.muted{color:var(--ink-2)}
+.num{font-family:var(--mono);font-variant-numeric:tabular-nums}
+header.top{display:flex;flex-wrap:wrap;gap:16px;align-items:flex-end;justify-content:space-between}
+.sources{display:flex;flex-wrap:wrap;gap:10px;align-items:stretch}
+.src{display:flex;align-items:center;gap:10px;background:var(--surface);border:1px solid var(--line);border-radius:8px;padding:8px 10px;min-width:0}
+.src .dot{width:9px;height:9px;border-radius:50%;background:var(--line);flex:none}
+.src.ok .dot{background:var(--ok)}
+.src b{display:block;font-size:12px}
+.src span{display:block;font-size:12px;color:var(--ink-2);overflow-wrap:anywhere}
+.btn{font:inherit;font-size:13px;font-weight:600;border:1px solid var(--line);background:var(--surface-2);color:var(--ink);border-radius:6px;padding:6px 10px;cursor:pointer;white-space:nowrap}
+.btn:hover{border-color:var(--accent)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--surface)}
+.btn:focus-visible,input:focus-visible,select:focus-visible,th[data-k]:focus-visible,.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+input[type=file]{display:none}
+.controls{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:center}
+.controls label{display:flex;gap:6px;align-items:center;font-size:13px;color:var(--ink-2)}
+input[type=number],input[type=search],select{font:inherit;font-size:13px;background:var(--surface);color:var(--ink);border:1px solid var(--line);border-radius:6px;padding:5px 8px}
+input[type=number]{width:64px}
+/* drop */
+.drop{border:1.5px dashed var(--line);border-radius:12px;background:var(--surface);padding:28px 20px;display:grid;grid-template-columns:repeat(auto-fit,minmax(240px,1fr));gap:16px}
+.drop.drag{border-color:var(--accent);background:var(--accent-soft)}
+.drop .slot{display:flex;flex-direction:column;gap:6px;min-width:0}
+.drop p{margin:0;max-width:62ch}
+/* kpis */
+.kpis{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px}
+.kpi{background:var(--surface);border:1px solid var(--line);border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:4px;min-width:0}
+.kpi .v{font-family:var(--display);font-size:28px;font-weight:700;font-variant-numeric:tabular-nums;line-height:1.1}
+.kpi .s{font-size:12px;color:var(--ink-2)}
+.kpi.alert{border-color:var(--crit);box-shadow:inset 4px 0 0 var(--crit)}
+.kpi.alert .v{color:var(--crit)}
+.kpi.cost{box-shadow:inset 4px 0 0 var(--accent)}
+section.card{background:var(--surface);border:1px solid var(--line);border-radius:12px;padding:18px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.sec-head{display:flex;flex-wrap:wrap;gap:10px 16px;align-items:baseline;justify-content:space-between}
+.sec-head p{margin:2px 0 0;font-size:13px;color:var(--ink-2);max-width:75ch}
+.tbl-wrap{overflow-x:auto;border:1px solid var(--line);border-radius:8px;max-height:620px;overflow-y:auto}
+table{border-collapse:collapse;width:100%;font-size:13px}
+th,td{padding:7px 10px;text-align:left;border-bottom:1px solid var(--line);white-space:nowrap}
+th{position:sticky;top:0;background:var(--surface-2);font-size:11px;letter-spacing:.06em;text-transform:uppercase;color:var(--ink-2);font-weight:600;z-index:1}
+th[data-k]{cursor:pointer;user-select:none}
+th[data-k]::after{content:"";margin-left:4px}
+th.asc::after{content:"▲";font-size:9px}
+th.desc::after{content:"▼";font-size:9px}
+td.r,th.r{text-align:right}
+td.r{font-family:var(--mono);font-variant-numeric:tabular-nums}
+tbody tr:hover{background:var(--surface-2)}
+tr.alert-row td:first-child{box-shadow:inset 3px 0 0 var(--crit)}
+tfoot td{font-weight:700;background:var(--surface-2);position:sticky;bottom:0}
+tr.sub td{background:var(--accent-soft);font-weight:600}
+.wrapcell{white-space:normal;min-width:180px}
+.pill{display:inline-block;font-size:11px;font-weight:600;padding:2px 8px;border-radius:999px;line-height:1.5}
+.pill.crit{background:var(--crit-soft);color:var(--crit)}
+.pill.warn{background:var(--warn-soft);color:var(--warn)}
+.pill.ok{background:var(--ok-soft);color:var(--ok)}
+.pill.neu{background:var(--surface-2);color:var(--ink-2)}
+/* category summary */
+.cats{display:grid;grid-template-columns:repeat(auto-fit,minmax(260px,1fr));gap:12px}
+.cat{border:1px solid var(--line);border-radius:10px;padding:14px;display:flex;flex-direction:column;gap:10px;min-width:0}
+.cat h3{font-size:16px}
+.cat dl{display:grid;grid-template-columns:1fr auto;gap:4px 12px;margin:0;font-size:13px}
+.cat dt{color:var(--ink-2)}
+.cat dd{margin:0;text-align:right;font-family:var(--mono);font-variant-numeric:tabular-nums}
+.cat dd.crit{color:var(--crit);font-weight:600}
+.stack{display:flex;height:12px;border-radius:3px;overflow:hidden;background:var(--surface-2)}
+.stack i{display:block;height:100%}
+.legend{display:flex;flex-wrap:wrap;gap:6px 14px;font-size:12px;color:var(--ink-2)}
+.legend span{display:inline-flex;align-items:center;gap:5px}
+.legend i{width:10px;height:10px;border-radius:2px;display:inline-block}
+.tabs{display:flex;flex-wrap:wrap;gap:6px}
+.chip{font:inherit;font-size:13px;border:1px solid var(--line);background:var(--surface);color:var(--ink-2);border-radius:999px;padding:4px 12px;cursor:pointer}
+.chip[aria-pressed="true"]{background:var(--ink);border-color:var(--ink);color:var(--bg)}
+.bar{display:flex;align-items:center;gap:8px;min-width:120px}
+.bar .t{flex:1;height:8px;background:var(--surface-2);border-radius:4px;overflow:hidden;min-width:60px}
+.bar .t i{display:block;height:100%;background:var(--crit)}
+a.lnk{color:var(--accent);cursor:pointer;text-decoration:underline;text-underline-offset:2px}
+.note{font-size:12px;color:var(--ink-2);margin:0;max-width:90ch}
+.warnbox{border:1px solid var(--warn);background:var(--warn-soft);color:var(--ink);border-radius:8px;padding:10px 12px;font-size:13px}
+details summary{cursor:pointer;font-weight:600}
+.toast{position:fixed;left:50%;bottom:calc(20px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:var(--ink);color:var(--bg);padding:8px 14px;border-radius:8px;font-size:13px;opacity:0;transition:opacity .2s;pointer-events:none;z-index:20}
+.toast.on{opacity:1}
+.err{color:var(--crit);font-size:13px}
+@media (prefers-reduced-motion: reduce){*{transition:none!important}}
+</style>
+
+<div class="wrap">
+  <header class="top">
+    <div>
+      <div class="eyebrow">Zara Chile S.A. · Feriado legal</div>
+      <h1>Saldos de vacaciones</h1>
+    </div>
+    <div class="sources">
+      <div class="src" id="srcRep"><i class="dot"></i><div><b>Reporte de vacaciones</b><span id="repInfo">Sin cargar</span></div><button class="btn" id="btnRep" type="button">Actualizar</button></div>
+      <div class="src" id="srcSql"><i class="dot"></i><div><b>INFSQL (maestro)</b><span id="sqlInfo">Sin cargar</span></div><button class="btn" id="btnSql" type="button">Actualizar</button></div>
+      <input type="file" id="fRep" accept=".xls,.xlsx,.html,.htm,.csv">
+      <input type="file" id="fSql" accept=".xlsx,.xls">
+    </div>
+  </header>
+
+  <div id="dropZone" class="drop">
+    <div class="slot">
+      <div class="eyebrow">Paso 1</div>
+      <h2>Arrastra aquí los dos archivos</h2>
+      <p class="muted">El <b>Reporte_dd-mm-aaaa.xls</b> (saldos por persona) y el <b>INFSQL_….xlsx</b> (centro, puesto, sueldo base y gratificación). Puedes soltarlos juntos o por separado; el panel reconoce cuál es cuál.</p>
+    </div>
+    <div class="slot">
+      <div class="eyebrow">Privacidad</div>
+      <p class="muted">Los archivos se leen solo en este navegador. Nada se sube al servidor; el último par cargado queda guardado aquí para la próxima vez que abras el panel.</p>
+      <div style="display:flex;gap:8px;flex-wrap:wrap"><button class="btn primary" id="btnPick" type="button">Elegir archivos</button><input type="file" id="fBoth" multiple accept=".xls,.xlsx,.html,.htm"></div>
+      <div id="loadErr" class="err"></div>
+    </div>
+  </div>
+
+  <div id="app" hidden>
+    <div style="display:flex;flex-direction:column;gap:22px">
+      <div class="controls">
+        <label>Alerta si saldo supera <input type="number" id="umbral" min="1" step="1" value="30"> días</label>
+        <label><input type="checkbox" id="corridos"> Valorizar en días corridos (hábiles × 7/5)</label>
+        <button class="btn" id="btnClear" type="button">Olvidar datos de este navegador</button>
+      </div>
+
+      <div class="kpis" id="kpis"></div>
+
+      <section class="card">
+        <div class="sec-head"><div><h2>Resumen por categoría</h2><p>Distribución del saldo total de días por persona. Alerta: más de <span class="umb">30</span> días disponibles (proporcional + anuales + progresivos + adicionales).</p></div>
+          <div class="legend" id="legend"></div></div>
+        <div class="cats" id="cats"></div>
+        <div id="unmatched"></div>
+      </section>
+
+      <section class="card">
+        <div class="sec-head"><div><h2>Saldos por centro</h2><p>Haz clic en un centro para ver su listado de personas más abajo.</p></div>
+          <div class="tabs" id="centerTabs"></div></div>
+        <div class="tbl-wrap"><table id="tCenters"></table></div>
+      </section>
+
+      <section class="card" id="costCard">
+        <div class="sec-head"><div><h2>Costo de vacaciones · Oficina/Estructura</h2>
+          <p>Valor día = (sueldo base + gratificación) ÷ 30. Costo = saldo de días × valor día. Incluye el centro 7028 Almacén. Saldos negativos se valorizan en $0.</p></div>
+          <button class="btn" id="copyCost" type="button">Copiar tabla para Excel</button></div>
+        <div class="tbl-wrap"><table id="tCost"></table></div>
+        <p class="note" id="costNote"></p>
+      </section>
+
+      <section class="card">
+        <div class="sec-head"><div><h2>Listado de personas</h2><p id="listCaption"></p></div>
+          <button class="btn" id="copyList" type="button">Copiar listado para Excel</button></div>
+        <div class="controls">
+          <div class="tabs" id="catTabs"></div>
+          <select id="fCenter" aria-label="Centro"></select>
+          <input type="search" id="fText" placeholder="Buscar nombre, RUT o puesto" aria-label="Buscar">
+          <label><input type="checkbox" id="fAlert"> Solo con alerta</label>
+        </div>
+        <div class="tbl-wrap"><table id="tList"></table></div>
+      </section>
+
+      <section class="card">
+        <details id="rules">
+          <summary>Reglas de clasificación de centros</summary>
+          <p class="note" style="margin-top:8px">Por defecto: centros con código 20000 o superior y el 7028 (Almacén) son Oficina/Estructura; centros cuyo nombre empieza con «Z.H.» o dice «Zara Home» son Zara Home; el resto son Tiendas. Si aparece un centro nuevo puedes reasignarlo aquí; el cambio queda guardado en este navegador.</p>
+          <div class="tbl-wrap" style="margin-top:10px"><table id="tRules"></table></div>
+        </details>
+      </section>
+    </div>
+  </div>
+</div>
+<div class="toast" id="toast" role="status"></div>
+
+<script>
+(function(){
+"use strict";
+const LS_KEY="vacdash.v1", LS_OVR="vacdash.ovr.v1", LS_SET="vacdash.set.v1";
+const CATS=["Tiendas","Zara Home","Oficina/Estructura"];
+const BUCKETS=[{lab:"< 15 días",max:15,c:"--b1"},{lab:"15–30",max:30,c:"--b2"},{lab:"30–45",max:45,c:"--b3"},{lab:"> 45",max:Infinity,c:"--b4"}];
+const $=id=>document.getElementById(id);
+const fmtD=n=>(n==null||isNaN(n))?"–":n.toLocaleString("es-CL",{minimumFractionDigits:2,maximumFractionDigits:2});
+const fmtI=n=>(n==null||isNaN(n))?"–":Math.round(n).toLocaleString("es-CL");
+const fmt$=n=>(n==null||isNaN(n))?"–":"$"+Math.round(n).toLocaleString("es-CL");
+const esc=s=>String(s??"").replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]));
+const norm=s=>String(s??"").normalize("NFD").replace(/[̀-ͯ]/g,"").toLowerCase().replace(/\s+/g," ").trim();
+const normRut=s=>String(s??"").replace(/[\s.]/g,"").toUpperCase();
+function lsGet(k){try{const v=localStorage.getItem(k);return v?JSON.parse(v):null}catch(e){return null}}
+function lsSet(k,v){try{localStorage.setItem(k,JSON.stringify(v));return true}catch(e){return false}}
+function lsDel(k){try{localStorage.removeItem(k)}catch(e){}}
+function toast(m){const t=$("toast");t.textContent=m;t.classList.add("on");clearTimeout(toast._t);toast._t=setTimeout(()=>t.classList.remove("on"),2200)}
+
+let state={rep:null,sql:null};
+let ovr=lsGet(LS_OVR)||{};
+let settings=Object.assign({umbral:30,corridos:false},lsGet(LS_SET)||{});
+let ui={centerCat:"Tiendas",listCat:"Todas",center:"",text:"",onlyAlert:false,sortList:{k:"total",d:-1},sortCenters:{k:"alert",d:-1}};
+
+/* ---------- parsing ---------- */
+function parseNum(v){
+  if(v==null||v==="")return 0;
+  if(typeof v==="number")return v;
+  let s=String(v).trim().replace(/\s/g,"");
+  if(s.includes(",")){s=s.replace(/\./g,"").replace(",",".")}
+  const n=parseFloat(s);return isNaN(n)?0:n;
+}
+function looksHtml(buf){
+  const b=new Uint8Array(buf.slice(0,512));let s="";for(const x of b)s+=String.fromCharCode(x);
+  return /^\s*(﻿|\xef\xbb\xbf)?\s*</.test(s)&&/<t(able|r|d)/i.test(s);
+}
+function htmlRows(buf){
+  const txt=new TextDecoder("utf-8").decode(buf);
+  const doc=new DOMParser().parseFromString(txt,"text/html");
+  return [...doc.querySelectorAll("tr")].map(tr=>[...tr.querySelectorAll("td,th")].map(td=>td.textContent.replace(/ /g," ").trim()));
+}
+/* Lector .xlsx nativo (zip + XML) para no depender de librerías externas */
+async function unzip(buf){
+  const dv=new DataView(buf),u8=new Uint8Array(buf);let e=-1;
+  for(let i=buf.byteLength-22;i>=Math.max(0,buf.byteLength-66000);i--){if(dv.getUint32(i,true)===0x06054b50){e=i;break}}
+  if(e<0)throw new Error("no es un archivo .xlsx válido");
+  const cnt=dv.getUint16(e+10,true);let off=dv.getUint32(e+16,true);const files={};const td=new TextDecoder();
+  for(let k=0;k<cnt;k++){
+    if(dv.getUint32(off,true)!==0x02014b50)break;
+    const meth=dv.getUint16(off+10,true),csz=dv.getUint32(off+20,true),nl=dv.getUint16(off+28,true),xl=dv.getUint16(off+30,true),cl=dv.getUint16(off+32,true),lho=dv.getUint32(off+42,true);
+    const name=td.decode(u8.subarray(off+46,off+46+nl));
+    files[name]={meth,csz,lho};off+=46+nl+xl+cl;
+  }
+  return async name=>{const f=files[name];if(!f)return null;
+    const ds=f.lho+30+dv.getUint16(f.lho+26,true)+dv.getUint16(f.lho+28,true);const data=u8.slice(ds,ds+f.csz);
+    if(f.meth===0)return td.decode(data);
+    const stream=new Blob([data]).stream().pipeThrough(new DecompressionStream("deflate-raw"));
+    return await new Response(stream).text()};
+}
+const xmlDoc=s=>new DOMParser().parseFromString(s,"application/xml");
+const tags=(n,t)=>[...n.getElementsByTagNameNS("*",t)];
+function colIdx(ref){const m=/^([A-Z]+)/.exec(ref||"");if(!m)return -1;let n=0;for(const ch of m[1])n=n*26+ch.charCodeAt(0)-64;return n-1}
+async function xlsxRows(buf){
+  const get=await unzip(buf);
+  let sheetPath="xl/worksheets/sheet1.xml";
+  try{const wb=xmlDoc(await get("xl/workbook.xml"));const s1=tags(wb,"sheet")[0];const rid=s1&&(s1.getAttribute("r:id")||s1.getAttributeNS("http://schemas.openxmlformats.org/officeDocument/2006/relationships","id"));
+    const rels=xmlDoc(await get("xl/_rels/workbook.xml.rels"));const rel=tags(rels,"Relationship").find(r=>r.getAttribute("Id")===rid);
+    if(rel){let t=rel.getAttribute("Target");t=t.startsWith("/")?t.slice(1):"xl/"+t.replace(/^\.\//,"");sheetPath=t}}catch(e){}
+  const ssTxt=await get("xl/sharedStrings.xml");
+  const ss=ssTxt?tags(xmlDoc(ssTxt),"si").map(si=>tags(si,"t").map(t=>t.textContent).join("")):[];
+  const sh=xmlDoc(await get(sheetPath));const out=[];
+  for(const row of tags(sh,"row")){
+    const r=[];let ci=0;
+    for(const c of tags(row,"c")){
+      const ref=colIdx(c.getAttribute("r"));if(ref>=0)ci=ref;
+      const t=c.getAttribute("t"),v=tags(c,"v")[0]?.textContent;let val=null;
+      if(t==="s")val=ss[+v]??"";else if(t==="inlineStr")val=tags(c,"t").map(x=>x.textContent).join("");else if(t==="str"||t==="e")val=v??"";else if(t==="b")val=v==="1";else if(v!=null&&v!=="")val=Number(v);
+      r[ci++]=val;
+    }
+    const ri=parseInt(row.getAttribute("r"),10);out[(ri>0?ri-1:out.length)]=r;
+  }
+  return out.map(r=>r||[]);
+}
+function isZip(buf){const b=new Uint8Array(buf.slice(0,4));return b[0]===0x50&&b[1]===0x4b}
+function wbRows(buf){
+  if(typeof XLSX==="undefined")throw new Error("es un .xls binario antiguo y no se pudo cargar el lector; guárdalo como .xlsx e inténtalo de nuevo");
+  const wb=XLSX.read(buf,{type:"array",cellDates:true});
+  const ws=wb.Sheets[wb.SheetNames[0]];
+  return XLSX.utils.sheet_to_json(ws,{header:1,raw:true,defval:null});
+}
+function findHeader(rows,needles){
+  for(let i=0;i<Math.min(rows.length,30);i++){
+    const h=(rows[i]||[]).map(norm);
+    if(needles.every(n=>h.some(x=>x===n||x.startsWith(n))))return i;
+  }return -1;
+}
+function col(h,...names){for(const n of names){const i=h.findIndex(x=>x===n);if(i>=0)return i}for(const n of names){const i=h.findIndex(x=>x.startsWith(n));if(i>=0)return i}return -1}
+
+function parseReporte(rows){
+  const hi=findHeader(rows,["codigo","total dias"]);
+  if(hi<0)return null;
+  const h=rows[hi].map(norm);
+  const c={rut:col(h,"codigo"),nom:col(h,"nombre"),tot:col(h,"total dias"),pro:col(h,"propor"),dpa:col(h,"dias por ano","dias por año"),anu:col(h,"anuales"),prg:col(h,"progrsvs","progresivos"),adi:col(h,"adicnls","adicionales"),fin:col(h,"fecha inicial")};
+  const out=[];
+  for(const r of rows.slice(hi+1)){
+    if(!r||!r[c.rut])continue;
+    const rut=normRut(r[c.rut]);if(!/\d/.test(rut))continue;
+    out.push({rut,nombre:String(r[c.nom]??"").replace(/\s+/g," ").trim(),total:parseNum(r[c.tot]),prop:parseNum(r[c.pro]),dpa:parseNum(r[c.dpa]),anu:parseNum(r[c.anu]),prg:parseNum(r[c.prg]),adi:parseNum(r[c.adi]),fini:c.fin>=0?String(r[c.fin]??""):""});
+  }
+  return out;
+}
+function parseSql(rows){
+  const hi=findHeader(rows,["cc_datos_personales_rut","cc_history/historico_tienda"]);
+  if(hi<0)return null;
+  const h=rows[hi].map(norm);
+  const c={rut:col(h,"cc_datos_personales_rut"),cc:col(h,"cc_history/historico_tienda"),cn:col(h,"d_history/historico_tienda"),pu:col(h,"d_commission_puesto"),sb:col(h,"cc_salario_salario_mensual"),gr:col(h,"cc_salario_gratificacion"),jo:col(h,"d_jornada semanal_jornada_semanal"),alta:col(h,"fechaultimaalta"),n1:col(h,"nombre"),a1:col(h,"apellido1"),a2:col(h,"apellido2")};
+  const out=[];
+  for(const r of rows.slice(hi+1)){
+    if(!r||!r[c.rut])continue;
+    let alta=c.alta>=0?r[c.alta]:null;
+    if(alta instanceof Date)alta=alta.toISOString().slice(0,10);
+    out.push({rut:normRut(r[c.rut]),cc:String(r[c.cc]??"").trim(),centro:String(r[c.cn]??"").trim(),puesto:String(c.pu>=0?(r[c.pu]??""):"").trim(),sueldo:parseNum(r[c.sb]),grat:c.gr>=0?parseNum(r[c.gr]):0,jornada:c.jo>=0?String(r[c.jo]??""):"",alta:alta?String(alta):"",nombre:[r[c.a1],r[c.a2],r[c.n1]].filter(Boolean).join(" ")});
+  }
+  return out;
+}
+function infoFromName(name){
+  let m=name.match(/(\d{2})-(\d{2})-(\d{4})/);if(m)return `${m[1]}-${m[2]}-${m[3]}`;
+  m=name.match(/(20\d{2})(\d{2})(\d{2})(\d{2})(\d{2})/);if(m)return `${m[3]}-${m[2]}-${m[1]} ${m[4]}:${m[5]}`;
+  return "";
+}
+async function handleFiles(files){
+  $("loadErr").textContent="";
+  for(const f of files){
+    try{
+      const buf=await f.arrayBuffer();
+      let rows;
+      if(looksHtml(buf))rows=htmlRows(buf);
+      else if(isZip(buf)){try{rows=await xlsxRows(buf)}catch(err){if(typeof XLSX!=="undefined")rows=wbRows(buf);else throw err}}
+      else rows=wbRows(buf);
+      let rep=parseReporte(rows), sql=rep?null:parseSql(rows);
+      if(rep&&rep.length){state.rep={name:f.name,stamp:infoFromName(f.name),loaded:new Date().toISOString(),rows:rep};toast(`Reporte cargado: ${rep.length} personas`)}
+      else if(sql&&sql.length){state.sql={name:f.name,stamp:infoFromName(f.name),loaded:new Date().toISOString(),rows:sql};toast(`INFSQL cargado: ${sql.length} personas`)}
+      else{$("loadErr").textContent=`No reconocí «${f.name}». Debe ser el Reporte de vacaciones (columnas Codigo y Total Dias) o el INFSQL (columnas cc_datos_personales_rut y cc_history/historico_tienda).`}
+    }catch(e){$("loadErr").textContent=`No pude leer «${f.name}»: ${e.message}`}
+  }
+  if(!lsSet(LS_KEY,state))toast("Cargado. No se pudo guardar en este navegador.");
+  render();
+}
+
+/* ---------- model ---------- */
+function defaultCat(cc,name){
+  const n=parseInt(cc,10);
+  if(n===7028||n>=20000)return "Oficina/Estructura";
+  if(/^z\.?\s?h\./i.test(name)||/zara\s*home/i.test(name))return "Zara Home";
+  return "Tiendas";
+}
+function catOf(cc,name){return ovr[cc]||defaultCat(cc,name)}
+function buildModel(){
+  const sqlMap=new Map((state.sql?.rows||[]).map(r=>[r.rut,r]));
+  const U=settings.umbral, fac=settings.corridos?1.4:1;
+  const people=(state.rep?.rows||[]).map(r=>{
+    const s=sqlMap.get(r.rut);
+    const cat=s?catOf(s.cc,s.centro):"Sin cruce";
+    const p=Object.assign({},r,{cc:s?.cc||"S/C",centro:s?.centro||"(no está en INFSQL)",puesto:s?.puesto||"",sueldo:s?.sueldo||0,grat:s?.grat||0,cat,nombre:r.nombre||s?.nombre||""});
+    p.alert=p.total>U; p.neg=p.total<0;
+    if(cat==="Oficina/Estructura"&&s){p.vdia=(p.sueldo+p.grat)/30;p.costo=Math.max(0,p.total)*fac*p.vdia}
+    return p;
+  });
+  return people;
+}
+
+/* ---------- render ---------- */
+function bIdx(t){if(t<15)return 0;if(t<=30)return 1;if(t<=45)return 2;return 3}
+function agg(list){
+  const n=list.length,d=list.reduce((a,p)=>a+p.total,0);
+  return {n,d,avg:n?d/n:0,al:list.filter(p=>p.alert).length,neg:list.filter(p=>p.neg).length,max:n?Math.max(...list.map(p=>p.total)):0,b:BUCKETS.map((_,i)=>list.filter(p=>bIdx(p.total)===i).length),aldays:list.filter(p=>p.alert).reduce((a,p)=>a+(p.total-settings.umbral),0)};
+}
+function render(){
+  const has=state.rep&&state.sql;
+  $("srcRep").classList.toggle("ok",!!state.rep);$("srcSql").classList.toggle("ok",!!state.sql);
+  $("repInfo").textContent=state.rep?`${state.rep.stamp||state.rep.name} · ${state.rep.rows.length} personas`:"Sin cargar";
+  $("sqlInfo").textContent=state.sql?`${state.sql.stamp||state.sql.name} · ${state.sql.rows.length} personas`:"Sin cargar";
+  $("dropZone").hidden=!!has; $("app").hidden=!has;
+  if(!has)return;
+  $("umbral").value=settings.umbral;$("corridos").checked=settings.corridos;
+  document.querySelectorAll(".umb").forEach(e=>e.textContent=settings.umbral);
+  const P=buildModel(); window.__P=P;
+  const byCat={};for(const c of [...CATS,"Sin cruce"])byCat[c]=P.filter(p=>p.cat===c);
+  const all=agg(P), off=byCat["Oficina/Estructura"];
+  const cost=off.reduce((a,p)=>a+(p.costo||0),0);
+  // KPIs
+  $("kpis").innerHTML=`
+   <div class="kpi"><div class="eyebrow">Personas</div><div class="v">${fmtI(all.n)}</div><div class="s">${CATS.map(c=>`${c}: ${byCat[c].length}`).join(" · ")}</div></div>
+   <div class="kpi"><div class="eyebrow">Días disponibles</div><div class="v">${fmtD(all.d)}</div><div class="s">Promedio ${fmtD(all.avg)} días por persona</div></div>
+   <div class="kpi alert"><div class="eyebrow">Sobre ${settings.umbral} días</div><div class="v">${fmtI(all.al)}</div><div class="s">${(all.n?all.al/all.n*100:0).toLocaleString("es-CL",{maximumFractionDigits:1})}% del total · ${fmtD(all.aldays)} días sobre el umbral</div></div>
+   <div class="kpi cost"><div class="eyebrow">Costo vacaciones Oficina/Estructura</div><div class="v">${fmt$(cost)}</div><div class="s">${off.length} personas · ${fmtD(off.reduce((a,p)=>a+p.total,0))} días${settings.corridos?" (× 7/5)":""}</div></div>`;
+  // legend & cats
+  $("legend").innerHTML=BUCKETS.map(b=>`<span><i style="background:var(${b.c})"></i>${b.lab}</span>`).join("");
+  $("cats").innerHTML=CATS.map(c=>{const a=agg(byCat[c]);const sc=c==="Oficina/Estructura"?off.reduce((x,p)=>x+(p.costo||0),0):null;
+    return `<div class="cat"><div style="display:flex;justify-content:space-between;gap:8px;align-items:baseline"><h3>${c}</h3>${a.al?`<span class="pill crit">${a.al} con alerta</span>`:`<span class="pill ok">Sin alertas</span>`}</div>
+    <div class="stack" title="Distribución de saldos">${a.b.map((v,i)=>v?`<i style="width:${v/a.n*100}%;background:var(${BUCKETS[i].c})" title="${BUCKETS[i].lab}: ${v}"></i>`:"").join("")}</div>
+    <dl><dt>Personas</dt><dd>${fmtI(a.n)}</dd><dt>Días disponibles</dt><dd>${fmtD(a.d)}</dd><dt>Promedio por persona</dt><dd>${fmtD(a.avg)}</dd>
+    <dt>Sobre ${settings.umbral} días</dt><dd class="${a.al?"crit":""}">${a.al} (${(a.n?a.al/a.n*100:0).toLocaleString("es-CL",{maximumFractionDigits:1})}%)</dd>
+    <dt>Saldo máximo</dt><dd>${fmtD(a.max)}</dd><dt>Saldos negativos</dt><dd>${a.neg}</dd>
+    ${sc!=null?`<dt>Costo vacaciones</dt><dd>${fmt$(sc)}</dd>`:""}</dl>
+    <a class="lnk" data-cat="${c}">Ver personas</a></div>`}).join("");
+  const sc=byCat["Sin cruce"];
+  $("unmatched").innerHTML=sc.length?`<div class="warnbox"><b>${sc.length} persona(s) del Reporte no aparecen en el INFSQL</b> y no se pudieron clasificar: ${sc.map(p=>`${esc(p.nombre)} (${esc(p.rut)}, ${fmtD(p.total)} días)`).join("; ")}. Suele tratarse de bajas o traslados; revisa si el INFSQL está actualizado.</div>`:"";
+  document.querySelectorAll("#cats a.lnk").forEach(a=>a.onclick=()=>{ui.listCat=a.dataset.cat;ui.center="";ui.onlyAlert=false;renderList(P);$("tList").scrollIntoView({behavior:"smooth",block:"start"})});
+  renderCenters(P);renderCost(off);renderList(P);renderRules();
+}
+function sortBy(list,s){const k=s.k,d=s.d;return list.slice().sort((a,b)=>{const x=a[k],y=b[k];if(typeof x==="number"&&typeof y==="number")return (x-y)*d;return String(x).localeCompare(String(y),"es")*d})}
+function headRow(cols,s,id){return `<thead><tr>${cols.map(c=>`<th ${c.k?`data-k="${c.k}" tabindex="0"`:""} class="${c.r?"r":""} ${s&&s.k===c.k?(s.d>0?"asc":"desc"):""}">${c.l}</th>`).join("")}</tr></thead>`}
+function wireSort(tableId,s,re){document.querySelectorAll(`#${tableId} th[data-k]`).forEach(th=>{const f=()=>{const k=th.dataset.k;if(s.k===k)s.d*=-1;else{s.k=k;s.d=(th.classList.contains("r")?-1:1)}re()};th.onclick=f;th.onkeydown=e=>{if(e.key==="Enter"||e.key===" "){e.preventDefault();f()}}})}
+function renderCenters(P){
+  const cats=[...CATS];if(P.some(p=>p.cat==="Sin cruce"))cats.push("Sin cruce");
+  $("centerTabs").innerHTML=cats.map(c=>`<button type="button" class="chip" aria-pressed="${ui.centerCat===c}" data-c="${c}">${c}</button>`).join("");
+  document.querySelectorAll("#centerTabs .chip").forEach(b=>b.onclick=()=>{ui.centerCat=b.dataset.c;renderCenters(P)});
+  const groups=new Map();
+  for(const p of P.filter(p=>p.cat===ui.centerCat)){const k=p.cc+"|"+p.centro;if(!groups.has(k))groups.set(k,[]);groups.get(k).push(p)}
+  let rows=[...groups.entries()].map(([k,l])=>{const a=agg(l);const[cc,centro]=k.split("|");return {cc,centro,n:a.n,d:a.d,avg:a.avg,alert:a.al,pct:a.n?a.al/a.n:0,max:a.max,neg:a.neg,cost:l.reduce((x,p)=>x+(p.costo||0),0)}});
+  rows=sortBy(rows,ui.sortCenters);
+  const isOff=ui.centerCat==="Oficina/Estructura";
+  const cols=[{k:"cc",l:"Código"},{k:"centro",l:"Centro"},{k:"n",l:"Personas",r:1},{k:"d",l:"Días disp.",r:1},{k:"avg",l:"Promedio",r:1},{k:"max",l:"Máximo",r:1},{k:"alert",l:`> ${settings.umbral} días`,r:1},{k:"pct",l:"% con alerta"},{k:"neg",l:"Negativos",r:1}];
+  if(isOff)cols.push({k:"cost",l:"Costo",r:1});
+  const T=agg(P.filter(p=>p.cat===ui.centerCat));
+  $("tCenters").innerHTML=headRow(cols,ui.sortCenters)+`<tbody>${rows.map(r=>`<tr class="${r.alert?"alert-row":""}"><td class="num">${esc(r.cc)}</td><td><a class="lnk" data-cc="${esc(r.cc)}">${esc(r.centro)}</a></td><td class="r">${r.n}</td><td class="r">${fmtD(r.d)}</td><td class="r">${fmtD(r.avg)}</td><td class="r">${fmtD(r.max)}</td><td class="r">${r.alert?`<span class="pill crit">${r.alert}</span>`:`<span class="pill ok">0</span>`}</td><td><div class="bar"><div class="t"><i style="width:${r.pct*100}%"></i></div><span class="num">${(r.pct*100).toLocaleString("es-CL",{maximumFractionDigits:1})}%</span></div></td><td class="r">${r.neg||"–"}</td>${isOff?`<td class="r">${fmt$(r.cost)}</td>`:""}</tr>`).join("")}</tbody>
+   <tfoot><tr><td></td><td>Total ${esc(ui.centerCat)}</td><td class="r">${T.n}</td><td class="r">${fmtD(T.d)}</td><td class="r">${fmtD(T.avg)}</td><td class="r">${fmtD(T.max)}</td><td class="r">${T.al}</td><td class="num">${(T.n?T.al/T.n*100:0).toLocaleString("es-CL",{maximumFractionDigits:1})}%</td><td class="r">${T.neg||"–"}</td>${isOff?`<td class="r">${fmt$(rows.reduce((a,r)=>a+r.cost,0))}</td>`:""}</tr></tfoot>`;
+  wireSort("tCenters",ui.sortCenters,()=>renderCenters(P));
+  document.querySelectorAll("#tCenters a.lnk").forEach(a=>a.onclick=()=>{ui.listCat=ui.centerCat;ui.center=a.dataset.cc;renderList(P);$("tList").scrollIntoView({behavior:"smooth",block:"start"})});
+}
+let costRowsForCopy=[];
+function renderCost(off){
+  const fac=settings.corridos?1.4:1;
+  const groups=new Map();for(const p of off){const k=p.cc+"|"+p.centro;if(!groups.has(k))groups.set(k,[]);groups.get(k).push(p)}
+  const keys=[...groups.keys()].sort((a,b)=>groups.get(b).reduce((x,p)=>x+p.costo,0)-groups.get(a).reduce((x,p)=>x+p.costo,0));
+  let html=`<thead><tr><th>Nombre</th><th>Puesto</th><th class="r">Saldo días</th><th class="r">Sueldo base</th><th class="r">Gratificación</th><th class="r">Valor día</th><th class="r">Costo</th><th>Estado</th></tr></thead><tbody>`;
+  costRowsForCopy=[["Código","Centro","Nombre","RUT","Puesto","Saldo días","Días valorizados","Sueldo base","Gratificación","Valor día","Costo"]];
+  let tot=0,td=0;
+  for(const k of keys){const l=groups.get(k).sort((a,b)=>b.costo-a.costo);const[cc,centro]=k.split("|");const st=l.reduce((a,p)=>a+p.costo,0),sd=l.reduce((a,p)=>a+p.total,0);tot+=st;td+=sd;
+    html+=`<tr class="sub"><td colspan="2">${esc(cc)} · ${esc(centro)} (${l.length})</td><td class="r">${fmtD(sd)}</td><td colspan="3"></td><td class="r">${fmt$(st)}</td><td></td></tr>`;
+    for(const p of l){html+=`<tr class="${p.alert?"alert-row":""}"><td>${esc(p.nombre)}</td><td class="wrapcell muted">${esc(p.puesto)}</td><td class="r">${fmtD(p.total)}</td><td class="r">${fmt$(p.sueldo)}</td><td class="r">${fmt$(p.grat)}</td><td class="r">${fmt$(p.vdia)}</td><td class="r">${fmt$(p.costo)}</td><td>${status(p)}</td></tr>`;
+      costRowsForCopy.push([cc,centro,p.nombre,p.rut,p.puesto,p.total,Math.max(0,p.total)*fac,p.sueldo,p.grat,Math.round(p.vdia),Math.round(p.costo)])}}
+  html+=`</tbody><tfoot><tr><td colspan="2">Total Oficina/Estructura (${off.length} personas)</td><td class="r">${fmtD(td)}</td><td colspan="3"></td><td class="r">${fmt$(tot)}</td><td></td></tr></tfoot>`;
+  $("tCost").innerHTML=html;
+  const top=off.slice().sort((a,b)=>b.costo-a.costo)[0];
+  $("costNote").textContent=(settings.corridos?"Valorizado en días corridos: cada día hábil de saldo se multiplica por 7/5 (aprox. lo que se paga si el saldo se indemniza al término). ":"Valorizado en días hábiles de saldo, tal como vienen en el Reporte. Activa «días corridos» arriba para estimar el monto si el saldo se indemnizara al término de contrato. ")+(top&&tot?`La mayor partida es ${top.nombre} con ${fmt$(top.costo)} (${(top.costo/tot*100).toLocaleString("es-CL",{maximumFractionDigits:1})}% del total).`:"");
+}
+function status(p){if(p.neg)return `<span class="pill warn">Negativo</span>`;if(p.alert)return `<span class="pill crit">Sobre ${settings.umbral}</span>`;if(p.total>settings.umbral-5)return `<span class="pill warn">Cerca</span>`;return `<span class="pill ok">OK</span>`}
+let listRowsForCopy=[];
+function renderList(P){
+  const cats=["Todas",...CATS];if(P.some(p=>p.cat==="Sin cruce"))cats.push("Sin cruce");
+  $("catTabs").innerHTML=cats.map(c=>`<button type="button" class="chip" aria-pressed="${ui.listCat===c}" data-c="${c}">${c}</button>`).join("");
+  document.querySelectorAll("#catTabs .chip").forEach(b=>b.onclick=()=>{ui.listCat=b.dataset.c;ui.center="";renderList(P)});
+  const inCat=P.filter(p=>ui.listCat==="Todas"||p.cat===ui.listCat);
+  const centers=[...new Map(inCat.map(p=>[p.cc,p.centro])).entries()].sort((a,b)=>a[1].localeCompare(b[1],"es"));
+  if(ui.center&&!centers.some(c=>c[0]===ui.center))ui.center="";
+  $("fCenter").innerHTML=`<option value="">Todos los centros</option>`+centers.map(([cc,n])=>`<option value="${esc(cc)}" ${cc===ui.center?"selected":""}>${esc(cc)} · ${esc(n)}</option>`).join("");
+  $("fAlert").checked=ui.onlyAlert;$("fText").value=ui.text;
+  const q=norm(ui.text);
+  let L=inCat.filter(p=>(!ui.center||p.cc===ui.center)&&(!ui.onlyAlert||p.alert)&&(!q||norm(p.nombre+" "+p.rut+" "+p.puesto+" "+p.centro).includes(q)));
+  L=sortBy(L,ui.sortList);
+  const cols=[{k:"nombre",l:"Nombre"},{k:"rut",l:"RUT"},{k:"centro",l:"Centro"},{k:"cat",l:"Categoría"},{k:"puesto",l:"Puesto"},{k:"fini",l:"Fecha inicial"},{k:"prop",l:"Proporc.",r:1},{k:"anu",l:"Anuales",r:1},{k:"prg",l:"Progres.",r:1},{k:"adi",l:"Adic.",r:1},{k:"total",l:"Total días",r:1},{k:"alert",l:"Estado"}];
+  const A=agg(L);
+  $("listCaption").textContent=`${L.length} personas · ${fmtD(A.d)} días · ${A.al} sobre ${settings.umbral} días`;
+  $("tList").innerHTML=headRow(cols,ui.sortList)+`<tbody>${L.map(p=>`<tr class="${p.alert?"alert-row":""}"><td>${esc(p.nombre)}</td><td class="num">${esc(p.rut)}</td><td>${esc(p.centro)}</td><td class="muted">${esc(p.cat)}</td><td class="wrapcell muted">${esc(p.puesto)}</td><td class="num muted">${esc(p.fini)}</td><td class="r">${fmtD(p.prop)}</td><td class="r">${fmtD(p.anu)}</td><td class="r">${fmtD(p.prg)}</td><td class="r">${fmtD(p.adi)}</td><td class="r"><b>${fmtD(p.total)}</b></td><td>${status(p)}</td></tr>`).join("")||`<tr><td colspan="12" class="muted">Ninguna persona coincide con los filtros.</td></tr>`}</tbody>`;
+  wireSort("tList",ui.sortList,()=>renderList(P));
+  listRowsForCopy=[["Nombre","RUT","Código centro","Centro","Categoría","Puesto","Fecha inicial","Proporcional","Anuales","Progresivos","Adicionales","Total días","Alerta"],...L.map(p=>[p.nombre,p.rut,p.cc,p.centro,p.cat,p.puesto,p.fini,p.prop,p.anu,p.prg,p.adi,p.total,p.alert?"SI":"NO"])];
+}
+function renderRules(){
+  const m=new Map();for(const r of state.sql?.rows||[]){if(!m.has(r.cc))m.set(r.cc,{cc:r.cc,centro:r.centro,n:0});m.get(r.cc).n++}
+  const rows=[...m.values()].sort((a,b)=>(parseInt(a.cc)||0)-(parseInt(b.cc)||0));
+  $("tRules").innerHTML=`<thead><tr><th>Código</th><th>Centro</th><th class="r">Personas</th><th>Categoría</th><th></th></tr></thead><tbody>${rows.map(r=>{const cur=catOf(r.cc,r.centro),def=defaultCat(r.cc,r.centro);return `<tr><td class="num">${esc(r.cc)}</td><td>${esc(r.centro)}</td><td class="r">${r.n}</td><td><select data-cc="${esc(r.cc)}" id="rule-${esc(r.cc)}" aria-label="Categoría de ${esc(r.centro)}">${CATS.map(c=>`<option ${c===cur?"selected":""}>${c}</option>`).join("")}</select></td><td>${ovr[r.cc]&&ovr[r.cc]!==def?`<span class="pill warn">Manual</span>`:""}</td></tr>`}).join("")}</tbody>`;
+  document.querySelectorAll("#tRules select").forEach(s=>s.onchange=()=>{const cc=s.dataset.cc,c=state.sql.rows.find(r=>r.cc===cc);if(s.value===defaultCat(cc,c?.centro||""))delete ovr[cc];else ovr[cc]=s.value;lsSet(LS_OVR,ovr);const open=$("rules").open;render();$("rules").open=open;toast("Clasificación actualizada")});
+}
+function toTSV(rows){return rows.map(r=>r.map(v=>typeof v==="number"?String(Math.round(v*100)/100).replace(".",","):String(v??"").replace(/\t|\n/g," ")).join("\t")).join("\n")}
+async function copy(rows){
+  const t=toTSV(rows);
+  try{await navigator.clipboard.writeText(t);toast(`Copiadas ${rows.length-1} filas. Pégalas en Excel.`)}
+  catch(e){const ta=document.createElement("textarea");ta.value=t;ta.style.position="fixed";ta.style.opacity="0";document.body.appendChild(ta);ta.select();let ok=false;try{ok=document.execCommand("copy")}catch(_){}ta.remove();toast(ok?`Copiadas ${rows.length-1} filas.`:"No se pudo copiar; selecciona la tabla manualmente.")}
+}
+
+/* ---------- wiring ---------- */
+$("btnRep").onclick=()=>$("fRep").click();$("btnSql").onclick=()=>$("fSql").click();$("btnPick").onclick=()=>$("fBoth").click();
+for(const id of ["fRep","fSql","fBoth"])$(id).onchange=e=>{if(e.target.files.length)handleFiles([...e.target.files]);e.target.value=""};
+const dz=document.body;
+dz.addEventListener("dragover",e=>{e.preventDefault();$("dropZone").classList.add("drag")});
+dz.addEventListener("dragleave",e=>{if(!e.relatedTarget)$("dropZone").classList.remove("drag")});
+dz.addEventListener("drop",e=>{e.preventDefault();$("dropZone").classList.remove("drag");if(e.dataTransfer.files.length)handleFiles([...e.dataTransfer.files])});
+$("umbral").onchange=e=>{const v=parseFloat(e.target.value);if(v>0){settings.umbral=v;lsSet(LS_SET,settings);render()}};
+$("corridos").onchange=e=>{settings.corridos=e.target.checked;lsSet(LS_SET,settings);render()};
+$("fCenter").onchange=e=>{ui.center=e.target.value;renderList(window.__P)};
+$("fText").oninput=e=>{ui.text=e.target.value;renderList(window.__P)};
+$("fAlert").onchange=e=>{ui.onlyAlert=e.target.checked;renderList(window.__P)};
+$("copyCost").onclick=()=>copy(costRowsForCopy);$("copyList").onclick=()=>copy(listRowsForCopy);
+let clearArm=false;
+$("btnClear").onclick=e=>{if(!clearArm){clearArm=true;e.target.textContent="Confirmar: olvidar datos";setTimeout(()=>{clearArm=false;e.target.textContent="Olvidar datos de este navegador"},4000);return}
+  lsDel(LS_KEY);state={rep:null,sql:null};clearArm=false;e.target.textContent="Olvidar datos de este navegador";render();toast("Datos borrados de este navegador")};
+
+const saved=lsGet(LS_KEY);if(saved&&saved.rep)state.rep=saved.rep;if(saved&&saved.sql)state.sql=saved.sql;
+render();
+})();
+</script>
+
+</body></html>
