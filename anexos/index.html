@@ -1,0 +1,2379 @@
+<!doctype html>
+<html lang="es">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+<title>Separador de Anexos</title>
+<meta name="description" content="Separa los PDF de anexos de contrato por trabajador y lleva quién firmó.">
+<meta name="theme-color" content="#07070f">
+<link rel="manifest" href="manifest.webmanifest">
+<link rel="icon" type="image/png" href="icons/favicon-64.png">
+<link rel="apple-touch-icon" href="icons/apple-touch-icon.png">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-title" content="Anexos">
+<style>:root{padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}body{margin:0}img{max-width:100%}[hidden]{display:none!important}</style>
+
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Archivo:wdth,wght@75..125,400..800&family=IBM+Plex+Mono:wght@400;500&display=swap">
+<style>
+/* Layout: una mesa de trabajo de una columna; el PDF entra arriba y cada anexo sale como una fila lista para revisar y descargar.
+   Aspecto único "dark neon": fondo casi negro, acento cian, brillo magenta en el título; verde neón para lo ya descargado. */
+:root {
+  --bg: #07070f;
+  --surface: #10111f;
+  --sunken: #0a0b17;
+  --ink: #eceeff;
+  --muted: #9097c4;
+  --line: #262a52;
+  --accent: #23e5ff;
+  --accent-ink: #031015;
+  --accent-soft: #0b2a36;
+  --glow: #ff3df2;
+  --ok: #3dff9e;
+  --ok-soft: #0f3a29;
+  --warn: #ffd24a;
+  --warn-soft: #352a07;
+  --bad: #ff5c93;
+  --paper: #ffffff;
+  --display: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --body: "Archivo", "Helvetica Neue", Arial, sans-serif;
+  --mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Consolas, monospace;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+body {
+  background:
+    radial-gradient(900px 480px at 8% -8%, rgba(255, 61, 242, .13), transparent 62%),
+    radial-gradient(800px 460px at 100% 0%, rgba(35, 229, 255, .11), transparent 60%),
+    var(--bg);
+  background-attachment: fixed;
+  color: var(--ink); font-family: var(--body); font-size: 15px; line-height: 1.45;
+  padding-left: max(16px, env(safe-area-inset-left, 0px));
+  padding-right: max(16px, env(safe-area-inset-right, 0px));
+  padding-block: 28px 56px;
+}
+.wrap { max-width: 1040px; margin-inline: auto; display: grid; gap: 20px; min-width: 0; }
+header { display: flex; flex-wrap: wrap; gap: 8px 24px; align-items: end; justify-content: space-between; }
+h1 {
+  font-family: var(--display); font-stretch: 112%; font-weight: 800; font-size: clamp(30px, 5.4vw, 44px);
+  line-height: 1.04; letter-spacing: -.02em; margin: 0; text-wrap: balance;
+}
+h1 .scrawl { color: var(--glow); text-shadow: 0 0 18px rgba(255, 61, 242, .55); }
+.scrawl { position: relative; white-space: nowrap; }
+.scrawl svg { position: absolute; left: -2%; bottom: -.26em; width: 104%; height: .42em; overflow: visible; pointer-events: none; }
+.scrawl path { fill: none; stroke: var(--accent); stroke-width: 2.4; stroke-linecap: round; filter: drop-shadow(0 0 4px var(--accent)); }
+.lede { margin: 12px 0 0; color: var(--muted); max-width: 60ch; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; }
+.chip {
+  display: inline-flex; align-items: center; gap: 7px; font-size: 13px; color: var(--muted);
+  padding: 5px 10px; border: 1px solid var(--line); border-radius: 999px; background: var(--surface);
+}
+.dot { width: 8px; height: 8px; border-radius: 50%; background: var(--muted); flex: none; }
+.chip[data-state="ready"] .dot { background: var(--ok); }
+.chip[data-state="error"] .dot { background: var(--bad); }
+.chip[data-state="loading"] .dot { animation: pulse 1.2s ease-in-out infinite; }
+@keyframes pulse { 50% { opacity: .3; } }
+
+.drop {
+  display: grid; grid-template-columns: auto 1fr auto; gap: 22px; align-items: center; padding: 26px;
+  background: var(--surface); border: 1.5px dashed var(--line); border-radius: 10px; cursor: pointer;
+  transition: border-color .15s, background .15s;
+}
+.drop:hover, .drop.over, .drop:focus-visible { border-color: var(--accent); background: var(--accent-soft); }
+.drop h2 { font-family: var(--display); font-size: 20px; font-weight: 700; margin: 0 0 2px; font-stretch: 104%; }
+.drop p { margin: 0; color: var(--muted); }
+.drop > div { min-width: 0; }
+.drop.compact { padding: 12px 16px; border-style: solid; grid-template-columns: 1fr auto; }
+.drop.compact svg { display: none; }
+.drop.compact h2 { font-size: 15px; overflow-wrap: anywhere; }
+.drop.compact p { font-size: 13px; }
+.drop input { position: absolute; width: 1px; height: 1px; opacity: 0; }
+
+button, .btn {
+  font: inherit; font-size: 14px; font-weight: 600; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 7px; padding: 7px 12px; cursor: pointer; white-space: nowrap;
+}
+button:hover:not(:disabled) { border-color: var(--accent); color: var(--accent); }
+button:disabled { opacity: .5; cursor: not-allowed; }
+button.primary { background: var(--accent); color: var(--accent-ink); border-color: var(--accent); box-shadow: 0 0 14px rgba(35, 229, 255, .35); }
+button.primary:hover:not(:disabled) { color: var(--accent-ink); filter: brightness(1.1); }
+button.quiet { border-color: transparent; background: none; color: var(--muted); padding-inline: 8px; font-weight: 500; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+
+.progress { display: grid; gap: 8px; }
+.progress p { margin: 0; color: var(--muted); font-variant-numeric: tabular-nums; }
+.ticks { display: flex; gap: 3px; height: 16px; }
+.ticks i { flex: 1 1 0; min-width: 0; background: var(--sunken); border-radius: 2px; transition: background .15s; }
+.ticks i.done { background: var(--accent); }
+
+.confirm {
+  display: grid; gap: 10px; padding: 14px 16px; border: 1px solid var(--accent); border-radius: 8px; background: var(--accent-soft);
+}
+.confirm p { margin: 0; max-width: 70ch; }
+.files { list-style: none; margin: -8px 0 0; padding: 0; display: flex; flex-wrap: wrap; gap: 6px; }
+.files li {
+  display: inline-flex; gap: 6px; align-items: baseline; max-width: 100%; font-size: 13px; padding: 4px 10px;
+  background: var(--surface); border: 1px solid var(--line); border-radius: 6px; min-width: 0;
+}
+.files li b { font-weight: 600; overflow-wrap: anywhere; min-width: 0; }
+.files li span { color: var(--muted); font-variant-numeric: tabular-nums; white-space: nowrap; }
+.files li.bad { border-color: var(--bad); }
+.files li.bad span { color: var(--bad); }
+.src { font-family: var(--mono); font-size: 12px; overflow-wrap: anywhere; }
+.notice { padding: 10px 14px; border-radius: 8px; background: var(--warn-soft); color: var(--warn); }
+.notice.good { background: var(--ok-soft); color: var(--ok); }
+
+.bar { display: flex; flex-wrap: wrap; align-items: center; justify-content: space-between; gap: 12px 20px; }
+.tally { display: flex; flex-wrap: wrap; gap: 4px 18px; font-variant-numeric: tabular-nums; }
+.tally b { font-family: var(--display); font-size: 22px; font-weight: 800; margin-right: 4px; }
+.tally span { color: var(--muted); }
+.tally .warn b, .tally .warn { color: var(--warn); }
+.actions { display: flex; flex-wrap: wrap; gap: 8px; }
+
+.opts { display: flex; flex-wrap: wrap; gap: 12px 18px; align-items: end; padding-block: 12px; border-block: 1px solid var(--line); }
+.opts label { display: grid; gap: 3px; font-size: 12px; color: var(--muted); letter-spacing: .02em; }
+select, input[type="text"], input[type="number"] {
+  font: inherit; font-size: 14px; color: var(--ink); background: var(--surface);
+  border: 1px solid var(--line); border-radius: 6px; padding: 6px 8px; min-width: 0; max-width: 100%;
+}
+input[type="number"] { width: 84px; font-variant-numeric: tabular-nums; }
+
+.rows { display: grid; gap: 4px; min-width: 0; }
+.row {
+  display: grid; grid-template-columns: 18px 30px minmax(0, 1fr) auto; gap: 10px; align-items: center;
+  padding: 5px 10px; background: var(--surface); border: 1px solid var(--line); border-radius: 6px;
+}
+.row.flag { background: var(--warn-soft); border-color: var(--warn); }
+/* Ya descargado o con Ok en la base: verde claro, para no repetirlo */
+.row.done { background: var(--ok-soft); border-color: var(--ok); box-shadow: 0 0 10px rgba(61, 255, 158, .18); }
+.row.done .name-line input { background: var(--surface); }
+.row .state { font-weight: 700; color: var(--ok); }
+.pick { width: 16px; height: 16px; margin: 0; accent-color: var(--accent); cursor: pointer; }
+.row.selected { border-color: var(--accent); }
+.selbar { display: flex; flex-wrap: wrap; align-items: center; gap: 6px 12px; padding: 8px 12px; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+.selbar label { display: inline-flex; align-items: center; gap: 8px; font-weight: 600; cursor: pointer; }
+.selbar .count { color: var(--muted); font-variant-numeric: tabular-nums; }
+.selbar .grow { flex: 1; }
+.thumb {
+  width: 30px; height: 42px; padding: 0; border: 1px solid var(--line); border-radius: 2px; background: var(--paper);
+  overflow: hidden; position: relative;
+}
+.thumb img { display: block; width: 100%; height: 100%; object-fit: cover; object-position: top; }
+.thumb .n {
+  position: absolute; right: 1px; bottom: 1px; font: 500 10px var(--mono); background: var(--ink); color: var(--bg);
+  border-radius: 3px; padding: 0 4px;
+}
+.body { min-width: 0; display: grid; gap: 2px; }
+.name-line { display: flex; align-items: center; gap: 4px 8px; min-width: 0; }
+.name-line input { min-width: 140px; }
+.name-line input { flex: 1 1 auto; font-family: var(--mono); font-weight: 500; font-size: 13px; width: 100%; padding: 3px 7px; }
+.name-line span { font-family: var(--mono); font-size: 12px; color: var(--muted); }
+.meta { font-size: 12px; color: var(--muted); display: flex; flex-wrap: wrap; gap: 0 10px; font-variant-numeric: tabular-nums; }
+.meta b { color: var(--ink); font-weight: 600; }
+.scan { display: block; flex: 0 1 auto; min-width: 0; max-width: 42%; height: auto; max-height: 24px; object-fit: contain; object-position: left; border-radius: 2px; background: #fff; border: 1px solid var(--line); }
+.why { font-size: 12px; color: var(--warn); font-weight: 600; }
+.saved { color: var(--ok); font-weight: 600; }
+.row-actions { display: flex; flex-wrap: wrap; gap: 4px; justify-content: flex-end; max-width: 300px; }
+.row-actions button { font-size: 12px; padding: 3px 8px; }
+
+.sample-head { display: flex; flex-wrap: wrap; align-items: baseline; gap: 4px 10px; }
+.sample-head h2 { font-family: var(--display); font-size: 16px; font-weight: 700; margin: 0; }
+.tag {
+  font-size: 11px; font-weight: 700; letter-spacing: .07em; text-transform: uppercase;
+  color: var(--accent); background: var(--accent-soft); padding: 2px 7px; border-radius: 4px;
+}
+.sample-head p { margin: 0; color: var(--muted); font-size: 13px; flex-basis: 100%; }
+.sample .row { opacity: .92; }
+.sheet { width: 30px; height: 42px; background: var(--paper); border: 1px solid var(--line); border-radius: 2px; padding: 5px 4px; display: grid; gap: 3px; align-content: start; }
+.sheet i { height: 1px; background: #c5ccd9; display: block; }
+.sheet i:first-child { width: 60%; height: 3px; background: #6c7689; margin-bottom: 3px; }
+.sheet i:last-child { width: 45%; }
+.fake-name { font-family: var(--mono); font-weight: 500; font-size: 13px; overflow-wrap: anywhere; }
+
+dialog {
+  width: min(760px, calc(100vw - 32px)); max-height: calc(100vh - 48px); padding: 0; border: 1px solid var(--line);
+  border-radius: 10px; background: var(--surface); color: var(--ink);
+}
+dialog::backdrop { background: rgba(10, 14, 22, .6); }
+.dlg-head {
+  position: sticky; top: 0; display: flex; justify-content: space-between; gap: 12px; align-items: center;
+  padding: 10px 14px; background: var(--surface); border-bottom: 1px solid var(--line); z-index: 1;
+}
+.dlg-head strong { font-family: var(--mono); font-weight: 500; font-size: 14px; overflow-wrap: anywhere; min-width: 0; }
+.dlg-pages { display: grid; gap: 12px; padding: 14px; }
+.dlg-pages canvas { width: 100%; height: auto; display: block; background: #fff; border: 1px solid var(--line); }
+
+.tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); overflow-x: auto; }
+.tabs button {
+  border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; padding: 10px 14px;
+  color: var(--muted); font-weight: 600; font-size: 15px;
+}
+.tabs button:hover:not(:disabled) { color: var(--ink); border-bottom-color: var(--line); }
+.tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); box-shadow: 0 6px 10px -8px var(--accent); }
+.tabs .count { font-weight: 500; color: var(--warn); margin-left: 4px; font-variant-numeric: tabular-nums; }
+.view { display: grid; gap: 20px; min-width: 0; }
+.base-top { display: flex; flex-wrap: wrap; gap: 16px 24px; align-items: end; justify-content: space-between; }
+.meter { display: grid; gap: 8px; flex: 1 1 320px; min-width: 0; }
+.meter-nums { display: flex; flex-wrap: wrap; gap: 4px 20px; font-variant-numeric: tabular-nums; color: var(--muted); }
+.meter-nums b { font-family: var(--display); font-size: 26px; font-weight: 800; color: var(--ink); margin-right: 5px; }
+.meter-nums .ok b { color: var(--ok); }
+.meter-nums .warn b, .meter-nums .warn { color: var(--warn); }
+.track { height: 10px; background: var(--sunken); border-radius: 5px; overflow: hidden; }
+.track i { display: block; height: 100%; width: 0; background: var(--ok); border-radius: 5px; transition: width .3s; }
+.hint { margin: 0; font-size: 13px; color: var(--muted); max-width: 70ch; }
+.base-msg { margin: 0; padding: 18px; border: 1px dashed var(--line); border-radius: 8px; color: var(--muted); background: var(--surface); }
+.tablewrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 8px; background: var(--surface); }
+table { border-collapse: collapse; width: 100%; font-size: 14px; }
+th, td { padding: 5px 10px; text-align: left; border-bottom: 1px solid var(--line); white-space: nowrap; vertical-align: middle; }
+tbody tr:last-child td { border-bottom: 0; }
+th { font-size: 12px; color: var(--muted); font-weight: 600; letter-spacing: .03em; background: var(--sunken); }
+td.name { white-space: normal; min-width: 200px; font-weight: 600; }
+td.mono { font-family: var(--mono); font-size: 13px; font-variant-numeric: tabular-nums; color: var(--muted); }
+td.place { color: var(--muted); }
+.okchip {
+  display: inline-flex; gap: 6px; align-items: baseline; background: var(--surface); color: var(--ok);
+  border: 1px solid var(--ok); font-weight: 700; padding: 2px 9px; border-radius: 999px; font-size: 13px;
+}
+.okchip small { font-weight: 500; font-size: 12px; }
+.okchip:hover:not(:disabled) { color: var(--ok); border-color: var(--ok); }
+.okchip.arm { background: var(--warn-soft); color: var(--warn); border-color: var(--warn); }
+.markbtn { font-size: 12px; padding: 2px 9px; }
+tr.ok td { background: var(--ok-soft); }
+.more { display: flex; gap: 12px; align-items: center; color: var(--muted); font-size: 13px; }
+.inbase { color: var(--ok); }
+.rutlink { display: flex; flex-wrap: wrap; align-items: center; gap: 2px 8px; font-size: 12px; color: var(--muted); }
+.rutlink input { width: 130px; font-family: var(--mono); font-size: 12px; padding: 2px 6px; }
+.notbase { color: var(--warn); }
+.picker { border: 1px solid var(--line); border-radius: 8px; background: var(--surface); padding: 12px 14px 14px; margin: 0; min-width: 0; display: grid; gap: 10px; }
+.picker legend { font-weight: 700; padding: 0 6px; font-size: 14px; }
+.picker legend span { font-weight: 500; color: var(--muted); }
+.picker-tools { display: flex; flex-wrap: wrap; gap: 6px 8px; align-items: center; }
+.picker-tools input { flex: 1 1 200px; }
+.sr-label { position: absolute; width: 1px; height: 1px; overflow: hidden; clip: rect(0 0 0 0); }
+.picker-list { display: grid; grid-template-columns: repeat(auto-fill, minmax(250px, 1fr)); gap: 2px 14px; max-height: 260px; overflow-y: auto; padding-right: 4px; }
+.picker-list label { display: flex; gap: 8px; align-items: baseline; padding: 4px 2px; font-size: 13px; cursor: pointer; min-width: 0; }
+.picker-list input { margin: 0; flex: none; accent-color: var(--accent); }
+.picker-list .code { font-family: var(--mono); font-weight: 500; flex: none; }
+.picker-list .nm { flex: 1; min-width: 0; overflow-wrap: anywhere; color: var(--ink); }
+.picker-list .ct { flex: none; color: var(--muted); font-variant-numeric: tabular-nums; }
+.picker-list .ct.left { color: var(--warn); }
+table.sum td, table.sum th { padding-block: 5px; }
+table.sum .num { text-align: right; font-variant-numeric: tabular-nums; }
+table.sum th button.sort { all: unset; cursor: pointer; font: inherit; color: inherit; }
+table.sum th button.sort:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+table.sum th button.sort[data-dir]::after { content: attr(data-dir); margin-left: 4px; color: var(--accent); }
+table.sum td.name { min-width: 180px; font-weight: 500; }
+table.sum td.left { color: var(--warn); font-weight: 700; }
+table.sum td.done { color: var(--ok); font-weight: 600; }
+table.sum tfoot td { font-weight: 800; border-top: 2px solid var(--line); border-bottom: 0; background: var(--sunken); }
+.mini { display: flex; align-items: center; gap: 8px; min-width: 150px; }
+.mini .track { flex: 1; height: 8px; }
+.mini span { width: 44px; text-align: right; font-variant-numeric: tabular-nums; font-size: 13px; }
+.sr { position: absolute; width: 1px; height: 1px; opacity: 0; pointer-events: none; }
+
+@media (max-width: 720px) {
+  .drop { grid-template-columns: 1fr; padding: 20px; }
+  .drop svg { display: none; }
+  .drop.compact { grid-template-columns: minmax(0, 1fr) auto; }
+  .row { grid-template-columns: 18px 30px minmax(0, 1fr); }
+  .row-actions { grid-column: 1 / -1; justify-content: flex-start; max-width: none; }
+  .name-line span { display: none; }
+  .name-line { flex-wrap: wrap; }
+  .scan { max-width: 100%; }
+  .name-line input { font-size: 13px; }
+}
+@media (max-width: 480px) { .tabs .long { display: none; } .tabs button { padding-inline: 10px; } }
+@media (prefers-reduced-motion: reduce) {
+  * { animation: none !important; transition: none !important; }
+}
+
+/* Acceso (solo versión web) */
+.gate { min-height: 80vh; display: grid; place-items: center; padding-block: 24px; }
+.gate-card { width: min(440px, 100%); display: grid; gap: 14px; padding: 26px 24px; background: var(--surface); border: 1px solid var(--line); border-radius: 12px; box-shadow: 0 0 40px rgba(35, 229, 255, .08); }
+.gate-card h1 { font-size: clamp(28px, 7vw, 38px); }
+.gate-card form { display: grid; gap: 12px; }
+.gate-card form label { display: grid; gap: 4px; font-size: 13px; color: var(--muted); }
+.gate-card input[type="email"], .gate-card input[type="password"] { font: inherit; font-size: 15px; color: var(--ink); background: var(--sunken); border: 1px solid var(--line); border-radius: 7px; padding: 9px 10px; }
+.gate-card button.primary { padding-block: 10px; font-size: 15px; }
+.gate-tabs { display: flex; gap: 2px; border-bottom: 1px solid var(--line); }
+.gate-tabs button { border: 0; border-bottom: 2px solid transparent; border-radius: 0; background: none; color: var(--muted); padding: 8px 10px; }
+.gate-tabs button[aria-selected="true"] { color: var(--ink); border-bottom-color: var(--accent); }
+.gate-msg { margin: 0; color: var(--warn); font-size: 14px; min-height: 1em; }
+.gate-msg.good { color: var(--ok); }
+#whoChip { gap: 4px; padding-block: 2px; }
+#whoChip button { padding: 2px 6px; font-size: 13px; }
+#whoMail { max-width: 220px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.acc-body { display: grid; gap: 12px; padding: 14px; }
+</style>
+
+
+</head>
+<body>
+<section class="gate" id="gate" aria-labelledby="gTitle">
+  <div class="gate-card">
+    <h1 id="gTitle">Separador de <span class="scrawl">Anexos</span></h1>
+    <p class="lede">Ingresa con tu cuenta de herramientas.quidelxpert.cl.</p>
+    <div id="gLoading"><p class="lede">Revisando tu acceso…</p></div>
+    <div id="gLogin" hidden>
+      <div class="gate-tabs" role="tablist" aria-label="Acceso">
+        <button type="button" role="tab" id="gt-login" aria-selected="true">Ingresar</button>
+        <button type="button" role="tab" id="gt-registro" aria-selected="false">Crear cuenta</button>
+        <button type="button" role="tab" id="gt-recuperar" aria-selected="false">Recuperar</button>
+      </div>
+      <form id="gf-login" autocomplete="on">
+        <label for="gl-email">Correo<input id="gl-email" type="email" autocomplete="username" required placeholder="tu@correo.cl"></label>
+        <label for="gl-pass">Contraseña<input id="gl-pass" type="password" autocomplete="current-password" required></label>
+        <button type="submit" class="primary">Ingresar</button>
+      </form>
+      <form id="gf-registro" autocomplete="on" hidden>
+        <label for="gr-nombre">Nombre completo<input id="gr-nombre" type="text" autocomplete="name" required></label>
+        <label for="gr-email">Correo<input id="gr-email" type="email" autocomplete="email" required placeholder="tu@correo.cl"></label>
+        <label for="gr-pass">Contraseña (mínimo 8 caracteres)<input id="gr-pass" type="password" autocomplete="new-password" required minlength="8"></label>
+        <label for="gr-pass2">Repetir contraseña<input id="gr-pass2" type="password" autocomplete="new-password" required minlength="8"></label>
+        <button type="submit" class="primary">Crear cuenta</button>
+        <p class="hint">Después de registrarte, el administrador debe darte acceso al separador.</p>
+      </form>
+      <form id="gf-recuperar" hidden>
+        <label for="gp-email">Correo<input id="gp-email" type="email" autocomplete="email" required placeholder="tu@correo.cl"></label>
+        <button type="submit" class="primary">Enviar enlace</button>
+      </form>
+    </div>
+    <div id="gPending" hidden>
+      <p id="gPendText"></p>
+      <div class="actions">
+        <button type="button" id="gReload">Ya me dieron acceso</button>
+        <button type="button" class="quiet" id="gResend" hidden>Reenviar verificación</button>
+        <button type="button" class="quiet" id="gOut">Salir</button>
+      </div>
+    </div>
+    <p class="gate-msg" id="gMsg" role="alert"></p>
+    <p class="hint">Los PDF y la base de trabajadores no salen de este navegador.</p>
+  </div>
+</section>
+
+<dialog id="accDlg" aria-labelledby="accTitle">
+  <div class="dlg-head"><strong id="accTitle">Quién puede usar el separador</strong><button type="button" id="accClose">Cerrar</button></div>
+  <div class="acc-body">
+    <p class="hint">Las personas se registran con «Crear cuenta». Marca a quién le das acceso. Cada persona ve solo la base que cargue en su propio navegador.</p>
+    <div class="tablewrap"><table><thead><tr><th>Nombre</th><th>Correo</th><th>Cotizador</th><th>Separador</th></tr></thead><tbody id="accRows"></tbody></table></div>
+    <p class="gate-msg" id="accMsg" role="status"></p>
+  </div>
+</dialog>
+
+<div class="wrap" id="app" hidden>
+  <header>
+    <div>
+      <h1>Separador de <span class="scrawl">Anexos<svg viewBox="0 0 200 14" preserveAspectRatio="none" aria-hidden="true"><path d="M2 9C30 3 52 11 80 6s44-3 62 1 38 1 56-4" vector-effect="non-scaling-stroke"/></svg></span></h1>
+      <p class="lede">Sube uno o varios PDF escaneados con los anexos. Cada hoja se lee, se agrupa por trabajador y queda como un archivo con su primer nombre, primer apellido, mes y año.</p>
+    </div>
+    <div class="chips">
+      <span class="chip">Los PDF no salen de este navegador</span>
+      <span class="chip" id="whoChip" hidden><span id="whoMail"></span><button type="button" class="quiet" id="accesosBtn" hidden>Accesos</button><button type="button" class="quiet" id="logoutBtn">Salir</button></span>
+      <span class="chip" id="engineChip" data-state="loading"><span class="dot"></span><span id="engineText">Preparando lector</span></span>
+    </div>
+  </header>
+
+  <nav class="tabs" role="tablist" aria-label="Secciones">
+    <button type="button" role="tab" id="tabSep" aria-selected="true" aria-controls="viewSep">Separar<span class="long"> anexos</span></button>
+    <button type="button" role="tab" id="tabBase" aria-selected="false" aria-controls="viewBase">Base<span class="long"> de trabajadores</span><span class="count" id="tabCount"></span></button>
+    <button type="button" role="tab" id="tabSum" aria-selected="false" aria-controls="viewSum">Resumen<span class="long"> por centro de costo</span></button>
+  </nav>
+
+  <div class="view" id="viewSep" role="tabpanel" aria-labelledby="tabSep">
+  <div class="drop" id="drop" tabindex="0" role="button" aria-label="Elegir un PDF">
+    <svg width="74" height="62" viewBox="0 0 74 62" fill="none" aria-hidden="true">
+      <rect x="3" y="7" width="34" height="48" rx="2" fill="var(--paper)" stroke="var(--muted)" stroke-width="1.5" transform="rotate(-7 20 31)"/>
+      <rect x="20" y="4" width="34" height="48" rx="2" fill="var(--paper)" stroke="var(--muted)" stroke-width="1.5"/>
+      <rect x="37" y="7" width="34" height="48" rx="2" fill="var(--paper)" stroke="var(--accent)" stroke-width="1.5" transform="rotate(7 54 31)"/>
+      <path d="M43 22h22M42 29h22M41 36h14" stroke="var(--accent)" stroke-width="1.5" stroke-linecap="round" transform="rotate(7 54 31)"/>
+    </svg>
+    <div>
+      <h2 id="dropTitle">Arrastra aquí los PDF de anexos</h2>
+      <p id="dropHint">O haz clic para elegirlos. Puedes subir varios a la vez, escaneados o con texto.</p>
+    </div>
+    <button type="button" class="primary" id="pickBtn">Elegir PDF</button>
+    <input type="file" id="fileInput" accept="application/pdf,.pdf" multiple tabindex="-1" aria-label="Archivos PDF">
+  </div>
+
+  <ul class="files" id="files" hidden></ul>
+
+  <div class="notice" id="notice" role="alert" hidden></div>
+
+  <div class="progress" id="progress" hidden>
+    <p id="progressText">Leyendo hojas</p>
+    <div class="ticks" id="ticks"></div>
+  </div>
+
+  <section class="sample" id="sample" aria-label="Ejemplo de resultado">
+    <div class="rows">
+      <div class="sample-head">
+        <h2>Así queda el resultado</h2><span class="tag">Ejemplo</span>
+        <p>Personas ficticias. Tus anexos aparecerán aquí, sin el ejemplo.</p>
+      </div>
+      <div class="row">
+        <input type="checkbox" class="pick" disabled aria-label="Ejemplo">
+        <div class="sheet"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="body"><span class="fake-name">Camila Soto Octubre 2026.pdf</span>
+          <div class="meta"><span><b>CAMILA ANDREA SOTO VERA</b></span><span>Hoja 1</span><span class="saved">Listo</span></div></div>
+        <div class="row-actions"><button type="button" disabled>Descargar</button></div>
+      </div>
+      <div class="row">
+        <input type="checkbox" class="pick" disabled aria-label="Ejemplo">
+        <div class="sheet"><i></i><i></i><i></i><i></i><i></i><i></i></div>
+        <div class="body"><span class="fake-name">Diego de la Fuente Octubre 2026.pdf</span>
+          <div class="meta"><span><b>DIEGO IGNACIO DE LA FUENTE ROJAS</b></span><span>Hojas 2 y 3</span><span class="saved">Listo</span></div></div>
+        <div class="row-actions"><button type="button" disabled>Descargar</button></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="results" hidden>
+    <div class="rows">
+      <div class="bar">
+        <div class="tally" id="tally" aria-live="polite"></div>
+        <div class="actions">
+          <button type="button" class="quiet" id="filterBtn" hidden></button>
+          <button type="button" id="resetBtn">Limpiar y cargar otros PDF</button>
+        </div>
+      </div>
+      <div class="selbar">
+        <label for="selAll"><input type="checkbox" class="pick" id="selAll">Seleccionar todos</label>
+        <span class="count" id="selCount">0 seleccionados</span>
+        <button type="button" class="quiet" id="selPending">Solo sin descargar</button>
+        <span class="grow"></span>
+        <button type="button" class="quiet" id="folderBtn" hidden>Elegir carpeta</button>
+        <button type="button" class="primary" id="saveSelBtn" disabled>Descargar seleccionados</button>
+      </div>
+      <div class="confirm" id="clearBox" hidden>
+        <p id="clearText"></p>
+        <div class="actions">
+          <button type="button" class="primary" id="clearPick">Limpiar y elegir PDF</button>
+          <button type="button" id="clearOnly">Solo limpiar</button>
+          <button type="button" class="quiet" id="clearCancel">Cancelar</button>
+        </div>
+      </div>
+      <div class="opts">
+        <label for="monthSel">Mes en el nombre<select id="monthSel"><option value="auto">Según la fecha de cada anexo</option></select></label>
+        <label for="yearInput">Año<input type="number" id="yearInput" min="2000" max="2100"></label>
+        <label for="styleSel">Formato del nombre
+          <select id="styleSel">
+            <option value="space">Pablo Soto Octubre 2026.pdf</option>
+            <option value="under">Pablo_Soto_Octubre_2026.pdf</option>
+            <option value="upper">PABLO SOTO OCTUBRE 2026.pdf</option>
+          </select>
+        </label>
+      </div>
+      <div class="rows" id="rows"></div>
+    </div>
+  </section>
+  </div>
+
+  <section class="view" id="viewSum" role="tabpanel" aria-labelledby="tabSum" hidden>
+    <p class="base-msg" id="sumMsg">Cargando la base de trabajadores…</p>
+    <div class="view" id="sumBody" hidden>
+      <div class="base-top">
+        <div class="meter">
+          <div class="meter-nums">
+            <span class="ok"><b id="sDone">0</b>firmados</span>
+            <span class="warn"><b id="sLeft">0</b>pendientes</span>
+            <span><b id="sPct">0 %</b>de avance</span>
+          </div>
+          <div class="track"><i id="sFill"></i></div>
+          <p class="hint" id="sScope"></p>
+        </div>
+        <div class="actions">
+          <button type="button" class="primary" id="repSum">Descargar resumen (.xlsx)</button>
+          <button type="button" id="repDet">Descargar detalle (.xlsx)</button>
+        </div>
+      </div>
+      <div class="notice" id="sumNotice" role="status" hidden></div>
+
+      <fieldset class="picker">
+        <legend>Centros de costo a mostrar <span id="pickCount"></span></legend>
+        <div class="picker-tools">
+          <label for="pickQ" class="sr-label">Buscar centro de costo</label>
+          <input type="text" id="pickQ" placeholder="Buscar código o nombre" autocomplete="off">
+          <button type="button" class="quiet" id="pickAll">Todos</button>
+          <button type="button" class="quiet" id="pickNone">Ninguno</button>
+          <button type="button" class="quiet" id="pickPending">Solo con pendientes</button>
+        </div>
+        <div class="picker-list" id="pickList"></div>
+      </fieldset>
+
+      <div class="tablewrap">
+        <table class="sum">
+          <thead><tr>
+            <th><button type="button" class="sort" data-sort="cc">C. costo</button></th>
+            <th><button type="button" class="sort" data-sort="name">Centro de costo</button></th>
+            <th class="num"><button type="button" class="sort" data-sort="total">Trabajadores</button></th>
+            <th class="num"><button type="button" class="sort" data-sort="done">Firmados</button></th>
+            <th class="num"><button type="button" class="sort" data-sort="left">Pendientes</button></th>
+            <th><button type="button" class="sort" data-sort="pct">Avance</button></th>
+            <th></th>
+          </tr></thead>
+          <tbody id="sumRows"></tbody>
+          <tfoot id="sumFoot"></tfoot>
+        </table>
+      </div>
+      <p class="hint">“Firmados” son quienes tienen Ok en la base, ya sea por descarga del anexo, marca manual o la planilla.</p>
+    </div>
+  </section>
+
+  <section class="view" id="viewBase" role="tabpanel" aria-labelledby="tabBase" hidden>
+    <div class="base-top">
+      <div class="meter" id="meter" hidden>
+        <div class="meter-nums">
+          <span class="ok"><b id="mDone">0</b>con anexo</span>
+          <span class="warn"><b id="mLeft">0</b>faltan</span>
+          <span><b id="mTotal">0</b>en la base</span>
+        </div>
+        <div class="track"><i id="mFill"></i></div>
+      </div>
+      <div class="actions" id="baseActions" hidden>
+        <button type="button" class="primary" id="exportBtn">Poner Ok en mi planilla (.xlsx)</button>
+        <button type="button" id="importBtn">Actualizar base</button>
+        <button type="button" class="quiet" id="backupOut">Exportar respaldo</button>
+        <button type="button" class="quiet" id="backupIn">Importar respaldo</button>
+      </div>
+    </div>
+    <p class="hint" id="baseHint" hidden>Al descargar un anexo, la persona queda con Ok sola. “Poner Ok en mi planilla” te pide la planilla original y completa su columna “Anexo” (la M) sin tocar lo demás.</p>
+    <p class="base-msg" id="baseMsg">Cargando la base de trabajadores…</p>
+    <div class="notice" id="baseNotice" role="status" hidden></div>
+    <div class="rows" id="baseBody" hidden>
+      <div class="opts">
+        <label for="baseQ">Buscar<input type="text" id="baseQ" placeholder="Nombre, RUT, id o centro de costo" autocomplete="off"></label>
+        <label for="baseFilter">Mostrar
+          <select id="baseFilter">
+            <option value="faltan">Les falta anexo</option>
+            <option value="ok">Con anexo</option>
+            <option value="todos">Todos</option>
+          </select>
+        </label>
+        <label for="baseCC">Centro de costo<select id="baseCC"></select></label>
+      </div>
+      <div class="tablewrap">
+        <table>
+          <thead><tr><th>Anexo</th><th>Nombre</th><th>RUT</th><th>Id</th><th>C. costo</th><th>Tienda</th><th>Puesto</th></tr></thead>
+          <tbody id="baseRows"></tbody>
+        </table>
+      </div>
+      <div class="more"><span id="baseShown"></span><button type="button" class="quiet" id="moreBtn" hidden>Mostrar 150 más</button></div>
+      <p class="hint" id="baseSrc"></p>
+    </div>
+    <input type="file" id="jsonInput" class="sr" accept=".json,application/json" tabindex="-1" aria-label="Respaldo">
+    <input type="file" id="xlsxInput" class="sr" accept=".xlsx,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" tabindex="-1" aria-label="Planilla Excel">
+  </section>
+</div>
+
+<dialog id="dlg" aria-label="Vista del anexo">
+  <div class="dlg-head"><strong id="dlgTitle"></strong><button type="button" id="dlgClose">Cerrar</button></div>
+  <div class="dlg-pages" id="dlgPages"></div>
+</dialog>
+
+<script src="lib/pdf-lib.min.js"></script>
+<script src="lib/jszip.min.js"></script>
+<script src="lib/local-db.js"></script>
+<script>
+/* Versión web: la base y las marcas se guardan en este navegador; las descargas van directo. */
+window.claude = { use: async n => (n === 'db' ? window.LocalDB.open() : undefined) };
+</script>
+<script>
+/* ---------- Lectura del texto del anexo (funciones puras) ---------- */
+const MONTHS = ['Enero','Febrero','Marzo','Abril','Mayo','Junio','Julio','Agosto','Septiembre','Octubre','Noviembre','Diciembre'];
+const PARTICLES = new Set(['DE','DEL','LA','LAS','LOS','EL','SAN','SANTA','VAN','VON','DI','DA']);
+const L = "A-Za-zÁÉÍÓÚÜÑáéíóúüñ";
+
+function rutIsValid(body, dv) {
+  let sum = 0, mul = 2;
+  for (let i = body.length - 1; i >= 0; i--) { sum += Number(body[i]) * mul; mul = mul === 7 ? 2 : mul + 1; }
+  const r = 11 - (sum % 11);
+  return (r === 11 ? '0' : r === 10 ? 'K' : String(r)) === String(dv).toUpperCase();
+}
+
+function findRut(text) {
+  const m = text.match(/(\d{1,2}[.\s]?\d{3}[.\s]?\d{3})\s*[-–—]\s*([\dkK])/);
+  if (!m) return null;
+  const body = m[1].replace(/\D/g, '');
+  const dv = m[2].toUpperCase();
+  return { text: body + '-' + dv, valid: rutIsValid(body, dv) };
+}
+
+function findAllRuts(text) {
+  const out = [];
+  const re = /(\d{1,2}[.\s]?\d{3}[.\s]?\d{3})\s*[-–—]\s*([\dkK])/g;
+  let m;
+  while ((m = re.exec(text))) {
+    const body = m[1].replace(/\D/g, '');
+    const dv = m[2].toUpperCase();
+    out.push({ rut: body + '-' + dv, body, valid: rutIsValid(body, dv) });
+  }
+  return out;
+}
+
+/* RUT de quien firma por la empresa, para no confundirlo con el del trabajador. */
+function findRepBody(text) {
+  const flat = text.replace(/\s+/g, ' ');
+  const m = flat.match(/representad[oa]\s[\s\S]{0,200}?(\d{1,2}[.\s]?\d{3}[.\s]?\d{3})\s*[-–—]\s*[\dkK]/i);
+  return m ? m[1].replace(/\D/g, '') : '';
+}
+
+function findDate(text) {
+  const months = MONTHS.join('|');
+  const m = text.match(new RegExp(`(\\d{1,2})\\s+de\\s+(${months})\\s*,?\\s*(?:de|del)?\\s*(?:año\\s*)?(\\d{4})`, 'i'));
+  if (m) return { month: MONTHS.findIndex(x => x.toLowerCase() === m[2].toLowerCase()), year: Number(m[3]) };
+  const n = text.match(/\b(\d{1,2})[\/-](\d{1,2})[\/-](\d{4})\b/);
+  if (n && Number(n[2]) >= 1 && Number(n[2]) <= 12) return { month: Number(n[2]) - 1, year: Number(n[3]) };
+  return null;
+}
+
+function cleanName(raw) {
+  return raw
+    .replace(/\b(?:don|doña|dona|señor|señora|sr|sra|srta)\b\.?/gi, ' ')
+    .replace(/\(a\)|\(ña\)/gi, ' ')
+    .replace(new RegExp(`[^${L}'\\s-]`, 'g'), ' ')
+    .replace(/\s+/g, ' ').trim().toLocaleUpperCase('es');
+}
+
+function findWorker(text) {
+  const flat = text.replace(/\s+/g, ' ');
+  const stop = '(?:c[ée]dula|c\\.?\\s?i\\.?\\b|rut\\b|r\\.u\\.t|run\\b|n[°ºo]\\s*de\\s*identidad|nacionalidad|de\\s+nacionalidad|chilen[oa]|domiciliad[oa]|correo|mayor\\s+de\\s+edad|en\\s+adelante)';
+  const title = '(?:(?:don|doña|dona|sr\\.?|sra\\.?|srta\\.?)\\s+)?';
+  /* Donde termina el RUT de quien firma por la empresa: el trabajador viene después */
+  const repM = flat.match(/representad[oa][\s\S]{0,200}?\d{1,2}[.\s]?\d{3}[.\s]?\d{3}\s*[-–—]\s*[\dkK]/i);
+  const afterRep = repM ? repM.index + repM[0].length : -1;
+  const patterns = [
+    [new RegExp(`por\\s+(?:la|el)\\s+otr[ao]\\s*(?:parte)?\\s*[,:;.]?\\s*(?:y\\s+)?${title}([${L}'.\\s()-]{5,90}?)\\s*[,;.]?\\s*(?:con\\s+)?${stop}`, 'i'), 0],
+    [new RegExp(`(?:trabajador(?:\\(a\\)|a)?|empleado(?:\\(a\\)|a)?)\\s*[,:]?\\s*(?:don|doña|sr\\.?|sra\\.?)\\s+([${L}'.\\s-]{5,90}?)\\s*[,;.]?\\s*${stop}`, 'i'), 0],
+    /* "..., representada por X, cédula N° ...; y don NOMBRE, cédula ..." */
+    [new RegExp(`^[\\s\\S]{0,200}?[,;]?\\s*\\by\\s+${title}([${L}'.\\s-]{5,90}?)\\s*[,;]?\\s*(?:con\\s+)?${stop}`, 'i'), afterRep],
+  ];
+  for (const [re, from] of patterns) {
+    if (from < 0) continue;
+    const part = flat.slice(from);
+    const m = part.match(re);
+    if (!m) continue;
+    const name = cleanName(m[1]);
+    if (name.split(' ').length >= 2) return { name, tail: part.slice(m.index + m[0].length - 8) };
+  }
+  return null;
+}
+
+function parsePage(text) {
+  const worker = findWorker(text);
+  const hasTitle = /\bANEXO\b/.test(text);
+  const rut = worker ? findRut(worker.tail) : null;
+  const lg = text.replace(/\s+/g, ' ').match(/Legajo\s*(?:N\s*[°º.]?\s*)?(\d{1,7})/i);
+  const repBody = findRepBody(text);
+  return {
+    ruts: findAllRuts(text).filter(c => c.body !== repBody),
+    repBody,
+    legajo: lg ? lg[1] : '',
+    name: worker ? worker.name : '',
+    rut: rut ? rut.text : '',
+    rutValid: rut ? rut.valid : false,
+    date: findDate(text),
+    isStart: Boolean(worker) || hasTitle,
+  };
+}
+
+/* Chile usa nombres + apellido paterno + apellido materno: se lee desde el final. */
+function splitName(full) {
+  const t = full.split(' ').filter(Boolean);
+  if (!t.length) return { first: '', surname: '' };
+  if (t.length === 1) return { first: t[0], surname: '' };
+  if (t.length === 2) return { first: t[0], surname: t[1] };
+  const groupStart = end => {
+    let i = end;
+    while (i - 1 >= 1 && PARTICLES.has(t[i - 1])) i--;
+    return i;
+  };
+  const maternal = groupStart(t.length - 1);
+  if (maternal <= 1) return { first: t[0], surname: t.slice(1).join(' ') };
+  return { first: t[0], surname: t.slice(groupStart(maternal - 1), maternal).join(' ') };
+}
+
+function titleCase(s) {
+  return s.split(' ').map((w, i) => {
+    const low = w.toLocaleLowerCase('es');
+    if (i > 0 && ['DE', 'DEL', 'LA', 'LAS', 'LOS', 'VAN', 'VON', 'DI', 'DA'].includes(w.toLocaleUpperCase('es'))) return low;
+    return low.replace(/(^|[-'])(\p{L})/gu, (_, a, b) => a + b.toLocaleUpperCase('es'));
+  }).join(' ');
+}
+
+function sanitize(name) {
+  return name.replace(/\.pdf$/i, '').replace(/[\\/:*?"<>|\u0000-\u001f]/g, ' ').replace(/\s+/g, ' ').trim();
+}
+
+function buildBaseName(full, monthIdx, year, style) {
+  const { first, surname } = splitName(full);
+  const person = titleCase([first, surname].filter(Boolean).join(' '));
+  const base = [person, MONTHS[monthIdx], year].filter(v => v !== '' && v !== undefined).join(' ');
+  if (style === 'under') return base.replace(/\s+/g, '_');
+  if (style === 'upper') return base.toLocaleUpperCase('es');
+  return base;
+}
+
+/* Agrupa hojas: un anexo empieza donde aparece título o trabajador; la hoja siguiente sin esos datos es su continuación. */
+function groupPages(pages) {
+  const groups = [];
+  let cur = null;
+  for (const p of pages) {
+    if (p.blank) continue;
+    const sameWorker = cur && p.rutValid && cur.pages[0].rutValid && cur.pages[0].rut === p.rut;
+    if (!cur || (p.isStart && !sameWorker)) {
+      cur = { pages: [p] };
+      groups.push(cur);
+    } else {
+      cur.pages.push(p);
+    }
+  }
+  return groups;
+}
+
+/* ---------- Estado ---------- */
+const $ = id => document.getElementById(id);
+const LIB = new URL('lib/', document.baseURI).href;
+const state = { sources: [], pages: [], groups: [], month: 0, year: new Date().getFullYear(), monthManual: false, fallback: 0, style: 'space', onlyFlag: false, blanks: 0, run: 0, busy: false };
+let nextGroupId = 1;
+
+function showNotice(msg, good) { const n = $('notice'); n.textContent = msg; n.hidden = !msg; n.classList.toggle('good', Boolean(good)); }
+
+/* ---------- Lector OCR local ---------- */
+const engine = { workers: [], ready: null, seq: 0, wanted: Math.min(4, Math.max(1, Math.floor((navigator.hardwareConcurrency || 2) / 2))) };
+
+function spawn() {
+  const w = new Worker(LIB + 'ocr-worker.js');
+  const pending = new Map();
+  w.onmessage = ({ data }) => {
+    const p = pending.get(data.id);
+    pending.delete(data.id);
+    if (p) data.ok ? p.resolve(data.result) : p.reject(new Error(data.error));
+  };
+  w.onerror = e => { for (const p of pending.values()) p.reject(new Error(e.message || 'Falló el lector')); pending.clear(); };
+  const call = (msg, transfer) => new Promise((resolve, reject) => {
+    const id = ++engine.seq;
+    pending.set(id, { resolve, reject });
+    w.postMessage({ ...msg, id }, transfer || []);
+  });
+  return { call, ready: call({ type: 'init', base: LIB }) };
+}
+
+function setEngine(s, text) { $('engineChip').dataset.state = s; $('engineText').textContent = text; }
+
+function startEngine() {
+  if (engine.ready) return engine.ready;
+  const first = spawn();
+  engine.ready = first.ready.then(() => {
+    engine.workers.push(first);
+    setEngine('ready', 'Lector listo');
+    return first;
+  }).catch(e => {
+    console.error('Lector OCR:', e);
+    setEngine('error', 'Lector sin cargar');
+    engine.ready = null;
+    throw e;
+  });
+  return engine.ready;
+}
+
+async function growEngine() {
+  while (engine.workers.length < engine.wanted) {
+    const w = spawn();
+    await w.ready;
+    engine.workers.push(w);
+  }
+}
+
+/* ---------- PDF ---------- */
+let pdfjsLib = null;
+async function loadPdfJs() {
+  if (pdfjsLib) return pdfjsLib;
+  pdfjsLib = await import(LIB + 'pdf.min.js');
+  pdfjsLib.GlobalWorkerOptions.workerSrc = LIB + 'pdf.worker.min.js';
+  return pdfjsLib;
+}
+
+async function renderPage(page, scale) {
+  const viewport = page.getViewport({ scale });
+  const canvas = document.createElement('canvas');
+  canvas.width = Math.ceil(viewport.width);
+  canvas.height = Math.ceil(viewport.height);
+  await page.render({ canvas, viewport }).promise;
+  return canvas;
+}
+
+function toBlob(canvas, type, quality) {
+  return new Promise((resolve, reject) => canvas.toBlob(b => b ? resolve(b) : reject(new Error('No se pudo preparar la hoja')), type, quality));
+}
+
+function cropCanvas(src, x, y, w, h) {
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const ctx = c.getContext('2d');
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(src, x, y, w, h, 0, 0, w, h);
+  return c;
+}
+
+function thumbOf(canvas) {
+  const w = 174, h = Math.round(canvas.height * w / canvas.width);
+  const c = document.createElement('canvas');
+  c.width = w; c.height = h;
+  const ctx = c.getContext('2d', { willReadFrequently: true });
+  ctx.fillStyle = '#fff';
+  ctx.fillRect(0, 0, w, h);
+  ctx.drawImage(canvas, 0, 0, w, h);
+  const px = ctx.getImageData(0, 0, w, h).data;
+  let dark = 0;
+  for (let i = 0; i < px.length; i += 4) if (px[i] * .3 + px[i + 1] * .59 + px[i + 2] * .11 < 170) dark++;
+  return { url: c.toDataURL('image/jpeg', .72), ink: dark / (w * h) };
+}
+
+/* Recorta del escaneo el trozo donde va el nombre, para compararlo con lo leído. */
+function nameEvidence(canvas, offsetY, words, name) {
+  const norm = s => s.toLocaleUpperCase('es').replace(new RegExp(`[^${L}]`, 'g'), '');
+  const want = name.split(' ').map(norm).filter(Boolean);
+  if (!want.length) return null;
+  for (let i = 0; i <= words.length - want.length; i++) {
+    let ok = 0;
+    for (let j = 0; j < want.length; j++) if (norm(words[i + j].t) === want[j]) ok++;
+    if (ok < want.length) continue;
+    const hit = words.slice(i, i + want.length);
+    const pad = 8;
+    const x0 = Math.max(0, Math.min(...hit.map(w => w.x0)) - pad);
+    const x1 = Math.min(canvas.width, Math.max(...hit.map(w => w.x1)) + pad);
+    const y0 = Math.max(0, Math.min(...hit.map(w => w.y0)) - pad);
+    const y1 = Math.max(...hit.map(w => w.y1)) + pad;
+    const crop = cropCanvas(canvas, x0, y0 + offsetY, x1 - x0, y1 - y0);
+    return { url: crop.toDataURL('image/jpeg', .8), conf: Math.min(...hit.map(w => w.c)) };
+  }
+  return null;
+}
+
+async function readPage(src, index, worker, run) {
+  const page = await src.pdf.getPage(index + 1);
+  const content = await page.getTextContent();
+  const digital = content.items.map(i => i.str + (i.hasEOL ? '\n' : ' ')).join('').trim();
+  const out = { src: src.id, index, text: '', evidence: null, thumb: '', ink: 0 };
+
+  if (digital.length > 80) {
+    const canvas = await renderPage(page, .5);
+    Object.assign(out, { text: digital }, (t => ({ thumb: t.url, ink: t.ink }))(thumbOf(canvas)));
+  } else {
+    const canvas = await renderPage(page, 200 / 72);
+    const t = thumbOf(canvas);
+    out.thumb = t.url; out.ink = t.ink;
+    const cropH = Math.round(canvas.height * .45);
+    const top = cropCanvas(canvas, 0, 0, canvas.width, cropH);
+    let res = await worker.call({ type: 'ocr', png: await (await toBlob(top, 'image/png')).arrayBuffer() });
+    const w = findWorker(res.text);
+    const r = w ? findRut(w.tail) : null;
+    if ((!w || !r || !r.valid) && t.ink > .003) {
+      const rest = cropCanvas(canvas, 0, cropH, canvas.width, canvas.height - cropH);
+      const more = await worker.call({ type: 'ocr', png: await (await toBlob(rest, 'image/png')).arrayBuffer() });
+      if (!w && findWorker(more.text)) { res = { text: res.text + '\n' + more.text, words: more.words }; out.offset = cropH; }
+      else res = { text: res.text + '\n' + more.text, words: res.words };
+    }
+    out.text = res.text;
+    out.words = res.words;
+    out.canvas = canvas;
+  }
+  if (run !== state.run) return out;
+  Object.assign(out, parsePage(out.text));
+  out.blank = out.text.replace(/\s/g, '').length < 12 && out.ink < .004;
+  if (out.canvas) {
+    if (out.name) out.evidence = nameEvidence(out.canvas, out.offset || 0, out.words, out.name);
+    out.canvas.width = out.canvas.height = 0;
+    delete out.canvas;
+  }
+  delete out.words;
+  page.cleanup();
+  return out;
+}
+
+const fmtMB = n => (n / 1048576).toFixed(1).replace('.', ',') + ' MB';
+
+function renderFiles() {
+  const ul = $('files');
+  ul.textContent = '';
+  for (const f of state.sources) {
+    const li = document.createElement('li');
+    if (f.error) li.className = 'bad';
+    const b = document.createElement('b'); b.textContent = f.name;
+    const sp = document.createElement('span');
+    sp.textContent = f.error ? f.error : f.pdf ? `${f.pdf.numPages} ${f.pdf.numPages === 1 ? 'hoja' : 'hojas'}` : fmtMB(f.size);
+    li.append(b, sp);
+    ul.append(li);
+  }
+  ul.hidden = !state.sources.length;
+  const ok = state.sources.filter(f => !f.error);
+  $('pickBtn').textContent = state.sources.length ? 'Agregar más PDF' : 'Elegir PDF';
+  $('drop').classList.toggle('compact', state.sources.length > 0);
+  $('dropTitle').textContent = state.sources.length ? `${ok.length} ${ok.length === 1 ? 'PDF cargado' : 'PDF cargados'}` : 'Arrastra aquí los PDF de anexos';
+  $('dropHint').textContent = state.sources.length ? 'Arrastra o elige más PDF para sumarlos a la lista.' : 'O haz clic para elegirlos. Puedes subir varios a la vez, escaneados o con texto.';
+}
+
+function pdfError(e) {
+  const msg = String(e && (e.name + ' ' + e.message));
+  if (/password/i.test(msg)) return 'tiene clave';
+  if (/Invalid PDF|InvalidPDF|FormatError/i.test(msg)) return 'no se pudo abrir';
+  return 'no se pudo leer';
+}
+
+let nextSourceId = 1;
+async function processFiles(list) {
+  if (state.busy) { showNotice('Espera a que termine la lectura actual y vuelve a agregar los PDF.'); return; }
+  showNotice('');
+  const all = [...list];
+  const pdfs = all.filter(f => /\.pdf$/i.test(f.name) || f.type === 'application/pdf');
+  const skipped = all.length - pdfs.length;
+  const fresh = pdfs.filter(f => !state.sources.some(s => s.name === f.name && s.size === f.size && !s.error));
+  const repeated = pdfs.length - fresh.length;
+  const notes = [];
+  if (skipped) notes.push(skipped === 1 ? '1 archivo no es PDF y se omitió' : `${skipped} archivos no son PDF y se omitieron`);
+  if (repeated) notes.push(repeated === 1 ? '1 PDF ya estaba cargado' : `${repeated} PDF ya estaban cargados`);
+  if (!fresh.length) { showNotice(notes.length ? notes.join('. ') + '.' : 'Elige al menos un archivo .pdf.'); return; }
+
+  const run = ++state.run;
+  state.busy = true;
+  $('sample').hidden = true;
+  const added = fresh.map(f => ({ id: nextSourceId++, name: f.name, size: f.size, file: f, bytes: null, pdf: null, error: '', lib: null }));
+  state.sources.push(...added);
+  renderFiles();
+
+  try {
+    const lib = await loadPdfJs();
+    for (const src of added) {
+      try {
+        src.bytes = new Uint8Array(await src.file.arrayBuffer());
+        src.pdf = await lib.getDocument({ data: src.bytes.slice(0), wasmUrl: LIB + 'wasm/', isEvalSupported: false }).promise;
+      } catch (e) {
+        console.error(src.name, e);
+        src.error = pdfError(e);
+      }
+      delete src.file;
+    }
+    renderFiles();
+    const ready = added.filter(s => s.pdf);
+    const jobs = [];
+    for (const src of ready) for (let i = 0; i < src.pdf.numPages; i++) jobs.push([src, i]);
+    const total = jobs.length;
+    if (!total) {
+      notes.unshift(added.length === 1 ? 'No pude abrir ese PDF' : 'No pude abrir esos PDF');
+      showNotice(notes.join('. ') + '.');
+      return;
+    }
+    const nFiles = ready.length > 1 ? ` de ${ready.length} PDF` : '';
+    $('progress').hidden = false;
+    $('progressText').textContent = `Leyendo ${total} ${total === 1 ? 'hoja' : 'hojas'}${nFiles}`;
+    $('ticks').innerHTML = '<i></i>'.repeat(Math.min(total, 120));
+    const paint = n => {
+      const ticks = $('ticks').children;
+      const lit = Math.round(n / total * ticks.length);
+      for (let i = 0; i < lit; i++) ticks[i].classList.add('done');
+      $('progressText').textContent = `Leídas ${n} de ${total} ${total === 1 ? 'hoja' : 'hojas'}${nFiles}`;
+    };
+
+    await startEngine().catch(() => null);
+    await growEngine().catch(() => {});
+    const pool = engine.workers.length ? engine.workers : [{ call: () => Promise.reject(new Error('el lector de escaneos no cargó')) }];
+    const out = new Array(total);
+    let next = 0, done = 0;
+    const failed = new Set();
+    await Promise.all(pool.map(async worker => {
+      while (next < total && run === state.run) {
+        const k = next++;
+        const [src, i] = jobs[k];
+        try { out[k] = await readPage(src, i, worker, run); }
+        catch (e) { console.error(src.name, i + 1, e); failed.add(src); }
+        paint(++done);
+      }
+    }));
+    if (run !== state.run) return;
+    for (const src of failed) src.error = 'hojas sin leer';
+    const pages = out.filter(Boolean);
+    if (failed.size) notes.unshift('Algunas hojas no se pudieron leer: ' + [...failed].map(s => s.name).join(', '));
+    const bad = added.filter(s => s.error && !failed.has(s));
+    if (bad.length) notes.unshift('No pude abrir: ' + bad.map(s => `${s.name} (${s.error})`).join(', '));
+    finish(pages, notes);
+  } catch (e) {
+    console.error(e);
+    showNotice('No pude leer las hojas: ' + (e.message || e) + '. Recarga la página e inténtalo otra vez.');
+  } finally {
+    if (run === state.run) { state.busy = false; $('progress').hidden = true; renderFiles(); }
+  }
+}
+
+function finish(newPages, notes) {
+  const groups = [];
+  for (const src of state.sources) {
+    const mine = newPages.filter(p => p.src === src.id);
+    if (mine.length) groups.push(...groupPages(mine));
+  }
+  state.pages.push(...newPages);
+  state.blanks = state.pages.filter(p => p.blank).length;
+  state.groups.push(...groups.map(g => ({ id: nextGroupId++, pages: g.pages, custom: null, confirmed: false, saved: false })));
+
+  const count = {};
+  for (const p of state.pages) if (p.date) { const k = p.date.year * 12 + p.date.month; count[k] = (count[k] || 0) + 1; }
+  const ranked = Object.entries(count).sort((a, b) => b[1] - a[1]);
+  const now = new Date();
+  state.fallback = ranked.length ? Number(ranked[0][0]) : now.getFullYear() * 12 + now.getMonth();
+  if (!state.monthManual) {
+    state.month = state.fallback % 12;
+    state.year = Math.floor(state.fallback / 12);
+    $('yearInput').value = String(state.year);
+  }
+  syncMonthUi();
+  state.onlyFlag = false;
+  $('results').hidden = !state.groups.length;
+  if (!groups.length) notes.push('No encontré hojas con contenido en los PDF agregados');
+  else if (!ranked.length && !state.monthManual) notes.push('No encontré la fecha en las hojas. Elige abajo el mes y el año de los archivos');
+  showNotice(notes.length ? notes.join('. ') + '.' : '');
+  render();
+}
+
+function resetAll() {
+  state.run++;
+  state.busy = false;
+  for (const s of state.sources) { try { if (s.pdf && s.pdf.loadingTask) s.pdf.loadingTask.destroy(); } catch (e) {} }
+  Object.assign(state, { sources: [], pages: [], groups: [], blanks: 0, onlyFlag: false, monthManual: false });
+  $('clearBox').hidden = true;
+  syncMonthUi();
+  $('results').hidden = true;
+  $('progress').hidden = true;
+  $('sample').hidden = false;
+  showNotice('');
+  renderFiles();
+}
+
+/* ---------- Modelo de cada anexo ---------- */
+function head(g) { return g.pages[0]; }
+
+/* Mes del anexo: el elegido a mano, o la fecha del propio anexo, o la más común de su PDF, o la más común de todo. */
+function commonKey(pages) {
+  const c = {};
+  for (const p of pages) if (p.date) { const k = p.date.year * 12 + p.date.month; c[k] = (c[k] || 0) + 1; }
+  const top = Object.entries(c).sort((a, b) => b[1] - a[1])[0];
+  return top ? Number(top[0]) : null;
+}
+
+function groupKey(g) {
+  if (state.monthManual) return { key: state.year * 12 + state.month, guessed: false };
+  const own = commonKey(g.pages);
+  if (own !== null) return { key: own, guessed: false };
+  const fromFile = commonKey(state.pages.filter(p => p.src === g.pages[0].src));
+  return { key: fromFile !== null ? fromFile : state.fallback, guessed: true };
+}
+
+function lev(a, b) {
+  const d = Array.from({ length: b.length + 1 }, (_, i) => i);
+  for (let i = 1; i <= a.length; i++) {
+    let prev = d[0]; d[0] = i;
+    for (let j = 1; j <= b.length; j++) { const t = d[j]; d[j] = Math.min(d[j] + 1, d[j - 1] + 1, prev + (a[i - 1] === b[j - 1] ? 0 : 1)); prev = t; }
+  }
+  return d[b.length];
+}
+
+/* Nombre de la base puesto en orden "nombres apellidos" */
+function baseDisplayName(nombre) {
+  const t = String(nombre || '').trim().split(/\s+/).filter(Boolean);
+  if (t.length < 3 || base.given(plain(t[0]))) return t.join(' ');
+  return t.slice(2).concat(t.slice(0, 2)).join(' ');
+}
+
+/* Corrige letras mal leídas del nombre usando la palabra más parecida de la base */
+function correctWithBase(name, nombre) {
+  const bt = String(nombre || '').split(/\s+/).filter(Boolean);
+  const used = new Set();
+  return name.split(' ').map(w => {
+    if (PARTICLES.has(w)) return w;
+    const pw = plain(w);
+    const same = bt.findIndex((t, i) => !used.has(i) && plain(t) === pw);
+    if (same >= 0) { used.add(same); return w; }
+    let k = -1;
+    {
+      let best = -1, bd = 99;
+      bt.forEach((t, i) => { if (used.has(i)) return; const dd = lev(pw, plain(t)); if (dd < bd) { bd = dd; best = i; } });
+      if (best >= 0 && bd <= (pw.length >= 6 ? 2 : 1) && plain(bt[best]).length >= pw.length - 1) k = best;
+    }
+    if (k < 0) return w;
+    used.add(k);
+    return bt[k];
+  }).join(' ');
+}
+
+function personName(g) {
+  const h = head(g);
+  const m = matchGroup(g);
+  if (!m) return { name: h.name, from: 'ocr', m };
+  if (tokens(h.name).length < 2) return { name: baseDisplayName(m.p.nombre), from: 'base', m };
+  return { name: correctWithBase(h.name, m.p.nombre), from: 'ocr', m };
+}
+
+function fileBase(g) {
+  if (g.custom !== null) return sanitize(g.custom);
+  const h = head(g);
+  const pn = personName(g);
+  if (!pn.name) return '';
+  const { key } = groupKey(g);
+  return sanitize(buildBaseName(pn.name, key % 12, Math.floor(key / 12), state.style));
+}
+
+function syncMonthUi() {
+  $('monthSel').value = state.monthManual ? String(state.month) : 'auto';
+  $('yearInput').disabled = !state.monthManual;
+}
+
+function fileNames() {
+  const seen = new Map(), names = new Map();
+  for (const g of state.groups) {
+    const fb = fileBase(g);
+    const key = fb.toLocaleLowerCase('es');
+    const n = (seen.get(key) || 0) + 1;
+    seen.set(key, n);
+    names.set(g.id, fb ? (n > 1 ? `${fb} (${n})` : fb) : '');
+  }
+  return { names, seen };
+}
+
+function problems(g, seen) {
+  const fb = fileBase(g);
+  if (!fb) return [base.status === 'ready' ? 'Falta el nombre: escribe abajo su RUT o el nombre mirando la hoja' : 'Falta el nombre: escríbelo mirando la hoja'];
+  const out = [];
+  if ((seen.get(fb.toLocaleLowerCase('es')) || 0) > 1) out.push('Hay otro archivo con este nombre');
+  if (g.confirmed || g.custom !== null) return out;
+  const h = head(g);
+  const inBase = matchGroup(g);
+  const byRut = inBase && !inBase.weak && inBase.how.startsWith('RUT');
+  if (inBase && inBase.weak) out.push('No se leyó el nombre: confirma que sea esta persona para marcar su Ok');
+  if (!byRut && !(inBase && inBase.weak) && h.name.split(' ').length < 3) out.push('Nombre incompleto');
+  if (!byRut && h.evidence && h.evidence.conf < 55) out.push('Lectura dudosa del nombre');
+  if (!inBase && h.rut && !h.rutValid) out.push('El RUT leído no cuadra: compara el nombre');
+  if (!inBase && !h.rut && h.name) out.push('No encontré el RUT: compara el nombre');
+  if (groupKey(g).guessed) out.push('No encontré la fecha en este anexo: revisa el mes');
+  return out;
+}
+
+function sourceOf(id) { return state.sources.find(s => s.id === id); }
+
+function pagesLabel(g) {
+  const n = g.pages.map(p => p.index + 1);
+  if (new Set(g.pages.map(p => p.src)).size > 1) return `${n.length} hojas de varios PDF`;
+  if (n.length === 1) return 'Hoja ' + n[0];
+  if (n.length === 2) return `Hojas ${n[0]} y ${n[1]}`;
+  return `Hojas ${n[0]} a ${n[n.length - 1]}`;
+}
+
+/* ---------- Vista ---------- */
+function render() {
+  const { names, seen } = fileNames();
+  const box = $('rows');
+  const flagged = state.groups.filter(g => problems(g, seen).length);
+  if (!flagged.length) state.onlyFlag = false;
+  box.textContent = '';
+  const frag = document.createDocumentFragment();
+  state.groups.forEach((g, i) => {
+    const issues = problems(g, seen);
+    if (state.onlyFlag && !issues.length) return;
+    const h = head(g);
+    const mg = base.status === 'ready' ? matchGroup(g) : null;
+    const hasOk = Boolean(mg && base.marks.has(mg.p.rut));
+    const row = document.createElement('article');
+    row.className = 'row' + (g.saved || hasOk ? ' done' : issues.length ? ' flag' : '') + (g.sel ? ' selected' : '');
+    row.dataset.id = g.id;
+
+    const th = document.createElement('button');
+    th.type = 'button'; th.className = 'thumb'; th.dataset.act = 'view';
+    th.setAttribute('aria-label', 'Ver ' + pagesLabel(g).toLowerCase());
+    const img = document.createElement('img'); img.src = h.thumb; img.alt = '';
+    th.append(img);
+    if (g.pages.length > 1) { const n = document.createElement('span'); n.className = 'n'; n.textContent = g.pages.length; th.append(n); }
+
+    const body = document.createElement('div'); body.className = 'body';
+    const line = document.createElement('div'); line.className = 'name-line';
+    const input = document.createElement('input');
+    input.type = 'text'; input.id = 'name-' + g.id; input.value = names.get(g.id);
+    input.placeholder = 'Nombre Apellido Mes Año';
+    input.setAttribute('aria-label', 'Nombre del archivo');
+    input.spellcheck = false; input.dataset.act = 'rename';
+    const ext = document.createElement('span'); ext.textContent = '.pdf';
+    line.append(input, ext);
+    body.append(line);
+
+    if (h.evidence) {
+      const s = document.createElement('img');
+      s.className = 'scan'; s.src = h.evidence.url; s.alt = 'Nombre tal como aparece en el escaneo';
+      line.append(s);
+    }
+    const meta = document.createElement('div'); meta.className = 'meta';
+    const who = document.createElement('span');
+    const b = document.createElement('b'); b.textContent = h.name || 'Sin nombre leído'; who.append(b);
+    const pg = document.createElement('span'); pg.textContent = pagesLabel(g);
+    if (!h.evidence) meta.append(who);
+    const shownRut = mg ? mg.p.rut : h.rut;
+    if (shownRut) { const r = document.createElement('span'); r.textContent = 'RUT ' + shownRut; meta.append(r); }
+    meta.append(pg);
+    if (state.sources.length > 1) {
+      const sn = document.createElement('span'); sn.className = 'src';
+      sn.textContent = [...new Set(g.pages.map(p => sourceOf(p.src).name))].join(' + ');
+      meta.append(sn);
+    }
+    if (base.status === 'ready') {
+      const s = document.createElement('span');
+      if (mg) {
+        const how = { 'RUT': 'por RUT', 'RUT corregido': `por RUT (se leyó ${mg.read})`, 'RUT escrito': 'por el RUT que escribiste', legajo: 'por legajo', nombre: 'por nombre', 'nombre escrito': 'por el nombre que escribiste' }[mg.how];
+        s.className = 'inbase';
+        s.textContent = `En la base ${how}` + (mg.p.tiendaCod ? ` · CC ${mg.p.tiendaCod}` : '') + (mg.p.tienda ? ' ' + mg.p.tienda : '');
+      } else { s.className = 'notbase'; s.textContent = 'No está en la base'; }
+      meta.append(s);
+    }
+    if (g.saved || hasOk) { const s = document.createElement('span'); s.className = 'state'; s.textContent = g.saved ? '✓ Descargado' : '✓ Ya tenía Ok en la base'; meta.append(s); }
+    body.append(meta);
+    if (issues.length) { const w = document.createElement('div'); w.className = 'why'; w.textContent = issues.join(' · '); body.append(w); }
+    if (base.status === 'ready' && (!mg || mg.weak || mg.how === 'RUT escrito')) {
+      const lab = document.createElement('label'); lab.className = 'rutlink'; lab.htmlFor = 'rut-' + g.id;
+      lab.textContent = mg ? 'RUT escrito' : 'Buscar en la base por RUT';
+      const ri = document.createElement('input');
+      ri.type = 'text'; ri.id = 'rut-' + g.id; ri.dataset.act = 'rut'; ri.placeholder = '12345678-9';
+      ri.value = g.manualRut || ''; ri.autocomplete = 'off'; ri.spellcheck = false; ri.inputMode = 'text';
+      lab.append(ri);
+      body.append(lab);
+    }
+
+    const act = document.createElement('div'); act.className = 'row-actions';
+    const btn = (label, a, cls, disabled) => {
+      const x = document.createElement('button');
+      x.type = 'button'; x.textContent = label; x.dataset.act = a;
+      if (cls) x.className = cls;
+      if (disabled) x.disabled = true;
+      act.append(x);
+    };
+    if (issues.length && fileBase(g) && g.custom === null && !issues.some(t => t.startsWith('Hay otro'))) btn('Está bien', 'ok');
+    if (i > 0) btn('Unir al anterior', 'merge', 'quiet');
+    if (g.pages.length > 1) btn('Separar última hoja', 'split', 'quiet');
+    btn('Descargar', 'save', '', !names.get(g.id));
+    const pick = document.createElement('input');
+    pick.type = 'checkbox'; pick.className = 'pick'; pick.id = 'sel-' + g.id; pick.dataset.act = 'sel';
+    pick.checked = Boolean(g.sel);
+    pick.setAttribute('aria-label', 'Seleccionar ' + (names.get(g.id) || 'anexo sin nombre'));
+    row.append(pick, th, body, act);
+    frag.append(row);
+  });
+  box.append(frag);
+
+  const tally = $('tally');
+  tally.textContent = '';
+  const add = (n, label, cls) => {
+    const s = document.createElement('span');
+    if (cls) s.className = cls;
+    const b = document.createElement('b'); b.textContent = n;
+    s.append(b, document.createTextNode(label));
+    tally.append(s);
+  };
+  add(state.pages.length, state.pages.length === 1 ? 'hoja' : 'hojas');
+  add(state.groups.length, state.groups.length === 1 ? 'anexo' : 'anexos');
+  if (flagged.length) add(flagged.length, 'por revisar', 'warn');
+  if (state.blanks) add(state.blanks, state.blanks === 1 ? 'en blanco, quitada' : 'en blanco, quitadas');
+
+  const fb = $('filterBtn');
+  fb.hidden = !flagged.length;
+  fb.textContent = state.onlyFlag ? 'Ver todos' : `Ver solo ${flagged.length} por revisar`;
+  renderSel();
+}
+
+/* ---------- Descargas ---------- */
+function libDoc(src) {
+  if (!src.lib) src.lib = PDFLib.PDFDocument.load(src.bytes, { ignoreEncryption: true, updateMetadata: false });
+  return src.lib;
+}
+
+async function buildPdf(g, title) {
+  const doc = await PDFLib.PDFDocument.create();
+  let i = 0;
+  while (i < g.pages.length) {
+    const id = g.pages[i].src;
+    const run = [];
+    while (i < g.pages.length && g.pages[i].src === id) run.push(g.pages[i++].index);
+    const copied = await doc.copyPages(await libDoc(sourceOf(id)), run);
+    copied.forEach(p => doc.addPage(p));
+  }
+  doc.setTitle(title);
+  return doc.save();
+}
+
+let dl;
+function downloader() {
+  if (dl === undefined) dl = window.claude && window.claude.use ? window.claude.use('downloads') : Promise.resolve(false);
+  return dl;
+}
+
+/* devuelve true si el archivo se entregó */
+async function offer(filename, bytes, type) {
+  const d = await downloader();
+  const blob = new Blob([bytes], { type });
+  if (d) {
+    try { await d.save({ filename, data: blob }); return true; }
+    catch (e) {
+      if (e.code === 'declined') return false;
+      if (e.code === 'rate_limited') { showNotice('Ya hay una descarga esperando tu confirmación. Respóndela y vuelve a intentar.'); return false; }
+      showNotice('No se pudo descargar aquí (' + (e.code || e.message) + '). Recarga la página e inténtalo de nuevo.');
+      return false;
+    }
+  }
+  if (d === null) { showNotice('Este navegador no permite descargar archivos desde aquí.'); return false; }
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob); a.download = filename; a.click();
+  setTimeout(() => URL.revokeObjectURL(a.href), 30000);
+  return true;
+}
+
+async function saveOne(g, button) {
+  const name = fileNames().names.get(g.id);
+  button.disabled = true; button.textContent = 'Preparando';
+  try {
+    const bytes = await buildPdf(g, name);
+    if (await offer(name + '.pdf', bytes, 'application/pdf')) { g.saved = true; await markDownloaded([g], fileNames().names); }
+  } catch (e) { console.error(e); showNotice('No pude armar este anexo: ' + e.message); }
+  render();
+}
+
+const sleep = ms => new Promise(r => setTimeout(r, ms));
+let batchBusy = false;
+
+function renderSel() {
+  const all = state.groups.length;
+  const n = state.groups.filter(g => g.sel).length;
+  const box = $('selAll');
+  box.checked = all > 0 && n === all;
+  box.indeterminate = n > 0 && n < all;
+  $('selCount').textContent = n === 1 ? '1 seleccionado' : `${n} seleccionados`;
+  const btn = $('saveSelBtn');
+  if (!batchBusy) {
+    btn.textContent = n ? `Descargar seleccionados (${n} PDF)` : 'Descargar seleccionados';
+    btn.disabled = !n;
+  }
+}
+
+/* Igual que offer(), pero espera su turno si ya hay una confirmación abierta. */
+async function offerInTurn(filename, bytes) {
+  const d = await downloader();
+  if (!d) return offer(filename, bytes, 'application/pdf');
+  for (let i = 0; i < 40; i++) {
+    try { await d.save({ filename, data: new Blob([bytes], { type: 'application/pdf' }) }); return 'ok'; }
+    catch (e) {
+      if (e.code === 'rate_limited') { await sleep(1500); continue; }
+      if (e.code === 'declined') return 'declined';
+      showNotice('No se pudo descargar aquí (' + (e.code || e.message) + '). Recarga la página e inténtalo de nuevo.');
+      return 'error';
+    }
+  }
+  return 'busy';
+}
+
+/* Pide una carpeta si el navegador lo permite dentro de esta página; si no, devuelve null. */
+/* Carpeta recordada: solo donde el navegador deja elegir carpeta (página abierta directamente, no dentro de otra). */
+const canPickFolder = typeof window.showDirectoryPicker === 'function' && window.self === window.top;
+const folderStore = {
+  open() {
+    return new Promise((res, rej) => {
+      const r = indexedDB.open('separador-carpeta', 1);
+      r.onupgradeneeded = () => r.result.createObjectStore('kv');
+      r.onsuccess = () => res(r.result);
+      r.onerror = () => rej(r.error);
+    });
+  },
+  async get() {
+    try {
+      const d = await this.open();
+      return await new Promise(res => { const q = d.transaction('kv').objectStore('kv').get('carpeta'); q.onsuccess = () => res(q.result || null); q.onerror = () => res(null); });
+    } catch (e) { return null; }
+  },
+  async set(h) { try { const d = await this.open(); d.transaction('kv', 'readwrite').objectStore('kv').put(h, 'carpeta'); } catch (e) {} },
+};
+let keptFolder = null;
+
+function renderFolder() {
+  const b = $('folderBtn');
+  b.hidden = !canPickFolder;
+  b.textContent = keptFolder ? `Carpeta: ${keptFolder.name} · cambiar` : 'Elegir carpeta';
+}
+
+async function pickFolder(change) {
+  if (!canPickFolder) return null;
+  if (!change) {
+    const kept = keptFolder || await folderStore.get();
+    if (kept) {
+      try {
+        let p = await kept.queryPermission({ mode: 'readwrite' });
+        if (p !== 'granted') p = await kept.requestPermission({ mode: 'readwrite' });
+        if (p === 'granted') { keptFolder = kept; renderFolder(); return kept; }
+      } catch (e) { console.warn('Sin permiso en la carpeta recordada:', e && e.name); }
+    }
+  }
+  try {
+    const d = await window.showDirectoryPicker({ id: 'anexos', mode: 'readwrite', startIn: 'documents' });
+    keptFolder = d;
+    folderStore.set(d);
+    renderFolder();
+    return d;
+  } catch (e) {
+    if (e && e.name === 'AbortError') return 'cancel';
+    console.warn('Carpeta no disponible aquí:', e && e.name);
+    return null;
+  }
+}
+
+async function saveSelected() {
+  const list = state.groups.filter(g => g.sel);
+  if (!list.length || batchBusy) return;
+  const { names } = fileNames();
+  const unnamed = list.filter(g => !names.get(g.id));
+  if (unnamed.length) { showNotice(`Hay ${unnamed.length} ${unnamed.length === 1 ? 'anexo seleccionado' : 'anexos seleccionados'} sin nombre. Escríbelo o quítalo de la selección.`); return; }
+  const btn = $('saveSelBtn');
+  batchBusy = true; btn.disabled = true;
+  showNotice('');
+  const dir = await pickFolder();
+  if (dir === 'cancel') { batchBusy = false; renderSel(); return; }
+  let done = 0, stop = '';
+  try {
+    for (const g of list) {
+      const name = names.get(g.id) + '.pdf';
+      btn.textContent = dir ? `Guardando ${done + 1} de ${list.length}…` : `Confirma ${done + 1} de ${list.length}…`;
+      const bytes = await buildPdf(g, names.get(g.id));
+      if (dir) {
+        const fh = await dir.getFileHandle(name, { create: true });
+        const w = await fh.createWritable();
+        await w.write(bytes);
+        await w.close();
+      } else {
+        const r = await offerInTurn(name, bytes);
+        if (r !== 'ok') { stop = r; break; }
+      }
+      g.saved = true; g.sel = false; done++;
+      await markDownloaded([g], names);
+      render();
+    }
+  } catch (e) { console.error(e); stop = 'error'; showNotice('Se detuvo la descarga: ' + e.message); }
+  batchBusy = false;
+  const left = list.length - done;
+  const where = dir ? ` en la carpeta «${dir.name}»` : '';
+  if (!left) showNotice(`Listo: se ${done === 1 ? 'guardó 1 PDF' : `guardaron ${done} PDF`}${where}, cada uno por separado.`, true);
+  else if (stop === 'declined' || stop === 'busy') showNotice(`Se ${done === 1 ? 'guardó 1' : `guardaron ${done}`} de ${list.length}. ${left === 1 ? 'El que falta sigue seleccionado' : `Los ${left} que faltan siguen seleccionados`}: presiona «Descargar seleccionados» para continuar.`);
+  render();
+}
+
+async function view(g) {
+  const dlg = $('dlg');
+  $('dlgTitle').textContent = (fileNames().names.get(g.id) || 'Sin nombre') + '.pdf';
+  const box = $('dlgPages');
+  box.textContent = '';
+  dlg.showModal();
+  for (const p of g.pages) {
+    const page = await sourceOf(p.src).pdf.getPage(p.index + 1);
+    box.append(await renderPage(page, 1.5));
+  }
+}
+
+/* ---------- Base de trabajadores ---------- */
+const base = { db: null, status: 'loading', meta: null, docs: {}, people: [], byRut: new Map(), byId: new Map(), tok: new Map(), marks: new Map(), filter: 'faltan', q: '', cc: '', shown: 150, arm: null, busy: false, ccSig: '' };
+const XLSX_MIME = 'application/vnd.openxmlformats-officedocument.spreadsheetml.sheet';
+const NS_MAIN = 'http://schemas.openxmlformats.org/spreadsheetml/2006/main';
+
+function normRut(v) {
+  const t = String(v == null ? '' : v).toUpperCase().replace(/[^0-9K]/g, '');
+  return t.length < 2 ? '' : t.slice(0, -1).replace(/^0+/, '') + '-' + t.slice(-1);
+}
+function plain(v) { return String(v || '').normalize('NFD').replace(/[̀-ͯ]/g, '').toUpperCase(); }
+function tokens(v) { return plain(v).split(/[^A-Z]+/).filter(t => t.length > 1 && !PARTICLES.has(t)); }
+function sharedCount(a, b) { const B = new Set(b); return a.filter(t => B.has(t)).length; }
+
+function rebuildIndex() {
+  base.byRut = new Map(base.people.map(p => [p.rut, p]));
+  base.byId = new Map(base.people.filter(p => p.id !== '' && p.id != null).map(p => [String(p.id), p]));
+  base.tok = new Map(base.people.map(p => [p.rut, tokens(p.nombre)]));
+  base.byBody = new Map();
+  for (const p of base.people) {
+    const b = p.rut.split('-')[0];
+    if (!base.byBody.has(b)) base.byBody.set(b, []);
+    base.byBody.get(b).push(p);
+  }
+  /* Qué palabras suelen ser nombres de pila (aparecen al final en "APELLIDOS NOMBRES") */
+  const early = new Map(), late = new Map();
+  for (const t of base.tok.values()) t.forEach((w, i) => { const m = i < 2 ? early : late; m.set(w, (m.get(w) || 0) + 1); });
+  base.given = w => (late.get(w) || 0) > (early.get(w) || 0);
+}
+
+function oneDigitOff(a, b) {
+  if (a.length !== b.length) return false;
+  let d = 0;
+  for (let i = 0; i < a.length; i++) if (a[i] !== b[i] && ++d > 1) return false;
+  return d === 1;
+}
+
+function nameAgrees(p, nt) { return sharedCount(base.tok.get(p.rut), nt) >= 2; }
+
+/* RUT que se repiten en muchos anexos de la carga: son de quien firma por la empresa, no del trabajador. */
+let repeatedCache = { key: '', set: new Set() };
+function repeatedBodies() {
+  const key = state.groups.length + ':' + state.pages.length;
+  if (repeatedCache.key === key) return repeatedCache.set;
+  const count = new Map();
+  for (const g of state.groups) {
+    const bodies = new Set(g.pages.flatMap(p => (p.ruts || []).map(c => c.body).concat(p.repBody ? [p.repBody] : [], p.rut ? [p.rut.split('-')[0]] : [])));
+    for (const b of bodies) count.set(b, (count.get(b) || 0) + 1);
+  }
+  const n = state.groups.length;
+  const set = new Set([...count].filter(([, c]) => c >= 3 && c >= n * .3).map(([b]) => b));
+  repeatedCache = { key, set };
+  return set;
+}
+
+function customTokens(g) {
+  const months = new Set(MONTHS.map(m => plain(m)));
+  return tokens(String(g.custom || '').replace(/_/g, ' ')).filter(t => !months.has(t));
+}
+
+/* Cruza un anexo con la base. Si escribiste el nombre, el cruce tiene que coincidir con ese nombre. */
+function matchGroup(g) {
+  if (base.status !== 'ready' || !base.people.length) return null;
+  if (g.manualRut) { const p = base.byRut.get(g.manualRut); return p ? { p, how: 'RUT escrito' } : null; }
+  const m = autoMatch(g);
+  if (g.custom === null) return m;
+  const ct = customTokens(g);
+  if (ct.length < 2) return m;
+  if (m && sharedCount(base.tok.get(m.p.rut), ct) >= 2) return { ...m, weak: false };
+  const hits = base.people.filter(p => ct.every(t => base.tok.get(p.rut).includes(t)));
+  return hits.length === 1 ? { p: hits[0], how: 'nombre escrito' } : null;
+}
+
+/* Primero RUT junto al nombre, luego otro RUT de la hoja, RUT corregido, legajo y por último nombre único. */
+function autoMatch(g) {
+  const h = head(g);
+  const nt = tokens(h.name);
+  const repeated = repeatedBodies();
+  if (h.rut && h.rutValid && base.byRut.has(h.rut)) {
+    const p = base.byRut.get(h.rut);
+    if (!repeated.has(h.rut.split('-')[0]) || nameAgrees(p, nt)) return { p, how: 'RUT' };
+  }
+  const reps = new Set(g.pages.map(p => p.repBody).filter(Boolean));
+  const cands = g.pages.flatMap(p => p.ruts || []).filter(c => !reps.has(c.body) && !repeated.has(c.body));
+  /* Un RUT válido en otra parte de la hoja (por ejemplo, bajo la firma) */
+  for (const c of cands) {
+    const p = c.valid && base.byRut.get(c.rut);
+    if (p && (nt.length < 2 || nameAgrees(p, nt))) return { p, how: 'RUT', weak: nt.length < 2 };
+  }
+  /* RUT con el dígito verificador o un número mal leído, confirmado con el nombre */
+  if (nt.length >= 2 && cands.length) {
+    const hits = new Set();
+    for (const c of cands) for (const p of base.byBody.get(c.body) || []) if (nameAgrees(p, nt)) hits.add(p);
+    if (!hits.size) for (const c of cands) for (const p of base.people) {
+      if (oneDigitOff(p.rut.split('-')[0], c.body) && nameAgrees(p, nt)) hits.add(p);
+    }
+    if (hits.size === 1) return { p: [...hits][0], how: 'RUT corregido', read: cands[0].rut };
+  }
+  if (h.legajo && base.byId.has(String(h.legajo))) {
+    const p = base.byId.get(String(h.legajo));
+    if (sharedCount(base.tok.get(p.rut), nt) >= 2) return { p, how: 'legajo' };
+  }
+  if (nt.length < 2) return null;
+  /* Por nombre, solo si cada palabra de la base está en el anexo (la última puede venir cortada en la base). */
+  const hits = base.people.filter(p => {
+    const bt = base.tok.get(p.rut);
+    if (bt.length < 2) return false;
+    return bt.every((t, i) => nt.includes(t) || (i === bt.length - 1 && t.length >= 3 && nt.some(w => w.startsWith(t))));
+  });
+  return hits.length === 1 ? { p: hits[0], how: 'nombre' } : null;
+}
+
+function baseNote(msg, bad) {
+  const n = $('baseNotice');
+  n.textContent = msg || '';
+  n.hidden = !msg;
+  n.style.background = bad ? '' : 'var(--ok-soft)';
+  n.style.color = bad ? '' : 'var(--ok)';
+}
+
+function dbErrorText(e) {
+  if (e && e.code === 'quota_exceeded') return 'La base llegó a su límite de registros.';
+  return 'No pude guardar en la base (' + ((e && (e.code || e.message)) || 'error') + '). Inténtalo de nuevo.';
+}
+
+async function setMark(p, via, archivo) {
+  if (!base.db) return false;
+  try {
+    await base.db.collection('marcas').doc(p.rut).set({ rut: p.rut, nombre: p.nombre || '', via, archivo: archivo || '', fecha: new Date().toISOString() });
+    return true;
+  } catch (e) { console.error(e); baseNote(dbErrorText(e), true); showNotice(dbErrorText(e)); return false; }
+}
+
+async function clearMark(rut) {
+  try { await base.db.collection('marcas').doc(rut).delete(); }
+  catch (e) { console.error(e); baseNote(dbErrorText(e), true); }
+}
+
+async function markDownloaded(groups, names) {
+  if (!base.db || base.status !== 'ready') return;
+  for (const g of groups) {
+    const m = matchGroup(g);
+    if (m && (!m.weak || g.confirmed)) await setMark(m.p, 'descarga', (names.get(g.id) || '') + '.pdf');
+  }
+}
+
+function ccKey(p) { return String(p.tiendaCod || p.tienda || 'Sin centro de costo'); }
+function refreshAll() { renderBase(); renderSummary(); if (state.groups.length) render(); }
+
+async function initBase() {
+  let db = null;
+  try { db = window.claude && window.claude.use ? await window.claude.use('db') : null; } catch (e) { db = null; }
+  if (!db) { base.status = 'off'; refreshAll(); return; }
+  base.db = db;
+  const timer = setTimeout(() => { if (base.status === 'loading') { base.status = 'slow'; renderBase(); } }, 10000);
+  db.collection('base').onSnapshot(snap => {
+    base.docs = {};
+    snap.docs.forEach(d => { base.docs[d.id] = d.data(); });
+    const meta = base.docs.actual;
+    if (!meta) {
+      if (!snap.metadata.fromCache) { clearTimeout(timer); base.status = 'empty'; base.people = []; base.meta = null; refreshAll(); }
+      return;
+    }
+    const rows = [];
+    for (let i = 0; i < meta.partes; i++) {
+      const part = base.docs['parte-' + i];
+      if (!part) return;
+      rows.push(...part.personas);
+    }
+    clearTimeout(timer);
+    base.meta = meta;
+    base.people = rows.map(a => ({ id: a[0], rut: a[1], nombre: a[2], tiendaCod: a[3], tienda: a[4], puesto: a[5] }));
+    rebuildIndex();
+    base.status = 'ready';
+    refreshAll();
+  }, err => { console.error(err); clearTimeout(timer); base.status = 'error'; refreshAll(); });
+  db.collection('marcas').onSnapshot(snap => {
+    base.marks = new Map(snap.docs.map(d => [d.id, d.data()]));
+    refreshAll();
+  }, err => { console.error(err); baseNote('No pude leer las marcas de anexos. Recarga la página.', true); });
+}
+
+const fmtDay = iso => { try { return new Date(iso).toLocaleDateString('es-CL', { day: 'numeric', month: 'short' }); } catch (e) { return ''; } };
+const VIA = { descarga: 'descargado', manual: 'manual', planilla: 'de planilla' };
+
+function renderBase() {
+  const ready = base.status === 'ready';
+  const msgs = {
+    loading: 'Cargando la base de trabajadores…',
+    slow: 'La base todavía no responde. Revisa tu conexión; aparecerá sola cuando responda.',
+    off: 'No pude abrir el almacenamiento de este navegador (¿ventana privada?). Separar y descargar anexos funciona igual, pero la base no se guardará.',
+    empty: 'Todavía no hay una base cargada. Usa “Cargar base” con la planilla de trabajadores (.xlsx) o “Importar respaldo” si traes la base de otro equipo.',
+    error: 'No pude leer la base. Recarga la página.',
+  };
+  $('baseMsg').hidden = ready;
+  if (!ready) $('baseMsg').textContent = msgs[base.status] || msgs.loading;
+  $('baseBody').hidden = !ready;
+  $('meter').hidden = !ready;
+  $('baseHint').hidden = !ready;
+  $('baseActions').hidden = !(ready || base.status === 'empty');
+  $('exportBtn').hidden = !ready;
+  $('backupOut').hidden = !ready;
+  $('importBtn').textContent = ready ? 'Actualizar base' : 'Cargar base (.xlsx)';
+  $('importBtn').className = ready ? '' : 'primary';
+  if (!ready) { $('tabCount').textContent = ''; return; }
+
+  const people = base.people;
+  const done = people.filter(p => base.marks.has(p.rut)).length;
+  const left = people.length - done;
+  $('mDone').textContent = done;
+  $('mLeft').textContent = left;
+  $('mTotal').textContent = people.length;
+  $('mFill').style.width = (people.length ? done / people.length * 100 : 0) + '%';
+  $('tabCount').textContent = left ? `· ${left} faltan` : '· completa';
+  const m = base.meta || {};
+  $('baseSrc').textContent = m.archivo ? `Base: ${m.archivo}, cargada el ${new Date(m.cargada).toLocaleDateString('es-CL', { day: 'numeric', month: 'long', year: 'numeric' })}.` : '';
+
+  const ccs = new Map();
+  for (const p of people) {
+    const k = ccKey(p);
+    const c = ccs.get(k) || { name: p.tienda || '', total: 0, left: 0 };
+    c.total++; if (!base.marks.has(p.rut)) c.left++;
+    ccs.set(k, c);
+  }
+  const sig = [...ccs].map(([k, v]) => k + ':' + v.left).join('|');
+  if (sig !== base.ccSig) {
+    base.ccSig = sig;
+    const sel = $('baseCC');
+    sel.textContent = '';
+    const all = document.createElement('option'); all.value = ''; all.textContent = `Todos (${ccs.size})`; sel.append(all);
+    [...ccs].sort((a, b) => a[0].localeCompare(b[0], 'es', { numeric: true })).forEach(([k, v]) => {
+      const o = document.createElement('option'); o.value = k;
+      o.textContent = `${k}${v.name && v.name !== k ? ' ' + v.name : ''} · ${v.left ? `faltan ${v.left} de ${v.total}` : `completo (${v.total})`}`;
+      sel.append(o);
+    });
+    if (!ccs.has(base.cc)) base.cc = '';
+    sel.value = base.cc;
+  }
+
+  const q = plain(base.q).trim();
+  const qRut = normRut(base.q);
+  const list = people.filter(p => {
+    const ok = base.marks.has(p.rut);
+    if (base.filter === 'faltan' && ok) return false;
+    if (base.filter === 'ok' && !ok) return false;
+    if (base.cc && ccKey(p) !== base.cc) return false;
+    if (!q) return true;
+    if (qRut.length > 3 && p.rut.replace('-', '').includes(qRut.replace('-', ''))) return true;
+    if (String(p.id) === q || String(p.tiendaCod) === q) return true;
+    return q.split(/\s+/).every(w => plain(p.nombre).includes(w));
+  });
+  if (base.filter === 'ok') list.sort((a, b) => String(base.marks.get(b.rut).fecha).localeCompare(String(base.marks.get(a.rut).fecha)));
+
+  const tb = $('baseRows');
+  tb.textContent = '';
+  const frag = document.createDocumentFragment();
+  for (const p of list.slice(0, base.shown)) {
+    const tr = document.createElement('tr');
+    tr.dataset.rut = p.rut;
+    if (base.marks.has(p.rut)) tr.className = 'ok';
+    const td0 = document.createElement('td');
+    const mk = base.marks.get(p.rut);
+    const b = document.createElement('button');
+    b.type = 'button';
+    if (mk) {
+      b.className = 'okchip' + (base.arm === p.rut ? ' arm' : '');
+      b.dataset.act = 'unmark';
+      if (base.arm === p.rut) b.textContent = '¿Quitar Ok?';
+      else {
+        b.append('Ok');
+        const sm = document.createElement('small'); sm.textContent = [VIA[mk.via] || mk.via, fmtDay(mk.fecha)].filter(Boolean).join(' · ');
+        b.append(sm);
+        b.title = mk.archivo ? 'Archivo: ' + mk.archivo : 'Marcado a mano';
+      }
+    } else { b.className = 'markbtn'; b.dataset.act = 'mark'; b.textContent = 'Marcar Ok'; }
+    td0.append(b);
+    const cell = (text, cls) => { const td = document.createElement('td'); if (cls) td.className = cls; td.textContent = text == null ? '' : text; return td; };
+    tr.append(td0, cell(p.nombre, 'name'), cell(p.rut, 'mono'), cell(p.id, 'mono'), cell(p.tiendaCod, 'mono'), cell(p.tienda, 'place'), cell(p.puesto, 'place'));
+    frag.append(tr);
+  }
+  tb.append(frag);
+  if (!list.length) {
+    const tr = document.createElement('tr'); const td = document.createElement('td'); td.colSpan = 7;
+    td.textContent = base.filter === 'faltan' && !q && !base.cc ? 'Todos los trabajadores tienen anexo.' : 'Nadie coincide con la búsqueda.';
+    tr.append(td); tb.append(tr);
+  }
+  const shown = Math.min(list.length, base.shown);
+  $('baseShown').textContent = list.length ? `Mostrando ${shown} de ${list.length}` : '';
+  $('moreBtn').hidden = list.length <= base.shown;
+}
+
+/* ---------- Planillas .xlsx (se leen y completan en el navegador) ---------- */
+function colIndex(ref) { const m = /^([A-Z]+)/.exec(ref || ''); if (!m) return -1; let n = 0; for (const ch of m[1]) n = n * 26 + ch.charCodeAt(0) - 64; return n - 1; }
+function colLetter(i) { let s = ''; i++; while (i > 0) { const r = (i - 1) % 26; s = String.fromCharCode(65 + r) + s; i = Math.floor((i - 1) / 26); } return s; }
+
+async function readXlsx(bytes) {
+  let zip;
+  try { zip = await JSZip.loadAsync(bytes); } catch (e) { throw new Error('el archivo no es una planilla .xlsx'); }
+  const xml = async p => { const f = zip.file(p); return f ? new DOMParser().parseFromString(await f.async('string'), 'application/xml') : null; };
+  const wb = await xml('xl/workbook.xml');
+  if (!wb) throw new Error('el archivo no es una planilla .xlsx');
+  const sheetEl = wb.getElementsByTagNameNS('*', 'sheet')[0];
+  const rid = sheetEl && (sheetEl.getAttributeNS('http://schemas.openxmlformats.org/officeDocument/2006/relationships', 'id') || sheetEl.getAttribute('r:id'));
+  const rels = await xml('xl/_rels/workbook.xml.rels');
+  let target = 'worksheets/sheet1.xml';
+  if (rels) for (const r of rels.getElementsByTagNameNS('*', 'Relationship')) if (r.getAttribute('Id') === rid) target = r.getAttribute('Target');
+  const path = target.startsWith('/') ? target.slice(1) : 'xl/' + target.replace(/^\.\//, '');
+  const doc = await xml(path);
+  if (!doc) throw new Error('no encontré la hoja de la planilla');
+  const sst = await xml('xl/sharedStrings.xml');
+  const strings = sst ? [...sst.getElementsByTagNameNS('*', 'si')].map(si => [...si.getElementsByTagNameNS('*', 't')].map(t => t.textContent).join('')) : [];
+  const rows = [];
+  for (const rowEl of doc.getElementsByTagNameNS('*', 'row')) {
+    const cells = [];
+    for (const c of rowEl.getElementsByTagNameNS('*', 'c')) {
+      const i = colIndex(c.getAttribute('r'));
+      if (i < 0) continue;
+      const t = c.getAttribute('t');
+      const v = c.getElementsByTagNameNS('*', 'v')[0];
+      if (t === 's') cells[i] = strings[Number(v && v.textContent)] ?? '';
+      else if (t === 'inlineStr') cells[i] = [...c.getElementsByTagNameNS('*', 't')].map(x => x.textContent).join('');
+      else cells[i] = v ? v.textContent : '';
+    }
+    rows.push({ el: rowEl, r: Number(rowEl.getAttribute('r')), cells });
+  }
+  const hi = rows.slice(0, 15).findIndex(r => r.cells.some(v => /^\s*rut\s*$/i.test(v || '')));
+  if (hi < 0) throw new Error('no encontré una columna llamada “Rut” en las primeras filas');
+  const H = Array.from(rows[hi].cells, v => String(v || '').trim().toLowerCase());
+  const find = f => H.findIndex(h => h && f(h));
+  const cols = {
+    rut: find(h => h === 'rut'),
+    id: find(h => h.includes('id persona') || h === 'id' || h.includes('legajo')),
+    nombre: find(h => h.includes('nombre')),
+    tiendaCod: find(h => h.includes('tienda') && h.startsWith('cc_')),
+    tienda: find(h => h.includes('tienda') && !h.startsWith('cc_')),
+    puesto: find(h => (h.includes('puesto') || h.includes('cargo')) && !h.startsWith('cc_')),
+    anexo: find(h => h.includes('anexo')),
+  };
+  return { zip, path, doc, header: rows[hi], rows: rows.slice(hi + 1), cols };
+}
+
+function fillColumn(x, target, okSet) {
+  const letter = colLetter(target);
+  let ok = 0;
+  const found = new Set();
+  const put = (rowEl, rnum, text) => {
+    let style = null;
+    for (const c of [...rowEl.getElementsByTagNameNS('*', 'c')]) {
+      if (colIndex(c.getAttribute('r')) === target) { style = c.getAttribute('s'); c.remove(); }
+    }
+    rowEl.removeAttribute('spans');
+    if (!text) return;
+    const c = x.doc.createElementNS(NS_MAIN, 'c');
+    c.setAttribute('r', letter + rnum);
+    if (style) c.setAttribute('s', style);
+    c.setAttribute('t', 'inlineStr');
+    const is = x.doc.createElementNS(NS_MAIN, 'is');
+    const t = x.doc.createElementNS(NS_MAIN, 't');
+    t.textContent = text;
+    is.append(t); c.append(is);
+    const after = [...rowEl.getElementsByTagNameNS('*', 'c')].find(e => colIndex(e.getAttribute('r')) > target);
+    rowEl.insertBefore(c, after || null);
+  };
+  if (!String(x.header.cells[target] || '').trim()) put(x.header.el, x.header.r, 'Anexo');
+  for (const row of x.rows) {
+    const rut = normRut(row.cells[x.cols.rut]);
+    if (!rut) continue;
+    const has = okSet.has(rut);
+    if (has) { ok++; found.add(rut); }
+    put(row.el, row.r, has ? 'Ok' : '');
+  }
+  const dim = x.doc.getElementsByTagNameNS('*', 'dimension')[0];
+  if (dim) {
+    const m = /^([A-Z]+\d+):([A-Z]+)(\d+)$/.exec(dim.getAttribute('ref') || '');
+    if (m && colIndex(m[2]) < target) dim.setAttribute('ref', `${m[1]}:${letter}${m[3]}`);
+  }
+  let out = new XMLSerializer().serializeToString(x.doc);
+  if (!out.startsWith('<?xml')) out = '<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n' + out;
+  x.zip.file(x.path, out);
+  return { ok, missing: [...okSet].filter(r => base.byRut.has(r) && !found.has(r)).length };
+}
+
+async function importBase(file) {
+  if (!base.db) return;
+  base.busy = true;
+  $('importBtn').disabled = true;
+  baseNote('Leyendo la planilla…');
+  try {
+    const x = await readXlsx(await file.arrayBuffer());
+    const c = x.cols;
+    const get = (row, i) => (i >= 0 && row.cells[i] != null ? String(row.cells[i]).trim() : '');
+    const seen = new Set(), people = [], okRuts = [];
+    for (const row of x.rows) {
+      const rut = normRut(row.cells[c.rut]);
+      if (!rut || seen.has(rut)) continue;
+      seen.add(rut);
+      const id = get(row, c.id);
+      people.push([/^\d+$/.test(id) ? Number(id) : id, rut, get(row, c.nombre), get(row, c.tiendaCod), get(row, c.tienda), get(row, c.puesto)]);
+      if (c.anexo >= 0 && /^\s*ok\s*$/i.test(get(row, c.anexo))) okRuts.push([rut, get(row, c.nombre)]);
+    }
+    if (!people.length) throw new Error('la columna Rut está vacía');
+    const size = 400, partes = Math.ceil(people.length / size);
+    const col = base.db.collection('base');
+    for (let i = 0; i < partes; i++) {
+      baseNote(`Guardando la base… ${Math.min((i + 1) * size, people.length)} de ${people.length}`);
+      await col.doc('parte-' + i).set({ personas: people.slice(i * size, (i + 1) * size) });
+    }
+    for (let i = partes; base.docs['parte-' + i]; i++) await col.doc('parte-' + i).delete();
+    await col.doc('actual').set({ archivo: file.name, cargada: new Date().toISOString(), total: people.length, partes });
+    let added = 0;
+    for (const [rut, nombre] of okRuts) if (!base.marks.has(rut) && await setMark({ rut, nombre }, 'planilla', file.name)) added++;
+    baseNote(`Base cargada: ${people.length} trabajadores.` + (added ? ` ${added} ya tenían Ok en la planilla y quedaron marcados.` : '') + ' Las marcas anteriores se mantienen.');
+  } catch (e) {
+    console.error(e);
+    baseNote('No pude cargar la planilla: ' + (e.code ? dbErrorText(e) : e.message) + '.', true);
+  } finally {
+    base.busy = false;
+    $('importBtn').disabled = false;
+  }
+}
+
+async function exportXlsx(file) {
+  $('exportBtn').disabled = true;
+  baseNote('Completando la planilla…');
+  try {
+    const x = await readXlsx(await file.arrayBuffer());
+    const target = x.cols.anexo >= 0 ? x.cols.anexo : 12;
+    const res = fillColumn(x, target, new Set(base.marks.keys()));
+    const bytes = await x.zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE', mimeType: XLSX_MIME });
+    const name = file.name.replace(/\.xlsx$/i, '') + '_anexos.xlsx';
+    if (await offer(name, bytes, XLSX_MIME)) {
+      baseNote(`Listo: ${res.ok} ${res.ok === 1 ? 'persona quedó' : 'personas quedaron'} con Ok en la columna ${colLetter(target)} de ${name}.` +
+        (res.missing ? ` ${res.missing} con anexo no aparecen en esa planilla.` : ''));
+    } else baseNote('');
+  } catch (e) {
+    console.error(e);
+    baseNote('No pude completar la planilla: ' + e.message + '.', true);
+  } finally { $('exportBtn').disabled = false; }
+}
+
+/* ---------- Respaldo de la base y las marcas (para otro PC o la versión web) ---------- */
+async function exportBackup() {
+  const data = {
+    tipo: 'separador-anexos-respaldo', version: 1, creado: new Date().toISOString(),
+    base: { archivo: (base.meta && base.meta.archivo) || '', cargada: (base.meta && base.meta.cargada) || '',
+      personas: base.people.map(p => [p.id, p.rut, p.nombre, p.tiendaCod, p.tienda, p.puesto]) },
+    marcas: [...base.marks.values()],
+  };
+  const d = new Date();
+  const name = `Respaldo separador de anexos ${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}.json`;
+  if (await offer(name, new TextEncoder().encode(JSON.stringify(data)), 'application/json'))
+    baseNote(`Respaldo listo: ${data.base.personas.length} trabajadores y ${data.marcas.length} marcas Ok en «${name}».`);
+}
+
+async function importBackup(file) {
+  if (!base.db || base.busy) return;
+  base.busy = true;
+  try {
+    let data;
+    try { data = JSON.parse(await file.text()); } catch (e) { throw new Error('el archivo no es un respaldo válido'); }
+    if (!data || data.tipo !== 'separador-anexos-respaldo' || !data.base || !Array.isArray(data.base.personas)) throw new Error('el archivo no es un respaldo del separador');
+    const people = data.base.personas.filter(a => Array.isArray(a) && normRut(a[1])).map(a => [a[0], normRut(a[1]), a[2] || '', a[3] || '', a[4] || '', a[5] || '']);
+    const marks = (data.marcas || []).filter(m => m && normRut(m.rut));
+    const col = base.db.collection('base');
+    if (people.length) {
+      const size = 400, partes = Math.ceil(people.length / size);
+      for (let i = 0; i < partes; i++) await col.doc('parte-' + i).set({ personas: people.slice(i * size, (i + 1) * size) });
+      for (let i = partes; base.docs['parte-' + i]; i++) await col.doc('parte-' + i).delete();
+      await col.doc('actual').set({ archivo: data.base.archivo || file.name, cargada: data.base.cargada || new Date().toISOString(), total: people.length, partes });
+    }
+    let n = 0;
+    for (const m of marks) {
+      const rut = normRut(m.rut);
+      if (n % 20 === 0) baseNote(`Importando marcas… ${n} de ${marks.length}`);
+      await base.db.collection('marcas').doc(rut).set({ rut, nombre: m.nombre || '', via: m.via || 'planilla', archivo: m.archivo || '', fecha: m.fecha || new Date().toISOString() });
+      n++;
+    }
+    baseNote(`Respaldo importado: ${people.length} trabajadores y ${n} marcas Ok.`);
+  } catch (e) {
+    console.error(e);
+    baseNote('No pude importar el respaldo: ' + (e.code ? dbErrorText(e) : e.message) + '.', true);
+  } finally { base.busy = false; }
+}
+
+function showView(v) {
+  const views = { separar: ['viewSep', 'tabSep'], base: ['viewBase', 'tabBase'], resumen: ['viewSum', 'tabSum'] };
+  if (!views[v]) v = 'separar';
+  for (const [k, [view, tab]] of Object.entries(views)) {
+    $(view).hidden = k !== v;
+    $(tab).setAttribute('aria-selected', String(k === v));
+  }
+}
+function go(v) { showView(v); try { history.replaceState(null, '', '#' + v); } catch (e) {} }
+
+/* ---------- Resumen por centro de costo ---------- */
+const SEL_KEY = 'anexos-resumen-cc';
+const sum = { sel: null, q: '', sort: { key: 'cc', dir: 1 } };
+try { const v = JSON.parse(localStorage.getItem(SEL_KEY) || 'null'); if (v && Array.isArray(v.keys)) sum.sel = new Set(v.keys); } catch (e) {}
+function saveSel() { try { localStorage.setItem(SEL_KEY, JSON.stringify(sum.sel ? { keys: [...sum.sel] } : null)); } catch (e) {} }
+
+function ccStats() {
+  const map = new Map();
+  for (const p of base.people) {
+    const k = ccKey(p);
+    const c = map.get(k) || { key: k, code: p.tiendaCod || '', name: p.tienda || '', total: 0, done: 0, people: [] };
+    c.total++;
+    if (base.marks.has(p.rut)) c.done++;
+    c.people.push(p);
+    map.set(k, c);
+  }
+  for (const c of map.values()) { c.left = c.total - c.done; c.pct = c.total ? c.done / c.total : 0; }
+  return [...map.values()].sort((a, b) => a.key.localeCompare(b.key, 'es', { numeric: true }));
+}
+
+function selectedStats(all) {
+  const keys = new Set(all.map(c => c.key));
+  if (sum.sel) for (const k of [...sum.sel]) if (!keys.has(k)) sum.sel.delete(k);
+  return all.filter(c => !sum.sel || sum.sel.has(c.key));
+}
+
+function sortStats(list) {
+  const { key, dir } = sum.sort;
+  const val = c => key === 'cc' ? c.key : key === 'name' ? c.name : c[key];
+  return list.slice().sort((a, b) => {
+    const x = val(a), y = val(b);
+    const r = typeof x === 'number' ? x - y : String(x).localeCompare(String(y), 'es', { numeric: true });
+    return r * dir || a.key.localeCompare(b.key, 'es', { numeric: true });
+  });
+}
+
+const pctText = v => Math.round(v * 100) + ' %';
+
+function renderSummary() {
+  const ready = base.status === 'ready';
+  $('sumMsg').hidden = ready;
+  $('sumBody').hidden = !ready;
+  if (!ready) { $('sumMsg').textContent = $('baseMsg').textContent; return; }
+  const all = ccStats();
+  const chosen = selectedStats(all);
+
+  /* selector */
+  const q = plain(sum.q).trim();
+  const list = $('pickList');
+  const focused = document.activeElement && document.activeElement.closest('#pickList') ? document.activeElement.value : null;
+  list.textContent = '';
+  for (const c of all) {
+    if (q && !plain(c.key + ' ' + c.name).includes(q)) continue;
+    const lab = document.createElement('label');
+    const cb = document.createElement('input');
+    cb.type = 'checkbox'; cb.value = c.key; cb.id = 'cc-' + c.key.replace(/[^A-Za-z0-9_-]/g, '_');
+    cb.checked = !sum.sel || sum.sel.has(c.key);
+    const code = document.createElement('span'); code.className = 'code'; code.textContent = c.code || '—';
+    const nm = document.createElement('span'); nm.className = 'nm'; nm.textContent = c.name;
+    const ct = document.createElement('span'); ct.className = 'ct' + (c.left ? ' left' : ''); ct.textContent = `${c.done}/${c.total}`;
+    ct.title = `${c.done} firmados de ${c.total}`;
+    lab.append(cb, code, nm, ct);
+    list.append(lab);
+    if (focused === c.key) cb.focus();
+  }
+  if (!list.children.length) { const p = document.createElement('p'); p.className = 'hint'; p.textContent = 'Ningún centro de costo coincide.'; list.append(p); }
+  $('pickCount').textContent = `· ${chosen.length} de ${all.length}`;
+
+  /* totales */
+  const T = chosen.reduce((a, c) => ({ total: a.total + c.total, done: a.done + c.done }), { total: 0, done: 0 });
+  const tPct = T.total ? T.done / T.total : 0;
+  $('sDone').textContent = T.done;
+  $('sLeft').textContent = T.total - T.done;
+  $('sPct').textContent = pctText(tPct);
+  $('sFill').style.width = (tPct * 100) + '%';
+  $('sScope').textContent = chosen.length === all.length
+    ? `Todos los centros de costo: ${all.length}, con ${T.total} trabajadores.`
+    : `${chosen.length} de ${all.length} centros de costo, con ${T.total} trabajadores.`;
+  $('repSum').disabled = $('repDet').disabled = !chosen.length;
+
+  /* tabla */
+  document.querySelectorAll('table.sum button.sort').forEach(b => {
+    if (b.dataset.sort === sum.sort.key) b.dataset.dir = sum.sort.dir > 0 ? '↑' : '↓'; else delete b.dataset.dir;
+  });
+  const tb = $('sumRows');
+  tb.textContent = '';
+  for (const c of sortStats(chosen)) {
+    const tr = document.createElement('tr');
+    const td = (text, cls) => { const x = document.createElement('td'); if (cls) x.className = cls; x.textContent = text; tr.append(x); return x; };
+    td(c.code || '—', 'mono');
+    td(c.name, 'name');
+    td(c.total, 'num');
+    td(c.done, 'num done');
+    td(c.left, 'num' + (c.left ? ' left' : ''));
+    const bar = td('', '');
+    const mini = document.createElement('div'); mini.className = 'mini';
+    const tr2 = document.createElement('div'); tr2.className = 'track';
+    const fill = document.createElement('i'); fill.style.width = (c.pct * 100) + '%'; tr2.append(fill);
+    const pc = document.createElement('span'); pc.textContent = pctText(c.pct);
+    mini.append(tr2, pc); bar.append(mini);
+    const act = td('', '');
+    if (c.left) {
+      const b = document.createElement('button'); b.type = 'button'; b.className = 'quiet'; b.dataset.cc = c.key;
+      b.textContent = 'Ver pendientes';
+      act.append(b);
+    }
+    tb.append(tr);
+  }
+  if (!chosen.length) {
+    const tr = document.createElement('tr'); const x = document.createElement('td'); x.colSpan = 7;
+    x.textContent = 'Elige al menos un centro de costo arriba.'; tr.append(x); tb.append(tr);
+  }
+  const ft = $('sumFoot');
+  ft.textContent = '';
+  if (chosen.length) {
+    const tr = document.createElement('tr');
+    [['Total', ''], [`${chosen.length} ${chosen.length === 1 ? 'centro' : 'centros'}`, ''], [T.total, 'num'], [T.done, 'num'], [T.total - T.done, 'num'], [pctText(tPct), ''], ['', '']]
+      .forEach(([t, cls]) => { const x = document.createElement('td'); if (cls) x.className = cls; x.textContent = t; tr.append(x); });
+    ft.append(tr);
+  }
+}
+
+/* ---------- Informes Excel (se arman en el navegador) ---------- */
+function xmlEsc(v) {
+  return String(v).replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f]/g, '').replace(/[&<>"]/g, c => ({ '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;' }[c]));
+}
+
+/* sheets: [{ name, title, subtitle, header, rows, widths, styles (por columna: 'pct' | null), total }] */
+async function buildXlsx(sheets) {
+  const zip = new JSZip();
+  const ns = 'xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main" xmlns:r="http://schemas.openxmlformats.org/officeDocument/2006/relationships"';
+  const cell = (ref, v, style) => {
+    const s = style ? ` s="${style}"` : '';
+    if (v === null || v === undefined || v === '') return style ? `<c r="${ref}"${s}/>` : '';
+    if (typeof v === 'number' && isFinite(v)) return `<c r="${ref}"${s}><v>${v}</v></c>`;
+    return `<c r="${ref}"${s} t="inlineStr"><is><t xml:space="preserve">${xmlEsc(v)}</t></is></c>`;
+  };
+  const defined = [];
+  sheets.forEach((sh, si) => {
+    const nCols = sh.header.length;
+    const last = colLetter(nCols - 1);
+    const rows = [];
+    rows.push(`<row r="1">${cell('A1', sh.title, 5)}</row>`);
+    rows.push(`<row r="2">${cell('A2', sh.subtitle, 6)}</row>`);
+    rows.push(`<row r="3">${sh.header.map((h, i) => cell(colLetter(i) + 3, h, 1)).join('')}</row>`);
+    let r = 4;
+    for (const row of sh.rows) {
+      rows.push(`<row r="${r}">${row.map((v, i) => cell(colLetter(i) + r, v, sh.styles[i] === 'pct' ? 2 : 0)).join('')}</row>`);
+      r++;
+    }
+    const lastData = r - 1;
+    if (sh.total) rows.push(`<row r="${r}">${sh.total.map((v, i) => cell(colLetter(i) + r, v, sh.styles[i] === 'pct' ? 4 : 3)).join('')}</row>`);
+    const cols = sh.widths.map((w, i) => `<col min="${i + 1}" max="${i + 1}" width="${w}" customWidth="1"/>`).join('');
+    const filter = lastData >= 4 ? `<autoFilter ref="A3:${last}${lastData}"/>` : '';
+    if (filter) defined.push(`<definedName name="_xlnm._FilterDatabase" localSheetId="${si}" hidden="1">'${sh.name.replace(/'/g, "''")}'!$A$3:$${last}$${lastData}</definedName>`);
+    zip.file(`xl/worksheets/sheet${si + 1}.xml`, `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n<worksheet ${ns}><dimension ref="A1:${last}${Math.max(r - (sh.total ? 0 : 1), 3)}"/><sheetViews><sheetView workbookViewId="0"${si === 0 ? ' tabSelected="1"' : ''}><pane ySplit="3" topLeftCell="A4" activePane="bottomLeft" state="frozen"/><selection pane="bottomLeft" activeCell="A4" sqref="A4"/></sheetView></sheetViews><sheetFormatPr defaultRowHeight="15"/><cols>${cols}</cols><sheetData>${rows.join('')}</sheetData>${filter}<pageMargins left="0.5" right="0.5" top="0.75" bottom="0.75" header="0.3" footer="0.3"/><pageSetup orientation="landscape" fitToWidth="1" fitToHeight="0"/></worksheet>`);
+  });
+  zip.file('[Content_Types].xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n<Types xmlns="http://schemas.openxmlformats.org/package/2006/content-types"><Default Extension="rels" ContentType="application/vnd.openxmlformats-package.relationships+xml"/><Default Extension="xml" ContentType="application/xml"/><Override PartName="/xl/workbook.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.sheet.main+xml"/>${sheets.map((_, i) => `<Override PartName="/xl/worksheets/sheet${i + 1}.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.worksheet+xml"/>`).join('')}<Override PartName="/xl/styles.xml" ContentType="application/vnd.openxmlformats-officedocument.spreadsheetml.styles+xml"/></Types>`);
+  zip.file('_rels/.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships"><Relationship Id="rId1" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/officeDocument" Target="xl/workbook.xml"/></Relationships>`);
+  zip.file('xl/workbook.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n<workbook ${ns}><bookViews><workbookView/></bookViews><sheets>${sheets.map((sh, i) => `<sheet name="${xmlEsc(sh.name)}" sheetId="${i + 1}" r:id="rId${i + 1}"/>`).join('')}</sheets>${defined.length ? `<definedNames>${defined.join('')}</definedNames>` : ''}</workbook>`);
+  zip.file('xl/_rels/workbook.xml.rels', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n<Relationships xmlns="http://schemas.openxmlformats.org/package/2006/relationships">${sheets.map((_, i) => `<Relationship Id="rId${i + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/worksheet" Target="worksheets/sheet${i + 1}.xml"/>`).join('')}<Relationship Id="rId${sheets.length + 1}" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/styles" Target="styles.xml"/></Relationships>`);
+  zip.file('xl/styles.xml', `<?xml version="1.0" encoding="UTF-8" standalone="yes"?>\r\n<styleSheet xmlns="http://schemas.openxmlformats.org/spreadsheetml/2006/main"><fonts count="4"><font><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="11"/><name val="Calibri"/><family val="2"/></font><font><b/><sz val="14"/><name val="Calibri"/><family val="2"/></font><font><i/><sz val="10"/><color rgb="FF566278"/><name val="Calibri"/><family val="2"/></font></fonts><fills count="4"><fill><patternFill patternType="none"/></fill><fill><patternFill patternType="gray125"/></fill><fill><patternFill patternType="solid"><fgColor rgb="FFE0E6FA"/><bgColor indexed="64"/></patternFill></fill><fill><patternFill patternType="solid"><fgColor rgb="FFEEF1F6"/><bgColor indexed="64"/></patternFill></fill></fills><borders count="2"><border><left/><right/><top/><bottom/><diagonal/></border><border><left/><right/><top style="thin"><color rgb="FF566278"/></top><bottom/><diagonal/></border></borders><cellStyleXfs count="1"><xf numFmtId="0" fontId="0" fillId="0" borderId="0"/></cellStyleXfs><cellXfs count="7"><xf numFmtId="0" fontId="0" fillId="0" borderId="0" xfId="0"/><xf numFmtId="0" fontId="1" fillId="2" borderId="0" xfId="0" applyFont="1" applyFill="1"/><xf numFmtId="9" fontId="0" fillId="0" borderId="0" xfId="0" applyNumberFormat="1"/><xf numFmtId="0" fontId="1" fillId="3" borderId="1" xfId="0" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="9" fontId="1" fillId="3" borderId="1" xfId="0" applyNumberFormat="1" applyFont="1" applyFill="1" applyBorder="1"/><xf numFmtId="0" fontId="2" fillId="0" borderId="0" xfId="0" applyFont="1"/><xf numFmtId="0" fontId="3" fillId="0" borderId="0" xfId="0" applyFont="1"/></cellXfs><cellStyles count="1"><cellStyle name="Normal" xfId="0" builtinId="0"/></cellStyles></styleSheet>`);
+  return zip.generateAsync({ type: 'uint8array', compression: 'DEFLATE', mimeType: XLSX_MIME });
+}
+
+function reportSheets(detail) {
+  const all = ccStats();
+  const chosen = sortStats(selectedStats(all));
+  const now = new Date();
+  const stamp = now.toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' });
+  const scope = chosen.length === all.length ? `todos los centros de costo (${all.length})` : `${chosen.length} de ${all.length} centros de costo`;
+  const src = base.meta && base.meta.archivo ? ` · Base: ${base.meta.archivo}` : '';
+  const T = chosen.reduce((a, c) => ({ total: a.total + c.total, done: a.done + c.done }), { total: 0, done: 0 });
+  const sheets = [{
+    name: 'Resumen',
+    title: 'Anexos de contrato por centro de costo',
+    subtitle: `Generado el ${stamp} · ${scope}${src}`,
+    header: ['C. costo', 'Centro de costo', 'Trabajadores', 'Firmados', 'Pendientes', 'Avance'],
+    rows: chosen.map(c => [/^\d+$/.test(c.code) ? Number(c.code) : c.code, c.name, c.total, c.done, c.left, c.pct]),
+    total: ['Total', `${chosen.length} centros de costo`, T.total, T.done, T.total - T.done, T.total ? T.done / T.total : 0],
+    widths: [11, 38, 14, 12, 13, 10],
+    styles: [null, null, null, null, null, 'pct'],
+  }];
+  if (detail) {
+    const rows = [];
+    for (const c of chosen) {
+      const people = c.people.slice().sort((a, b) => (base.marks.has(a.rut) - base.marks.has(b.rut)) || a.nombre.localeCompare(b.nombre, 'es'));
+      for (const p of people) {
+        const mk = base.marks.get(p.rut);
+        const fecha = mk && mk.fecha ? new Date(mk.fecha).toLocaleString('es-CL', { day: '2-digit', month: '2-digit', year: 'numeric', hour: '2-digit', minute: '2-digit' }) : '';
+        rows.push([/^\d+$/.test(c.code) ? Number(c.code) : c.code, c.name, p.id, p.rut, p.nombre, p.puesto, mk ? 'Firmado' : 'Pendiente', fecha, mk ? (VIA[mk.via] || mk.via) : '', mk ? mk.archivo || '' : '']);
+      }
+    }
+    sheets.push({
+      name: 'Detalle',
+      title: 'Detalle por trabajador',
+      subtitle: `Generado el ${stamp} · ${scope} · ${T.total} trabajadores, ${T.total - T.done} pendientes`,
+      header: ['C. costo', 'Centro de costo', 'Id', 'RUT', 'Nombre', 'Puesto', 'Estado', 'Fecha Ok', 'Cómo se marcó', 'Archivo'],
+      rows, total: null,
+      widths: [11, 32, 8, 13, 36, 30, 11, 17, 14, 38],
+      styles: [],
+    });
+  }
+  return sheets;
+}
+
+async function downloadReport(detail) {
+  const btn = detail ? $('repDet') : $('repSum');
+  const label = btn.textContent;
+  btn.disabled = true; btn.textContent = 'Preparando…';
+  const note = (msg, bad) => { const n = $('sumNotice'); n.textContent = msg; n.hidden = !msg; n.style.background = bad ? '' : 'var(--ok-soft)'; n.style.color = bad ? '' : 'var(--ok)'; };
+  try {
+    const bytes = await buildXlsx(reportSheets(detail));
+    const d = new Date();
+    const day = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, '0')}-${String(d.getDate()).padStart(2, '0')}`;
+    const name = `${detail ? 'Detalle' : 'Resumen'} anexos por centro de costo ${day}.xlsx`;
+    if (await offer(name, bytes, XLSX_MIME)) note(`Listo: ${name}`); else note('');
+  } catch (e) { console.error(e); note('No pude armar el informe: ' + e.message + '.', true); }
+  btn.textContent = label;
+  btn.disabled = false;
+}
+
+/* ---------- Eventos ---------- */
+const drop = $('drop'), input = $('fileInput');
+drop.addEventListener('click', e => { if (e.target !== input) input.click(); });
+drop.addEventListener('keydown', e => { if ((e.key === 'Enter' || e.key === ' ') && e.target === drop) { e.preventDefault(); input.click(); } });
+input.addEventListener('change', () => { const f = [...input.files]; input.value = ''; if (f.length) processFiles(f); });
+for (const t of ['dragenter', 'dragover']) drop.addEventListener(t, e => { e.preventDefault(); drop.classList.add('over'); });
+for (const t of ['dragleave', 'drop']) drop.addEventListener(t, e => { e.preventDefault(); drop.classList.remove('over'); });
+drop.addEventListener('drop', e => { const f = [...e.dataTransfer.files]; if (f.length) processFiles(f); });
+window.addEventListener('dragover', e => e.preventDefault());
+window.addEventListener('drop', e => e.preventDefault());
+
+MONTHS.forEach((m, i) => { const o = document.createElement('option'); o.value = i; o.textContent = m; $('monthSel').append(o); });
+$('monthSel').addEventListener('change', e => {
+  state.monthManual = e.target.value !== 'auto';
+  if (state.monthManual) state.month = Number(e.target.value);
+  syncMonthUi(); render();
+});
+$('yearInput').addEventListener('change', e => { const y = Number(e.target.value); if (y >= 2000 && y <= 2100) { state.year = y; state.monthManual = true; render(); } });
+$('resetBtn').addEventListener('click', () => {
+  const total = state.groups.length;
+  const pending = state.groups.filter(g => !g.saved).length;
+  const ok = base.status === 'ready' ? base.marks.size : 0;
+  $('clearText').textContent =
+    `Se quitarán de esta pantalla los ${total} ${total === 1 ? 'anexo' : 'anexos'} y sus PDF` +
+    (pending ? `; ${pending} todavía no ${pending === 1 ? 'se descarga' : 'se descargan'}` : '') + '. ' +
+    (ok ? `La base y sus ${ok} marcas Ok no cambian.` : 'La base de trabajadores no cambia.');
+  $('clearBox').hidden = false;
+  $('clearPick').focus();
+});
+$('clearCancel').addEventListener('click', () => { $('clearBox').hidden = true; });
+$('clearOnly').addEventListener('click', () => { $('clearBox').hidden = true; resetAll(); });
+$('clearPick').addEventListener('click', () => { $('clearBox').hidden = true; resetAll(); input.click(); });
+$('styleSel').addEventListener('change', e => { state.style = e.target.value; render(); });
+$('saveSelBtn').addEventListener('click', saveSelected);
+$('folderBtn').addEventListener('click', async () => {
+  const d = await pickFolder(true);
+  if (d && d !== 'cancel') showNotice(`Los PDF se guardarán en la carpeta «${d.name}».`, true);
+});
+if (canPickFolder) folderStore.get().then(h => { keptFolder = h; renderFolder(); });
+$('selAll').addEventListener('change', e => { state.groups.forEach(g => { g.sel = e.target.checked; }); render(); });
+$('selPending').addEventListener('click', () => {
+  state.groups.forEach(g => {
+    const m = base.status === 'ready' ? matchGroup(g) : null;
+    g.sel = !g.saved && !(m && base.marks.has(m.p.rut));
+  });
+  render();
+});
+$('filterBtn').addEventListener('click', () => { state.onlyFlag = !state.onlyFlag; render(); });
+$('dlgClose').addEventListener('click', () => $('dlg').close());
+
+$('rows').addEventListener('change', e => {
+  if (e.target.dataset.act === 'sel') {
+    const g = state.groups.find(x => x.id === Number(e.target.closest('.row').dataset.id));
+    g.sel = e.target.checked;
+    e.target.closest('.row').classList.toggle('selected', g.sel);
+    renderSel();
+    return;
+  }
+  if (e.target.dataset.act === 'rut') {
+    const g = state.groups.find(x => x.id === Number(e.target.closest('.row').dataset.id));
+    const v = normRut(e.target.value);
+    if (!v) { g.manualRut = null; showNotice(''); }
+    else if (base.byRut.has(v)) { g.manualRut = v; showNotice(''); }
+    else { g.manualRut = null; showNotice(`El RUT ${v} no está en la base. Revísalo en la hoja.`); }
+    render();
+    return;
+  }
+  if (e.target.dataset.act !== 'rename') return;
+  const g = state.groups.find(x => x.id === Number(e.target.closest('.row').dataset.id));
+  const v = sanitize(e.target.value);
+  g.custom = v ? v : null;
+  render();
+});
+$('rows').addEventListener('click', e => {
+  const b = e.target.closest('[data-act]');
+  if (!b || b.dataset.act === 'rename') return;
+  const i = state.groups.findIndex(x => x.id === Number(b.closest('.row').dataset.id));
+  const g = state.groups[i];
+  switch (b.dataset.act) {
+    case 'view': view(g); break;
+    case 'save': saveOne(g, b); break;
+    case 'ok': g.confirmed = true; render(); break;
+    case 'merge':
+      state.groups[i - 1].pages.push(...g.pages);
+      state.groups.splice(i, 1);
+      render(); break;
+    case 'split': {
+      const p = g.pages.pop();
+      state.groups.splice(i + 1, 0, { id: nextGroupId++, pages: [p], custom: null, confirmed: false, saved: false });
+      render(); break;
+    }
+  }
+});
+
+$('tabSep').addEventListener('click', () => go('separar'));
+$('tabBase').addEventListener('click', () => go('base'));
+$('tabSum').addEventListener('click', () => go('resumen'));
+window.addEventListener('hashchange', () => showView(location.hash.slice(1)));
+showView(location.hash.slice(1));
+
+$('pickQ').addEventListener('input', e => { sum.q = e.target.value; renderSummary(); });
+$('pickList').addEventListener('change', e => {
+  if (e.target.type !== 'checkbox') return;
+  const all = ccStats().map(c => c.key);
+  if (!sum.sel) sum.sel = new Set(all);
+  if (e.target.checked) sum.sel.add(e.target.value); else sum.sel.delete(e.target.value);
+  if (sum.sel.size === all.length) sum.sel = null;
+  saveSel(); renderSummary();
+});
+const visibleKeys = () => ccStats().filter(c => !sum.q || plain(c.key + ' ' + c.name).includes(plain(sum.q).trim())).map(c => c.key);
+$('pickAll').addEventListener('click', () => {
+  if (!sum.q) sum.sel = null;
+  else { if (sum.sel) visibleKeys().forEach(k => sum.sel.add(k)); }
+  saveSel(); renderSummary();
+});
+$('pickNone').addEventListener('click', () => {
+  const vis = new Set(visibleKeys());
+  sum.sel = new Set(ccStats().map(c => c.key).filter(k => !vis.has(k) && (!sum.sel || sum.sel.has(k))));
+  saveSel(); renderSummary();
+});
+$('pickPending').addEventListener('click', () => { sum.sel = new Set(ccStats().filter(c => c.left).map(c => c.key)); saveSel(); renderSummary(); });
+document.querySelector('table.sum thead').addEventListener('click', e => {
+  const b = e.target.closest('button.sort');
+  if (!b) return;
+  const k = b.dataset.sort;
+  sum.sort = sum.sort.key === k ? { key: k, dir: -sum.sort.dir } : { key: k, dir: ['cc', 'name'].includes(k) ? 1 : -1 };
+  renderSummary();
+});
+$('sumRows').addEventListener('click', e => {
+  const b = e.target.closest('button[data-cc]');
+  if (!b) return;
+  base.cc = b.dataset.cc; base.filter = 'faltan'; base.q = ''; base.shown = 150;
+  $('baseFilter').value = 'faltan'; $('baseQ').value = '';
+  base.ccSig = '';
+  renderBase();
+  go('base');
+});
+$('repSum').addEventListener('click', () => downloadReport(false));
+$('backupOut').addEventListener('click', exportBackup);
+$('backupIn').addEventListener('click', () => { if (!base.busy) $('jsonInput').click(); });
+$('jsonInput').addEventListener('change', e => { const f = e.target.files[0]; e.target.value = ''; if (f) importBackup(f); });
+$('repDet').addEventListener('click', () => downloadReport(true));
+
+let xlsxMode = '';
+$('importBtn').addEventListener('click', () => { if (!base.busy) { xlsxMode = 'import'; $('xlsxInput').click(); } });
+$('exportBtn').addEventListener('click', () => { xlsxMode = 'export'; $('xlsxInput').click(); });
+$('xlsxInput').addEventListener('change', e => {
+  const f = e.target.files[0];
+  e.target.value = '';
+  if (!f) return;
+  if (xlsxMode === 'import') importBase(f); else exportXlsx(f);
+});
+$('baseQ').addEventListener('input', e => { base.q = e.target.value; base.shown = 150; renderBase(); });
+$('baseFilter').addEventListener('change', e => { base.filter = e.target.value; base.shown = 150; renderBase(); });
+$('baseCC').addEventListener('change', e => { base.cc = e.target.value; base.shown = 150; renderBase(); });
+$('moreBtn').addEventListener('click', () => { base.shown += 150; renderBase(); });
+$('baseRows').addEventListener('click', async e => {
+  const b = e.target.closest('button[data-act]');
+  if (!b) return;
+  const rut = b.closest('tr').dataset.rut;
+  const p = base.byRut.get(rut);
+  if (b.dataset.act === 'mark') {
+    b.disabled = true;
+    await setMark(p, 'manual', '');
+  } else if (base.arm !== rut) {
+    base.arm = rut;
+    renderBase();
+    setTimeout(() => { if (base.arm === rut) { base.arm = null; renderBase(); } }, 4000);
+  } else {
+    base.arm = null;
+    await clearMark(rut);
+  }
+});
+
+window.__startApp = () => {
+  initBase();
+  startEngine().catch(() => showNotice('No se pudo cargar el lector de escaneos. Recarga la página. Los PDF con texto sí se pueden separar igual.'));
+};
+</script>
+
+<script type="module" src="lib/acceso.js"></script>
+<script>
+if ('serviceWorker' in navigator) window.addEventListener('load', () => navigator.serviceWorker.register('sw.js').catch(e => console.warn('Sin modo sin conexión:', e)));
+</script>
+</body>
+</html>
