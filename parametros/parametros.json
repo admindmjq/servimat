@@ -1,0 +1,1976 @@
+{
+ "actualizado": "2026-11-13",
+ "fuentes": [
+  "https://www.previred.com/indicadores-previsionales/",
+  "https://www.sii.cl/valores_y_fechas/"
+ ],
+ "meses": {
+  "2025-01": {
+   "af": [
+    {
+     "hasta": 598698,
+     "monto": 21243
+    },
+    {
+     "hasta": 874460,
+     "monto": 13036
+    },
+    {
+     "hasta": 1363858,
+     "monto": 4119
+    }
+   ],
+   "aporteCEV": 0,
+   "aporteCI": 0,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.49
+   },
+   "estado": "verificado",
+   "fuente": "Previred, indicadores previsionales enero 2025",
+   "imm": 510636,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2025-01",
+   "sis": 1.38,
+   "topeAfpUF": 87.8,
+   "topeCesUF": 131.8,
+   "uf": 38384.41,
+   "utm": 67429,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2025-02": {
+   "af": [
+    {
+     "hasta": 598698,
+     "monto": 21243
+    },
+    {
+     "hasta": 874460,
+     "monto": 13036
+    },
+    {
+     "hasta": 1363858,
+     "monto": 4119
+    }
+   ],
+   "aporteCEV": 0,
+   "aporteCI": 0,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.49
+   },
+   "estado": "derivado",
+   "fuente": "Derivado: UF y UTM del SII; tasas de Previred del mes verificado más cercano — febrero 2025",
+   "imm": 510636,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2025-02",
+   "sis": 1.38,
+   "topeAfpUF": 87.8,
+   "topeCesUF": 131.9,
+   "uf": 38647.94,
+   "utm": 67294,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2025-03": {
+   "af": [
+    {
+     "hasta": 598698,
+     "monto": 21243
+    },
+    {
+     "hasta": 874460,
+     "monto": 13036
+    },
+    {
+     "hasta": 1363858,
+     "monto": 4119
+    }
+   ],
+   "aporteCEV": 0,
+   "aporteCI": 0,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.49
+   },
+   "estado": "derivado",
+   "fuente": "Derivado: UF y UTM del SII; tasas de Previred del mes verificado más cercano — marzo 2025",
+   "imm": 510636,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2025-03",
+   "sis": 1.38,
+   "topeAfpUF": 87.8,
+   "topeCesUF": 131.9,
+   "uf": 38894.11,
+   "utm": 68034,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2025-04": {
+   "af": [
+    {
+     "hasta": 598698,
+     "monto": 21243
+    },
+    {
+     "hasta": 874460,
+     "monto": 13036
+    },
+    {
+     "hasta": 1363858,
+     "monto": 4119
+    }
+   ],
+   "aporteCEV": 0,
+   "aporteCI": 0,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.49
+   },
+   "estado": "verificado",
+   "fuente": "Previred, indicadores previsionales abril 2025",
+   "imm": 510636,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2025-04",
+   "sis": 1.78,
+   "topeAfpUF": 87.8,
+   "topeCesUF": 131.9,
+   "uf": 39075.41,
+   "utm": 68306,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2025-05": {
+   "af": [
+    {
+     "hasta": 620251,
+     "monto": 22007
+    },
+    {
+     "hasta": 905941,
+     "monto": 13505
+    },
+    {
+     "hasta": 1412957,
+     "monto": 4267
+    }
+   ],
+   "aporteCEV": 0,
+   "aporteCI": 0,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.49
+   },
+   "estado": "derivado",
+   "fuente": "Derivado: UF y UTM del SII; tasas de Previred del mes verificado más cercano — mayo 2025",
+   "imm": 529000,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2025-05",
+   "sis": 1.78,
+   "topeAfpUF": 87.8,
+   "topeCesUF": 131.9,
+   "uf": 39189.45,
+   "utm": 68648,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2025-06": {
+   "af": [
+    {
+     "hasta": 620251,
+     "monto": 22007
+    },
+    {
+     "hasta": 905941,
+     "monto": 13505
+    },
+    {
+     "hasta": 1412957,
+     "monto": 4267
+    }
+   ],
+   "aporteCEV": 0,
+   "aporteCI": 0,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.49
+   },
+   "estado": "derivado",
+   "fuente": "Derivado: UF y UTM del SII; tasas de Previred del mes verificado más cercano — junio 2025",
+   "imm": 529000,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2025-06",
+   "sis": 1.78,
+   "topeAfpUF": 87.8,
+   "topeCesUF": 131.9,
+   "uf": 39267.07,
+   "utm": 68785,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2025-07": {
+   "af": [
+    {
+     "hasta": 620251,
+     "monto": 22007
+    },
+    {
+     "hasta": 905941,
+     "monto": 13505
+    },
+    {
+     "hasta": 1412957,
+     "monto": 4267
+    }
+   ],
+   "aporteCEV": 0,
+   "aporteCI": 0,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.49
+   },
+   "estado": "derivado",
+   "fuente": "Derivado: UF y UTM del SII; tasas de Previred del mes verificado más cercano — julio 2025",
+   "imm": 529000,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2025-07",
+   "sis": 1.88,
+   "topeAfpUF": 87.8,
+   "topeCesUF": 131.9,
+   "uf": 39179.01,
+   "utm": 68923,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2025-08": {
+   "af": [
+    {
+     "hasta": 620251,
+     "monto": 22007
+    },
+    {
+     "hasta": 905941,
+     "monto": 13505
+    },
+    {
+     "hasta": 1412957,
+     "monto": 4267
+    }
+   ],
+   "aporteCEV": 0.9,
+   "aporteCI": 0.1,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.49
+   },
+   "estado": "verificado",
+   "fuente": "Previred, indicadores previsionales agosto 2025. Ley 21.735: 1% empleador = 0,1% cuenta individual + 0,9% seguro expectativa de vida; SIS aparte",
+   "imm": 529000,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2025-08",
+   "sis": 1.88,
+   "topeAfpUF": 87.8,
+   "topeCesUF": 131.9,
+   "uf": 39383.07,
+   "utm": 68647,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2025-09": {
+   "af": [
+    {
+     "hasta": 620251,
+     "monto": 22007
+    },
+    {
+     "hasta": 905941,
+     "monto": 13505
+    },
+    {
+     "hasta": 1412957,
+     "monto": 4267
+    }
+   ],
+   "aporteCEV": 0.9,
+   "aporteCI": 0.1,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.49
+   },
+   "estado": "derivado",
+   "fuente": "Derivado: UF y UTM del SII; tasas de Previred del mes verificado más cercano — septiembre 2025. Ley 21.735: 1% empleador = 0,1% cuenta individual + 0,9% seguro expectativa de vida; SIS aparte",
+   "imm": 529000,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2025-09",
+   "sis": 1.88,
+   "topeAfpUF": 87.8,
+   "topeCesUF": 131.9,
+   "uf": 39485.65,
+   "utm": 69265,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2025-10": {
+   "af": [
+    {
+     "hasta": 620251,
+     "monto": 22007
+    },
+    {
+     "hasta": 905941,
+     "monto": 13505
+    },
+    {
+     "hasta": 1412957,
+     "monto": 4267
+    }
+   ],
+   "aporteCEV": 0.9,
+   "aporteCI": 0.1,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.46
+   },
+   "estado": "verificado",
+   "fuente": "Previred, indicadores previsionales octubre 2025. Ley 21.735: 1% empleador = 0,1% cuenta individual + 0,9% seguro expectativa de vida; SIS aparte",
+   "imm": 529000,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2025-10",
+   "sis": 1.49,
+   "topeAfpUF": 87.8,
+   "topeCesUF": 131.9,
+   "uf": 39597.67,
+   "utm": 69265,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2025-11": {
+   "af": [
+    {
+     "hasta": 620251,
+     "monto": 22007
+    },
+    {
+     "hasta": 905941,
+     "monto": 13505
+    },
+    {
+     "hasta": 1412957,
+     "monto": 4267
+    }
+   ],
+   "aporteCEV": 0.9,
+   "aporteCI": 0.1,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.46
+   },
+   "estado": "derivado",
+   "fuente": "Derivado: UF y UTM del SII; tasas de Previred del mes verificado más cercano — noviembre 2025. Ley 21.735: 1% empleador = 0,1% cuenta individual + 0,9% seguro expectativa de vida; SIS aparte",
+   "imm": 529000,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2025-11",
+   "sis": 1.49,
+   "topeAfpUF": 87.8,
+   "topeCesUF": 131.9,
+   "uf": 39643.59,
+   "utm": 69542,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2025-12": {
+   "af": [
+    {
+     "hasta": 620251,
+     "monto": 22007
+    },
+    {
+     "hasta": 905941,
+     "monto": 13505
+    },
+    {
+     "hasta": 1412957,
+     "monto": 4267
+    }
+   ],
+   "aporteCEV": 0.9,
+   "aporteCI": 0.1,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.46
+   },
+   "estado": "verificado",
+   "fuente": "Previred, indicadores previsionales diciembre 2025. Ley 21.735: 1% empleador = 0,1% cuenta individual + 0,9% seguro expectativa de vida; SIS aparte",
+   "imm": 529000,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2025-12",
+   "sis": 1.49,
+   "topeAfpUF": 87.8,
+   "topeCesUF": 131.9,
+   "uf": 39727.96,
+   "utm": 69542,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2026-01": {
+   "af": [
+    {
+     "hasta": 631976,
+     "monto": 22007
+    },
+    {
+     "hasta": 923067,
+     "monto": 13505
+    },
+    {
+     "hasta": 1439668,
+     "monto": 4267
+    }
+   ],
+   "aporteCEV": 0.9,
+   "aporteCI": 0.1,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.46
+   },
+   "estado": "verificado",
+   "fuente": "Previred, indicadores previsionales enero 2026. Ley 21.735: 1% empleador = 0,1% cuenta individual + 0,9% seguro expectativa de vida; SIS aparte",
+   "imm": 539000,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2026-01",
+   "sis": 1.54,
+   "topeAfpUF": 89.9,
+   "topeCesUF": 135.1,
+   "uf": 39706.07,
+   "utm": 69751,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2026-02": {
+   "af": [
+    {
+     "hasta": 631976,
+     "monto": 22007
+    },
+    {
+     "hasta": 923067,
+     "monto": 13505
+    },
+    {
+     "hasta": 1439668,
+     "monto": 4267
+    }
+   ],
+   "aporteCEV": 0.9,
+   "aporteCI": 0.1,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.46
+   },
+   "estado": "derivado",
+   "fuente": "Derivado: UF y UTM del SII; tasas de Previred del mes verificado más cercano — febrero 2026. Ley 21.735: 1% empleador = 0,1% cuenta individual + 0,9% seguro expectativa de vida; SIS aparte",
+   "imm": 539000,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2026-02",
+   "sis": 1.54,
+   "topeAfpUF": 90,
+   "topeCesUF": 135.2,
+   "uf": 39790.63,
+   "utm": 69611,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2026-03": {
+   "af": [
+    {
+     "hasta": 631976,
+     "monto": 22007
+    },
+    {
+     "hasta": 923067,
+     "monto": 13505
+    },
+    {
+     "hasta": 1439668,
+     "monto": 4267
+    }
+   ],
+   "aporteCEV": 0.9,
+   "aporteCI": 0.1,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.46
+   },
+   "estado": "derivado",
+   "fuente": "Derivado: UF y UTM del SII; tasas de Previred del mes verificado más cercano — marzo 2026. Ley 21.735: 1% empleador = 0,1% cuenta individual + 0,9% seguro expectativa de vida; SIS aparte",
+   "imm": 539000,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2026-03",
+   "sis": 1.54,
+   "topeAfpUF": 90,
+   "topeCesUF": 135.2,
+   "uf": 39841.72,
+   "utm": 69889,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2026-04": {
+   "af": [
+    {
+     "hasta": 631976,
+     "monto": 22007
+    },
+    {
+     "hasta": 923067,
+     "monto": 13505
+    },
+    {
+     "hasta": 1439668,
+     "monto": 4267
+    }
+   ],
+   "aporteCEV": 0.9,
+   "aporteCI": 0.1,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.46
+   },
+   "estado": "verificado",
+   "fuente": "Previred, indicadores previsionales abril 2026. Ley 21.735: 1% empleador = 0,1% cuenta individual + 0,9% seguro expectativa de vida; SIS aparte",
+   "imm": 539000,
+   "jornadaLegal": 44,
+   "mutualBasica": 0.93,
+   "periodo": "2026-04",
+   "sis": 1.62,
+   "topeAfpUF": 90,
+   "topeCesUF": 135.2,
+   "uf": 40120.2,
+   "utm": 69889,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2026-05": {
+   "af": [
+    {
+     "hasta": 649039,
+     "monto": 22601
+    },
+    {
+     "hasta": 947990,
+     "monto": 13870
+    },
+    {
+     "hasta": 1478539,
+     "monto": 4382
+    }
+   ],
+   "aporteCEV": 0.9,
+   "aporteCI": 0.1,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.46
+   },
+   "estado": "derivado",
+   "fuente": "Derivado: UF y UTM del SII; tasas de Previred del mes verificado más cercano — mayo 2026. Ley 21.735: 1% empleador = 0,1% cuenta individual + 0,9% seguro expectativa de vida; SIS aparte",
+   "imm": 553553,
+   "jornadaLegal": 42,
+   "mutualBasica": 0.93,
+   "periodo": "2026-05",
+   "sis": 1.62,
+   "topeAfpUF": 90,
+   "topeCesUF": 135.2,
+   "uf": 40610.69,
+   "utm": 70588,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2026-06": {
+   "af": [
+    {
+     "hasta": 649039,
+     "monto": 22601
+    },
+    {
+     "hasta": 947990,
+     "monto": 13870
+    },
+    {
+     "hasta": 1478539,
+     "monto": 4382
+    }
+   ],
+   "aporteCEV": 0.9,
+   "aporteCI": 0.1,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.46
+   },
+   "estado": "verificado",
+   "fuente": "Previred, indicadores previsionales junio 2026. Ley 21.735: 1% empleador = 0,1% cuenta individual + 0,9% seguro expectativa de vida; SIS aparte",
+   "imm": 553553,
+   "jornadaLegal": 42,
+   "mutualBasica": 0.93,
+   "periodo": "2026-06",
+   "sis": 1.62,
+   "topeAfpUF": 90,
+   "topeCesUF": 135.2,
+   "uf": 40820.31,
+   "utm": 71506,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2026-07": {
+   "af": [
+    {
+     "hasta": 649039,
+     "monto": 22601
+    },
+    {
+     "hasta": 947990,
+     "monto": 13870
+    },
+    {
+     "hasta": 1478539,
+     "monto": 4382
+    }
+   ],
+   "aporteCEV": 0.9,
+   "aporteCI": 0.1,
+   "aporteCRP": 0,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.46
+   },
+   "estado": "verificado",
+   "fuente": "Previred, indicadores previsionales julio 2026. Ley 21.735: 1% empleador = 0,1% cuenta individual + 0,9% seguro expectativa de vida; SIS aparte",
+   "imm": 553553,
+   "jornadaLegal": 42,
+   "mutualBasica": 0.93,
+   "periodo": "2026-07",
+   "sis": 2,
+   "topeAfpUF": 90,
+   "topeCesUF": 135.2,
+   "uf": 40844.79,
+   "utm": 71649,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2026-08": {
+   "af": [
+    {
+     "hasta": 649039,
+     "monto": 22601
+    },
+    {
+     "hasta": 947990,
+     "monto": 13870
+    },
+    {
+     "hasta": 1478539,
+     "monto": 4382
+    }
+   ],
+   "aporteCEV": 0.72,
+   "aporteCI": 0.1,
+   "aporteCRP": 0.9,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.46
+   },
+   "estado": "verificado",
+   "fuente": "Previred, indicadores previsionales agosto 2026. Ley 21.735: 3,5% empleador = 0,1% cuenta individual + 0,9% CRP + 2,5% SIS (1,78%) y expectativa de vida (0,72%)",
+   "imm": 553553,
+   "jornadaLegal": 42,
+   "mutualBasica": 0.93,
+   "periodo": "2026-08",
+   "sis": 1.78,
+   "topeAfpUF": 90,
+   "topeCesUF": 135.2,
+   "uf": 40873.77,
+   "utm": 71649,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2026-09": {
+   "af": [
+    {
+     "hasta": 649039,
+     "monto": 22601
+    },
+    {
+     "hasta": 947990,
+     "monto": 13870
+    },
+    {
+     "hasta": 1478539,
+     "monto": 4382
+    }
+   ],
+   "aporteCEV": 0.72,
+   "aporteCI": 0.1,
+   "aporteCRP": 0.9,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.46
+   },
+   "estado": "verificado",
+   "fuente": "Previred, indicadores previsionales septiembre 2026. Ley 21.735: 3,5% empleador = 0,1% cuenta individual + 0,9% CRP + 2,5% SIS (1,78%) y expectativa de vida (0,72%)",
+   "imm": 553553,
+   "jornadaLegal": 42,
+   "mutualBasica": 0.93,
+   "periodo": "2026-09",
+   "sis": 1.78,
+   "topeAfpUF": 90,
+   "topeCesUF": 135.2,
+   "uf": 41057.2,
+   "utm": 71721,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2026-10": {
+   "af": [
+    {
+     "hasta": 649039,
+     "monto": 22601
+    },
+    {
+     "hasta": 947990,
+     "monto": 13870
+    },
+    {
+     "hasta": 1478539,
+     "monto": 4382
+    }
+   ],
+   "aporteCEV": 0.72,
+   "aporteCI": 0.1,
+   "aporteCRP": 0.9,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.46
+   },
+   "estado": "verificado",
+   "fuente": "Previred, indicadores previsionales octubre 2026. Ley 21.735: 3,5% empleador = 0,1% cuenta individual + 0,9% CRP + 2,5% SIS (1,78%) y expectativa de vida (0,72%)",
+   "imm": 553553,
+   "jornadaLegal": 42,
+   "mutualBasica": 0.93,
+   "periodo": "2026-10",
+   "sis": 1.78,
+   "topeAfpUF": 90,
+   "topeCesUF": 135.2,
+   "uf": 41247.63,
+   "utm": 72151,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ]
+  },
+  "2026-11": {
+   "af": [
+    {
+     "hasta": 649039,
+     "monto": 22601
+    },
+    {
+     "hasta": 947990,
+     "monto": 13870
+    },
+    {
+     "hasta": 1478539,
+     "monto": 4382
+    }
+   ],
+   "aporteCEV": 0.72,
+   "aporteCI": 0.1,
+   "aporteCRP": 0.9,
+   "cesIndefEmp": 2.4,
+   "cesIndefTrab": 0.6,
+   "cesMas11Emp": 0.8,
+   "cesPlazoFijoEmp": 3,
+   "comisiones": {
+    "CAPITAL": 1.44,
+    "CUPRUM": 1.44,
+    "HABITAT": 1.27,
+    "MODELO": 0.58,
+    "PLANVITAL": 1.16,
+    "PROVIDA": 1.45,
+    "UNO": 0.46
+   },
+   "estado": "derivado",
+   "fuente": "Derivado: UF al 30-11-2026 y UTM de noviembre del SII; tasas de Previred de octubre 2026 (último mes publicado). Ley 21.735: 3,5% empleador = 0,1% cuenta individual + 0,9% CRP + 2,5% SIS (1,78%) y expectativa de vida (0,72%)",
+   "imm": 553553,
+   "jornadaLegal": 42,
+   "mutualBasica": 0.93,
+   "periodo": "2026-11",
+   "sis": 1.78,
+   "topeAfpUF": 90,
+   "topeCesUF": 135.2,
+   "uf": 41439.89,
+   "utm": 72440,
+   "tax": [
+    [
+     0,
+     0,
+     0
+    ],
+    [
+     13.5,
+     0.04,
+     0.54
+    ],
+    [
+     30,
+     0.08,
+     1.74
+    ],
+    [
+     50,
+     0.135,
+     4.49
+    ],
+    [
+     70,
+     0.23,
+     11.14
+    ],
+    [
+     90,
+     0.304,
+     17.8
+    ],
+    [
+     120,
+     0.35,
+     23.32
+    ],
+    [
+     310,
+     0.4,
+     38.82
+    ]
+   ],
+   "ufDias": {
+    "2026-11-01": 41252.94,
+    "2026-11-09": 41295.46,
+    "2026-11-10": 41302.33,
+    "2026-11-30": 41439.89,
+    "2026-12-01": 41446.78,
+    "2026-12-09": 41501.94
+   },
+   "utmProx": {
+    "2026-12": 72802
+   },
+   "cargado": "2026-11-12"
+  }
+ }
+}

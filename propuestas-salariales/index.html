@@ -257,7 +257,7 @@ const SIM = (() => {
     mutual: 0.93, sanna: 0.03,
     afp: { capital: 1.44, cuprum: 1.44, habitat: 1.27, modelo: 0.58, planvital: 1.16, provida: 1.45, uno: 0.46 },
     // Impuesto único 2ª categoría, tramos en UTM (desde, factor, rebaja)
-    tax: [[0, 0, 0], [13.5, 0.04, 0.54], [30, 0.08, 1.74], [50, 0.135, 4.49], [70, 0.23, 11.42], [90, 0.304, 17.80], [120, 0.35, 23.32], [310, 0.40, 38.82]],
+    tax: [[0, 0, 0], [13.5, 0.04, 0.54], [30, 0.08, 1.74], [50, 0.135, 4.49], [70, 0.23, 11.14], [90, 0.304, 17.80], [120, 0.35, 23.32], [310, 0.40, 38.82]],
     heRecargo: 50, jornadaLegal: 42, heIncluyeAntig: false, heIncluyeBono: false,
     mesesComision: 12, comSoloHoras: true,
     umbralValor2: 30,         // jornadas <= este valor usan "valor2" del convenio cuando existe
@@ -742,6 +742,28 @@ const st = {
 };
 
 /* ---------- Almacenamiento (compartido o local) ---------- */
+/* Base central de parámetros oficiales. Orden: 1) base de datos de Claude, 2) herramientas.quidelxpert.cl, 3) mindicador.cl (solo UF y UTM). */
+const PARAM_URL = "https://herramientas.quidelxpert.cl/parametros/parametros.json";
+async function paramOficial(ym, db) {
+  const sitio = typeof window !== "undefined" && !!window.CLAUDE_LOCAL; // página propia: la base es local, primero se consulta la web
+  const local = async () => { if (!db) return null; try { const s = await db.doc("parametros/" + ym).get(); return s.exists ? { d: s.data(), via: sitio ? "este navegador" : "base de Claude" } : null; } catch (e) { return null; } };
+  if (!sitio) { const l = await local(); if (l) return l; }
+  try {
+    const r = await fetch(PARAM_URL + "?t=" + Date.now(), { cache: "no-store" });
+    if (r.ok) { const j = await r.json(); const d = j && j.meses && j.meses[ym]; if (d) return { d, via: "herramientas.quidelxpert.cl" }; }
+  } catch (e) { /* sin red o bloqueado dentro de Claude */ }
+  try {
+    const y = ym.slice(0, 4), m = ym.slice(5, 7), ult = new Date(+y, +m, 0).getDate(), p2 = (n) => String(n).padStart(2, "0");
+    const val = async (ind, dia) => { try { const r = await fetch("https://mindicador.cl/api/" + ind + "/" + p2(dia) + "-" + m + "-" + y); if (!r.ok) return null; const j = await r.json(); const v = j && j.serie && j.serie[0] ? +j.serie[0].valor : 0; return v > 0 ? v : null; } catch (e) { return null; } };
+    const [u1, u9, u10, uU, utm] = await Promise.all([val("uf", 1), val("uf", 9), val("uf", 10), val("uf", ult), val("utm", 1)]);
+    const d = { periodo: ym, estado: "parcial", ufDias: {}, cargado: new Date().toISOString().slice(0, 10) };
+    if (u1) d.ufDias[ym + "-01"] = u1; if (u9) d.ufDias[ym + "-09"] = u9; if (u10) d.ufDias[ym + "-10"] = u10;
+    if (uU) { d.ufDias[ym + "-" + p2(ult)] = uU; d.uf = uU; }
+    if (utm) d.utm = utm;
+    if (d.uf || d.utm || Object.keys(d.ufDias).length) return { d, via: "mindicador.cl" };
+  } catch (e) { /* nada */ }
+  return sitio ? local() : null;
+}
 const store = {
   async get(path) { if (st.db) { const s = await st.db.doc(path).get(); return s.exists ? s.data() : null; } return st.local.get(path) || null; },
   async set(path, data) { if (st.db) return st.db.doc(path).set(data); st.local.set(path, JSON.parse(JSON.stringify(data))); if (path.startsWith('proposals/') && path.split('/').length === 2) localProps(); },
@@ -1425,7 +1447,7 @@ const pin = (k, label, step = 'any', suf = '') => `<label class="fld">${label}<i
 function viewParams() {
   const P = st.P, ro = st.role === 'revisor' ? 'disabled' : '';
   const reform = P.sis + P.expVida + P.crp + P.ciEmpl;
-  return `<section class="sec-h"><div><h2>Parámetros legales</h2><div class="sub">Valores precargados a octubre 2026. Revísalos cada mes en Previred y SII.</div></div>${ro ? '' : '<button class="btn primary" data-act="params-save">Guardar parámetros</button>'}</section>
+  return `<section class="sec-h"><div><h2>Parámetros legales</h2><div class="sub">${st.pmInfo ? esc(st.pmInfo) : 'Elige un mes y pulsa «Actualizar mes» para traer los valores oficiales (Previred y SII) (base de Claude, herramientas.quidelxpert.cl o mindicador.cl).'}</div></div>${ro ? '' : `<div class="row"><input type="month" id="pm-mes" value="${st.pmMes || todayISO().slice(0, 7)}" aria-label="Mes de los parámetros" style="width:auto"><button class="btn" data-act="params-fetch">⟳ Actualizar mes</button><button class="btn primary" data-act="params-save">Guardar parámetros</button></div>`}</section>
   <div class="pgrid">
     <div class="card" style="display:grid;gap:10px"><h2>Logos de la empresa</h2>
       <div class="row">${(st.marca?.logos || []).map((l, i) => `<span class="logo-chip"><img src="${l.src}" alt="Logo ${i + 1}">${ro ? '' : `<button class="btn ghost" data-act="logo-del" data-i="${i}" aria-label="Quitar logo">✕</button>`}</span>`).join('') || '<span class="note">Sin logos cargados.</span>'}</div>
@@ -2183,6 +2205,30 @@ const H = {
   async 'logo-del'(b) { const logos = (st.marca?.logos || []).filter((_, i) => i !== Number(b.dataset.i)); st.marca = { logos }; try { await store.set('params/marca', { logos, at: nowISO() }); } catch (e) { toast(errMsg(e)); } render(); },
   'pend-rm'(b) { st.pending.splice(Number(b.dataset.k), 1); render(); },
   'pend-publish'() { publishPending(); },
+  async 'params-fetch'(b) {
+    const m = ((document.getElementById('pm-mes') || {}).value || st.pmMes || todayISO().slice(0, 7)).trim();
+    if (!/^\d{4}-\d{2}$/.test(m)) { toast('Elige un mes (AAAA-MM).'); return; }
+    st.pmMes = m;
+    const MN = ['enero', 'febrero', 'marzo', 'abril', 'mayo', 'junio', 'julio', 'agosto', 'septiembre', 'octubre', 'noviembre', 'diciembre'];
+    const nom = MN[Number(m.slice(5)) - 1] + ' ' + m.slice(0, 4);
+    if (b) b.disabled = true;
+    try {
+      const r = await paramOficial(m, st.db);
+      if (!r) { st.pmInfo = `Todavía no hay parámetros oficiales publicados para ${nom}. Pídele a Claude: «actualiza los parámetros de ${nom}».`; render(); return; }
+      const d = r.d;
+      const n = (v) => typeof v === 'number' && isFinite(v);
+      const map = { imm: d.imm, uf: d.uf, utm: d.utm, topeAfpUF: d.topeAfpUF, topeCesUF: d.topeCesUF, jornadaLegal: d.jornadaLegal, sis: d.sis, expVida: d.aporteCEV, crp: d.aporteCRP, ciEmpl: d.aporteCI, mutual: d.mutualBasica, cesTrabIndef: d.cesIndefTrab, cesEmplIndef: d.cesIndefEmp, cesEmplPlazo: d.cesPlazoFijoEmp };
+      const P = { ...st.P, afp: { ...st.P.afp } };
+      Object.entries(map).forEach(([k, v]) => { if (n(v)) P[k] = v; });
+      Object.entries(d.comisiones || {}).forEach(([k, v]) => { if (n(v)) P.afp[String(k).toLowerCase()] = v; });
+      if (Array.isArray(d.tax) && d.tax.length >= 2 && d.tax.every((t) => Array.isArray(t) && t.length === 3 && t.every(n))) P.tax = d.tax.map((t) => t.slice());
+      st.P = P;
+      const est = d.estado === 'verificado' ? 'verificados en Previred' : d.estado === 'derivado' ? 'derivados: UF y UTM del SII, tasas del último mes publicado por Previred' : d.estado === 'parcial' ? 'solo UF y UTM; el resto no cambió' : 'ingresados a mano';
+      st.pmInfo = `Parámetros de ${nom} cargados desde ${r.via} (${est})${d.cargado ? ', actualizados el ' + d.cargado : ''}. Pulsa «Guardar parámetros» para dejarlos fijos para todos.`;
+      render(); toast(`Parámetros de ${nom} cargados. Revisa y guarda.`);
+    } catch (e) { toast('No se pudo consultar la base central. Intenta nuevamente.'); }
+    finally { if (b) b.disabled = false; }
+  },
   async 'params-save'() { try { await store.set('params/indicadores', st.P); toast('Parámetros guardados para todos los usuarios.'); } catch (e) { toast(errMsg(e)); } },
   async 'conv-save'() { try { await store.update('params/convenios', { conv: st.C, at: nowISO() }); toast('Convenios guardados.'); } catch (e) { try { await store.set('params/convenios', { conv: st.C, tiendas: st.tiendas, cargos: st.cargos, at: nowISO() }); toast('Convenios guardados.'); } catch (e2) { toast(errMsg(e2)); } } },
   async 'pdf-work'() { await exportPDF({ nombre: st.work.nombre || 'Propuesta en curso', status: 'borrador', vigencia: st.work.vigencia, desc: st.work.desc, hist: [] }, summarize(workLines(), st.P, st.C, wX()), st.P, empresaImpacto(workLines(), st.P, st.C, wX(), baselineLive())); },
@@ -2317,6 +2363,7 @@ document.addEventListener('change', (ev) => {
   if (t.id === 'kf-g') { st.kf.g = t.value; render(); return; }
   if (t.id === 'kf-uso') { st.kf.uso = t.checked; render(); return; }
   if (t.matches('.pend-conv')) { st.pending[Number(t.dataset.pk)].key = t.value; return; }
+  if (t.id === 'pm-mes') { st.pmMes = t.value; return; }
   if (t.matches('[data-p]')) {
     const k = t.dataset.p;
     st.P[k] = t.type === 'checkbox' ? t.checked : (t.type === 'number' ? Number(t.value) : t.value);
@@ -2352,7 +2399,7 @@ async function boot() {
   const cl = window.claude;
   const use = (n) => (cl?.use ? cl.use(n).catch(() => null) : Promise.resolve(null));
   const [db, user, dl] = await Promise.all([use('db'), use('user'), use('downloads')]);
-  st.db = db; st.user = user; st.dl = dl;
+  st.db = db; st.user = user; st.dl = dl || (cl?.use ? null : { save: async ({ filename, data }) => { const b = data instanceof Blob ? data : new Blob([data]); const a = document.createElement('a'); a.href = URL.createObjectURL(b); a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); } });
   if (user) { try { st.me = await user.id(); } catch (e) { st.me = null; } }
   if (!db) { st.role = 'local'; }
   else {

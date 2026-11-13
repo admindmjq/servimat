@@ -1,0 +1,1612 @@
+<!doctype html><html lang="es"><head><script>window.CLAUDE_LOCAL = {"app": "simulador-finiquitos", "titulo": "Simulador de Finiquitos", "carpeta": "Artefactos/Simulador de Finiquitos"};</script><script src="/comun/claude-local.js?v=3fad1bb6"></script><meta charset=utf8><meta name=viewport content="width=device-width,initial-scale=1,viewport-fit=cover"><style>:root{color-scheme:light;box-sizing:border-box;padding-top:env(safe-area-inset-top,0px);padding-bottom:env(safe-area-inset-bottom,0px)}html{scroll-padding-top:env(safe-area-inset-top,0px)}body{margin:0;padding:0;font:14px -apple-system,BlinkMacSystemFont,sans-serif;background:#fff;color:#000}img{max-width:100%}[hidden]:not([hidden=until-found i]){display:none!important}</style></head><body>
+<title>Simulador de Finiquitos</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Exo+2:wght@400;500;600;700;800&family=JetBrains+Mono:wght@400;600&display=swap">
+<style>
+/* Layout: barra de app con pestañas; cada pestaña es un módulo (simulador, 24 rentas, UF, histórico, historial, configuración).
+   Tema único oscuro con tipografía neón (línea QuidelXpert). Ámbar = editable, aqua = cálculo. */
+:root{
+  --bg:#060B0F; --surface:rgba(9,20,26,.80); --surface-2:rgba(14,30,38,.85); --ink:#DDFDFF; --muted:#86B9C4; --line:rgba(64,228,214,.24); --line-2:rgba(64,228,214,.12);
+  --accent:#36F5E3; --accent-2:#5CC8FF; --accent-ink:#03201E; --accent-soft:rgba(54,245,227,.12);
+  --edit:rgba(255,168,64,.08); --edit-line:rgba(255,176,82,.6); --edit-ink:#FFE1B3;
+  --calc:rgba(54,245,227,.07); --calc-ink:#8DFFF1; --proj:#C79BFF; --proj-soft:rgba(199,155,255,.14);
+  --pos:#4DFFAE; --neg:#FF6B86; --warn:#FFD25C; --warn-soft:rgba(255,210,92,.12); --neg-soft:rgba(255,107,134,.13); --pos-soft:rgba(77,255,174,.12);
+  --glow:0 0 4px rgba(54,245,227,.85),0 0 14px rgba(54,245,227,.45),0 0 28px rgba(54,245,227,.2);
+  --glow-soft:0 0 6px rgba(54,245,227,.28); --glow-blue:0 0 4px rgba(92,200,255,.8),0 0 14px rgba(92,200,255,.4); --glow-amber:0 0 4px rgba(255,176,82,.7),0 0 12px rgba(255,176,82,.3);
+  --f-display:"Exo 2","Arial Narrow",system-ui,sans-serif; --f-body:"Exo 2",system-ui,-apple-system,"Segoe UI",sans-serif; --f-mono:"JetBrains Mono",ui-monospace,Menlo,monospace;
+  --r:8px; color-scheme:dark;
+}
+*{box-sizing:border-box}
+[hidden]{display:none!important}
+body{background-color:var(--bg);color:var(--ink);font-family:var(--f-body);font-size:14px;line-height:1.45;margin:0;text-shadow:var(--glow-soft);
+  background-image:radial-gradient(1100px 620px at 4% 92%,rgba(28,238,204,.28),transparent 62%),radial-gradient(900px 560px at 52% -6%,rgba(36,124,214,.24),transparent 60%),radial-gradient(820px 520px at 100% 104%,rgba(30,206,178,.2),transparent 60%),repeating-linear-gradient(115deg,rgba(64,228,214,.025) 0 1px,transparent 1px 7px);background-attachment:fixed}
+body::before{content:"";position:fixed;inset:0 0 auto;height:env(safe-area-inset-top,0px);z-index:30;background:#050C10}
+.wrap{max-width:1360px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px));padding-block:0 48px}
+h1,h2,h3{font-family:var(--f-display);text-wrap:balance;margin:0;letter-spacing:-.01em;color:var(--accent);text-shadow:var(--glow)}
+h2{font-size:1.1rem;font-weight:700}
+h3{font-size:.92rem;font-weight:700}
+button,input,select,textarea{font:inherit;color:inherit}
+:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.appbar{background:rgba(5,12,16,.78);backdrop-filter:blur(10px);border-bottom:1px solid var(--line);position:sticky;top:env(safe-area-inset-top,0px);z-index:20}
+.appbar .wrap{padding-block:12px 0;display:flex;flex-direction:column;gap:10px}
+.brand{display:flex;align-items:center;gap:12px;flex-wrap:wrap}
+.brand h1{font-size:1.35rem;font-weight:800;text-transform:uppercase;letter-spacing:.03em;color:#E9FFFF}
+.brand h1 span{color:var(--accent);font-weight:600}
+.brand .who{margin-left:auto;display:flex;align-items:center;gap:10px;flex-wrap:wrap}
+.status{display:flex;align-items:center;gap:8px;font-size:12.5px;color:var(--muted);text-shadow:none}
+.dot{width:8px;height:8px;border-radius:50%;background:var(--warn);display:inline-block;box-shadow:0 0 8px currentColor}
+.dot.ok{background:var(--pos)} .dot.err{background:var(--neg)}
+.ufchip{font-family:var(--f-mono);font-size:12.5px;padding:3px 10px;border:1px solid var(--line);border-radius:999px;color:var(--calc-ink)}
+.tabs{display:flex;gap:2px;overflow-x:auto;scrollbar-width:none;margin-bottom:-1px}
+.tabs::-webkit-scrollbar{display:none}
+.tab{appearance:none;border:0;background:none;padding:9px 14px 10px;font-weight:600;color:var(--muted);border-bottom:3px solid transparent;cursor:pointer;white-space:nowrap;font-size:13.5px;text-shadow:none}
+.tab:hover{color:var(--ink)}
+.tab[aria-selected="true"]{color:var(--accent);border-bottom-color:var(--accent);text-shadow:var(--glow);box-shadow:0 2px 12px -4px rgba(54,245,227,.8)}
+main{padding-top:18px}
+@media (max-width:760px){.appbar{position:static}.brand h1{font-size:1.1rem}}
+.panel{display:flex;flex-direction:column;gap:16px}
+.card{background:var(--surface);backdrop-filter:blur(8px);border:1px solid var(--line);border-radius:var(--r);box-shadow:0 0 0 1px rgba(54,245,227,.05),0 10px 30px rgba(0,0,0,.45);min-width:0}
+.card-h{display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap;padding:12px 14px;border-bottom:1px solid var(--line-2)}
+.card-b{padding:14px}
+.sub,.note{color:var(--muted);font-size:12.5px;text-shadow:none}
+.eyebrow{font-size:11px;letter-spacing:.08em;text-transform:uppercase;color:var(--muted);font-weight:600;text-shadow:none}
+.grid{display:grid;gap:16px}
+.g3{grid-template-columns:repeat(3,minmax(0,1fr))}
+.g2{grid-template-columns:repeat(2,minmax(0,1fr))}
+.g21{grid-template-columns:minmax(0,1.6fr) minmax(0,1fr)}
+@media (max-width:1100px){.g3{grid-template-columns:repeat(2,minmax(0,1fr))}.g3>.span-all{grid-column:1/-1}}
+@media (max-width:760px){.g3,.g2,.g21{grid-template-columns:minmax(0,1fr)}}
+.fields{display:grid;grid-template-columns:minmax(120px,max-content) minmax(0,1fr);gap:8px 12px;align-items:center}
+.fields label,.lbl{font-size:12.5px;font-weight:600;color:var(--muted);text-shadow:none}
+.inp{width:100%;min-width:0;background:var(--edit);border:1px solid var(--edit-line);color:var(--edit-ink);border-radius:4px;padding:6px 8px;font-variant-numeric:tabular-nums;text-shadow:var(--glow-amber)}
+.inp:focus{box-shadow:0 0 0 1px var(--edit-line),0 0 14px rgba(255,176,82,.35);outline:none}
+.inp::placeholder{color:rgba(199,155,255,.75);text-shadow:none;font-style:italic}
+select.inp option{background:#0B1A20;color:var(--edit-ink)}
+.calc{background:var(--calc);color:var(--calc-ink);border:1px solid var(--line-2);border-radius:4px;padding:6px 8px;font-weight:600;min-height:32px;display:flex;align-items:center;overflow-wrap:anywhere;text-shadow:var(--glow);font-variant-numeric:tabular-nums}
+.chkrow{display:flex;flex-direction:column;gap:6px}
+.chk{display:flex;gap:8px;align-items:center;font-size:13px;cursor:pointer;text-shadow:none}
+.chk input{width:16px;height:16px;accent-color:var(--accent)}
+.seg{display:inline-flex;border:1px solid var(--edit-line);border-radius:4px;overflow:hidden;background:var(--edit)}
+.seg button{border:0;background:none;padding:4px 8px;cursor:pointer;color:var(--edit-ink);font-weight:700;font-size:11.5px}
+.seg button[aria-pressed="true"]{background:var(--accent);color:var(--accent-ink);text-shadow:none;box-shadow:0 0 10px rgba(54,245,227,.6)}
+.toolbar{display:flex;gap:8px;flex-wrap:wrap;align-items:center}
+.btn{appearance:none;border:1px solid var(--line);background:rgba(8,20,26,.6);color:var(--ink);padding:7px 12px;border-radius:4px;cursor:pointer;font-weight:600;font-size:13px;display:inline-flex;align-items:center;gap:6px;white-space:nowrap}
+.btn:hover{border-color:var(--accent);box-shadow:0 0 12px rgba(54,245,227,.25)}
+.btn.primary{background:var(--accent);border-color:var(--accent);color:var(--accent-ink);text-shadow:none;box-shadow:0 0 14px rgba(54,245,227,.55)}
+.btn.primary:hover{background:#7DFFF2}
+.btn.danger{color:var(--neg);text-shadow:0 0 6px rgba(255,107,134,.5)}
+.btn.solid-danger{background:var(--neg);border-color:var(--neg);color:#fff;text-shadow:none}
+.btn.sm{padding:4px 8px;font-size:12px}
+.btn:disabled{opacity:.5;cursor:not-allowed}
+.sep{width:1px;align-self:stretch;background:var(--line);margin-inline:2px}
+.tbl-wrap{overflow-x:auto;-webkit-overflow-scrolling:touch}
+table.t{border-collapse:collapse;width:100%;font-size:13px}
+table.t th{font-size:10.5px;letter-spacing:.05em;text-transform:uppercase;font-weight:700;text-align:left;padding:8px;border-bottom:1px solid var(--line);background:rgba(10,26,32,.94);white-space:nowrap;color:var(--accent-2);text-shadow:var(--glow-blue)}
+table.t td{padding:6px 8px;border-bottom:1px solid var(--line-2);white-space:nowrap;font-variant-numeric:tabular-nums}
+table.t .n{text-align:right}
+table.t .c{text-align:center}
+table.t td.e{padding:3px 4px}
+table.t td.e .inp{padding:4px 6px}
+table.t td.cc{background:var(--calc);color:var(--calc-ink)}
+table.t tfoot td{font-weight:700;border-top:2px solid var(--line);border-bottom:0;background:var(--surface-2)}
+table.t tr.off td{opacity:.42}
+table.t tr:hover td{background-image:linear-gradient(rgba(54,245,227,.05),rgba(54,245,227,.05))}
+.num{font-variant-numeric:tabular-nums}
+.pill{display:inline-flex;align-items:center;gap:4px;padding:1px 8px;border-radius:999px;font-size:11px;font-weight:700;border:1px solid currentColor;color:var(--accent);text-shadow:0 0 6px currentColor;white-space:nowrap}
+.pill.pos{color:var(--pos)} .pill.neg{color:var(--neg)} .pill.warn{color:var(--warn)} .pill.proj{color:var(--proj)}
+.up{color:var(--pos)} .down{color:var(--neg)}
+.totals{display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:1px;background:var(--line);border-top:1px solid var(--line)}
+.totals>div{background:rgba(8,18,24,.88);padding:12px 14px;min-width:0}
+.totals .v{font-family:var(--f-display);font-size:1.25rem;font-weight:700;font-variant-numeric:tabular-nums;color:#E9FFFF;text-shadow:var(--glow);overflow-wrap:anywhere}
+.totals .hl{background:linear-gradient(135deg,rgba(54,245,227,.24),rgba(92,200,255,.18))}
+@media (max-width:900px){.totals{grid-template-columns:repeat(2,minmax(0,1fr))}}
+.kpis{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:12px}
+.kpi{border:1px solid var(--line);border-radius:var(--r);padding:12px;background:rgba(8,20,26,.7);min-width:0}
+.kpi .big{font-family:var(--f-display);font-size:1.6rem;font-weight:800;font-variant-numeric:tabular-nums;line-height:1.1;color:#E9FFFF;text-shadow:var(--glow)}
+.kpi .big.proj{color:var(--proj);text-shadow:0 0 6px rgba(199,155,255,.8),0 0 18px rgba(199,155,255,.35)}
+@media (max-width:900px){.kpis{grid-template-columns:repeat(2,minmax(0,1fr))}}
+@media (max-width:480px){.kpis{grid-template-columns:minmax(0,1fr)}}
+.banner{border:1px solid var(--line);border-left:4px solid var(--warn);background:rgba(255,210,92,.08);padding:10px 12px;border-radius:4px;font-size:13px;text-shadow:none}
+.banner.ok{border-left-color:var(--pos);background:var(--pos-soft)}
+.banner.info{border-left-color:var(--accent-2);background:rgba(92,200,255,.08)}
+.toast{position:fixed;left:50%;bottom:calc(18px + env(safe-area-inset-bottom,0px));transform:translateX(-50%);background:#0B1D24;color:var(--accent);border:1px solid var(--accent);box-shadow:0 0 18px rgba(54,245,227,.4);padding:10px 16px;border-radius:6px;font-weight:600;font-size:13px;z-index:50;max-width:calc(100% - 32px)}
+.confirm{display:inline-flex;gap:6px;align-items:center;font-size:12.5px;font-weight:600}
+/* Detalle tipo comprobante */
+.doc{display:flex;flex-direction:column;gap:14px}
+.doc-sec h3{font-size:.8rem;letter-spacing:.12em;text-transform:uppercase;margin-bottom:8px;color:var(--accent-2);text-shadow:var(--glow-blue)}
+.kv{display:grid;grid-template-columns:repeat(auto-fill,minmax(210px,1fr));gap:6px 18px}
+.kv>div{display:flex;justify-content:space-between;gap:10px;border-bottom:1px dashed var(--line-2);padding:3px 0;min-width:0}
+.kv>div>span:first-child{color:var(--muted);font-size:12.5px;text-shadow:none}
+.kv>div>span:last-child{font-weight:600;text-align:right;font-variant-numeric:tabular-nums;overflow-wrap:anywhere}
+.lines{display:flex;flex-direction:column}
+.line{display:grid;grid-template-columns:minmax(0,1fr) auto;gap:12px;padding:6px 0;border-bottom:1px solid var(--line-2);align-items:baseline}
+.line .d{font-size:12px;color:var(--muted);text-shadow:none}
+.line .a{font-weight:700;font-variant-numeric:tabular-nums;text-align:right}
+.line.tot{border-top:2px solid var(--accent);border-bottom:0;margin-top:4px;padding-top:10px}
+.line.tot .a{font-size:1.3rem;font-family:var(--f-display);color:#E9FFFF;text-shadow:var(--glow)}
+.line.minus .a{color:var(--neg)}
+.cmp{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.cmp>div{border:1px solid var(--line);border-radius:6px;padding:10px;min-width:0}
+.cmp .v{font-family:var(--f-display);font-size:1.15rem;font-weight:700;font-variant-numeric:tabular-nums}
+@media (max-width:600px){.cmp{grid-template-columns:minmax(0,1fr)}}
+.chart{width:100%;height:auto;display:block}
+.chart text{font-family:var(--f-mono);font-size:11px;fill:var(--muted)}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:12px;color:var(--muted);text-shadow:none}
+.sw{display:inline-block;width:14px;height:3px;vertical-align:middle;margin-right:6px;border-radius:2px}
+.timeline{list-style:none;margin:0;padding:0}
+.timeline li{position:relative;padding:0 0 12px 22px;font-size:13px}
+.timeline li::before{content:"";position:absolute;left:5px;top:6px;width:9px;height:9px;border-radius:50%;background:var(--accent);box-shadow:0 0 8px var(--accent)}
+.timeline li::after{content:"";position:absolute;left:9px;top:17px;bottom:0;width:1px;background:var(--line)}
+.timeline li:last-child::after{display:none}
+.timeline li.orig::before{background:var(--warn);box-shadow:0 0 8px var(--warn)}
+.timeline small{display:block;color:var(--muted);text-shadow:none}
+.mono{font-family:var(--f-mono);font-size:12px}
+.mini-form{display:grid;grid-template-columns:repeat(auto-fit,minmax(150px,1fr));gap:8px;align-items:end}
+.mini-form .lbl{display:block;margin-bottom:3px}
+.drop{border:2px dashed var(--line);border-radius:var(--r);padding:14px;text-align:center;background:rgba(8,20,26,.5);font-size:13px;color:var(--muted)}
+textarea.inp{resize:vertical;min-height:120px;font-family:var(--f-mono);font-size:12px}
+::selection{background:rgba(54,245,227,.35)}
+@media (prefers-reduced-motion:no-preference){.tab,.btn{transition:color .15s,background-color .15s,border-color .15s,box-shadow .15s}}
+</style>
+
+<header class="appbar">
+  <div class="wrap">
+    <div class="brand">
+      <h1>Simulador de Finiquitos <span>· UF proyectada</span></h1>
+      <div class="who">
+        <span class="ufchip" id="ufChip">UF —</span>
+        <div class="status"><span class="dot" id="stDot"></span><span id="stTxt">Conectando historial…</span></div>
+      </div>
+    </div>
+    <nav class="tabs" role="tablist" aria-label="Módulos">
+      <button class="tab" role="tab" data-tab="sim" aria-selected="true" id="t-sim">Simulador</button>
+      <button class="tab" role="tab" data-tab="r24" aria-selected="false" id="t-r24">24 rentas e impuesto</button>
+      <button class="tab" role="tab" data-tab="uf" aria-selected="false" id="t-uf">Proyección UF</button>
+      <button class="tab" role="tab" data-tab="hist" aria-selected="false" id="t-hist">Histórico UF</button>
+      <button class="tab" role="tab" data-tab="log" aria-selected="false" id="t-log">Historial</button>
+      <button class="tab" role="tab" data-tab="cfg" aria-selected="false" id="t-cfg">Configuración</button>
+    </nav>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="editBanner"></div>
+
+  <!-- ================= SIMULADOR ================= -->
+  <section class="panel" id="p-sim">
+    <div class="card">
+      <div class="card-h">
+        <div><h2>Simulación</h2><div class="sub" id="simSub">Cálculo a fecha futura con UF proyectada</div></div>
+        <div class="toolbar">
+          <button class="btn primary" id="bSave" type="button">Guardar</button>
+          <button class="btn" id="bSaveNew" type="button">Guardar como nueva</button>
+          <span class="sep"></span>
+          <button class="btn" id="bXlsx" type="button">Exportar Excel</button>
+          <button class="btn" id="bPdf" type="button">Exportar PDF</button>
+          <span class="sep"></span>
+          <button class="btn" id="bTpl" type="button">Plantilla Excel</button>
+          <label class="btn primary" for="fPdf">Subir liquidaciones / vacaciones (PDF)</label><input type="file" id="fPdf" accept=".pdf,application/pdf" multiple hidden>
+          <label class="btn" for="fImport">Importar Excel</label><input type="file" id="fImport" accept=".xlsx,.xls,.xlsm" hidden>
+          <span id="clearBox"><button class="btn danger" id="bClear" type="button">Limpiar datos</button></span>
+        </div>
+      </div>
+      <div class="card-b grid g3">
+        <div class="fields">
+          <label for="qPer">Buscar trabajador</label>
+          <div style="display:flex;gap:6px;min-width:0"><input class="inp" id="qPer" list="dlPer" placeholder="RUT o nombre" autocomplete="off"><label class="btn sm" for="fBase" title="Actualizar base de trabajadores (formato INFSQL)">Actualizar base</label></div>
+          <label for="pNom">Nombre</label><input class="inp" id="pNom" data-k="persona.nombre">
+          <label for="pRut">RUT</label><input class="inp" id="pRut" data-k="persona.rut">
+          <label for="pCargo">Cargo</label><input class="inp" id="pCargo" data-k="persona.cargo">
+          <label for="pCc">Centro de costo</label><input class="inp" id="pCc" data-k="persona.cc">
+          <label for="pJor">Jornada</label><input class="inp" id="pJor" data-k="persona.jornada">
+          <label for="pIng">Fecha ingreso</label><input class="inp" id="pIng" type="date" data-k="persona.ingreso">
+        </div>
+        <div class="fields">
+          <label for="fEgr">Fecha egreso</label><input class="inp" id="fEgr" type="date" data-k="egreso">
+          <label for="fCau">Causal</label>
+          <select class="inp" id="fCau" data-k="causal">
+            <option value="161N">Art. 161: Necesidades de la empresa</option>
+            <option value="161D">Art. 161 inc. 2: Desahucio</option>
+            <option value="159-1">Art. 159 N°1: Mutuo acuerdo</option>
+            <option value="159-2">Art. 159 N°2: Renuncia voluntaria</option>
+            <option value="159-4">Art. 159 N°4: Vencimiento del plazo</option>
+            <option value="159-5">Art. 159 N°5: Conclusión del trabajo</option>
+            <option value="160">Art. 160: Despido disciplinario</option>
+          </select>
+          <span class="lbl">Topes legales</span>
+          <div class="chkrow">
+            <label class="chk"><input type="checkbox" id="cT90" data-k="t90ias"> Tope 90 UF en indemnización</label>
+            <label class="chk"><input type="checkbox" id="cT90a" data-k="t90av"> Tope 90 UF en mes de aviso</label>
+            <label class="chk"><input type="checkbox" id="cT11" data-k="t11"> Tope 11 años</label>
+            <label class="chk"><input type="checkbox" id="cAviso" data-k="aviso"> Se dio aviso de 30 días (no paga mes)</label>
+            <label class="chk"><input type="checkbox" id="cSMes" data-k="sueldoMes"> Incluir sueldo proporcional del mes</label>
+          </div>
+          <label for="fUfM">UF para topes</label>
+          <select class="inp" id="fUfM" data-k="ufModo">
+            <option value="mesAnterior">Último día del mes anterior al egreso</option>
+            <option value="egreso">Día del egreso</option>
+            <option value="hoy">UF de hoy (sin proyectar)</option>
+            <option value="manual">Valor manual</option>
+          </select>
+          <label for="fUfV" id="lUfV">UF manual</label><input class="inp" id="fUfV" type="number" step="0.01" data-k="ufManual">
+          <label for="fReaj">Reajuste proyectado</label>
+          <div style="display:flex;gap:6px;align-items:center;min-width:0"><input class="inp" id="fReaj" type="number" step="0.1" data-k="reaj" style="max-width:110px"><span class="note">% sobre haberes fijos al egreso</span></div>
+        </div>
+        <div class="span-all" style="display:flex;flex-direction:column;gap:10px;min-width:0">
+          <div class="kpi"><div class="eyebrow">UF utilizada para topes</div><div class="big proj" id="kUf">—</div><div class="note" id="kUfN"></div></div>
+          <div class="kpi"><div class="eyebrow">UF de hoy</div><div class="big" id="kUfHoy">—</div><div class="note" id="kUfHoyN"></div></div>
+          <div class="kpi"><div class="eyebrow">Tope 90 UF</div><div class="big" id="kTope">—</div><div class="note" id="kTopeN"></div></div>
+        </div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h">
+        <div><h2>Haberes y bases de cálculo</h2><div class="sub">Fijo usa el último mes; variable promedia los 3 meses. Marca qué ítems entran en cada base.</div></div>
+        <div class="toolbar">
+          <label class="lbl" for="fMesRef">Mes de referencia</label><input class="inp" id="fMesRef" type="month" data-k="mesRef" style="width:auto">
+          <button class="btn" id="bAddItem" type="button">+ Agregar ítem</button>
+        </div>
+      </div>
+      <div class="card-b" id="docs" style="padding-bottom:0"></div>
+      <div class="tbl-wrap"><table class="t" id="tItems"></table></div>
+    </div>
+
+    <div class="grid g21">
+      <div class="card">
+        <div class="card-h"><div><h2>Vacaciones</h2><div class="sub">Saldo actual y vacaciones que tomará antes del egreso</div></div>
+          <div class="seg" id="segVac" role="group" aria-label="Origen del saldo"><button type="button" data-v="saldo">Desde saldo actual</button><button type="button" data-v="teorico">Cálculo teórico</button></div></div>
+        <div class="card-b grid g2">
+          <div class="fields" id="vacSaldo">
+            <label for="vF">Saldo al</label><input class="inp" id="vF" type="date" data-k="vac.fecha">
+            <label for="vN">Normales pendientes</label><input class="inp" id="vN" type="number" step="0.01" data-k="vac.normales">
+            <label for="vP">Proporcional pendiente</label><input class="inp" id="vP" type="number" step="0.01" data-k="vac.prop">
+            <label for="vG">Progresivos pendientes</label><input class="inp" id="vG" type="number" step="0.01" data-k="vac.prog">
+            <label for="vA">Adicionales</label><input class="inp" id="vA" type="number" step="0.01" data-k="vac.adic">
+            <label for="vT">Días tomados (histórico)</label><input class="inp" id="vT" type="number" step="0.5" data-k="vac.tomados">
+          </div>
+          <div class="fields">
+            <label for="vGa">Progresivos por aniversario</label><input class="inp" id="vGa" type="number" step="1" data-k="vac.progAnual">
+            <label for="vGt" id="lvGt">Progresivos tomados</label><input class="inp" id="vGt" type="number" step="0.5" data-k="vac.progTom">
+            <span class="lbl">Días inhábiles</span>
+            <label class="chk"><input type="checkbox" id="vFer" data-k="vac.feriados"> Contar feriados como inhábiles</label>
+            <span class="lbl">Resultado al egreso</span><div class="calc" id="vRes">—</div>
+          </div>
+        </div>
+        <div class="card-h" style="border-top:1px solid var(--line-2)"><div><h3>Proyección de vacaciones tomadas</h3><div class="sub">Días hábiles (sin sábados, domingos ni feriados) que se descuentan del saldo</div></div><button class="btn" id="bAddVac" type="button">+ Agregar período</button></div>
+        <div class="tbl-wrap"><table class="t" id="tVac"></table></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><div><h2>Descuentos</h2><div class="sub">Deudas, anticipos, aporte empleador AFC</div></div><button class="btn" id="bAddDesc" type="button">+ Agregar</button></div>
+        <div class="card-b fields">
+          <label for="dAfc">Aporte empleador AFC</label><input class="inp" id="dAfc" type="number" data-k="afc">
+          <label for="dNota">Observación</label><input class="inp" id="dNota" data-k="nota" placeholder="Supuestos de esta simulación">
+        </div>
+        <div class="tbl-wrap"><table class="t" id="tDesc"></table></div>
+      </div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><div><h2>Detalle cálculo pago finiquito</h2><div class="sub" id="detSub"></div></div><span class="pill proj" id="detPill">UF proyectada</span></div>
+      <div class="card-b doc" id="det"></div>
+      <div class="totals" id="tots"></div>
+    </div>
+
+    <div class="card">
+      <div class="card-h"><div><h2>Impacto de la UF futura</h2><div class="sub">Mismo finiquito calculado con la UF de hoy y con la UF proyectada al egreso</div></div></div>
+      <div class="card-b cmp" id="cmpUf"></div>
+    </div>
+  </section>
+
+  <!-- ================= 24 RENTAS ================= -->
+  <section class="panel" id="p-r24" hidden>
+    <div class="card">
+      <div class="card-h">
+        <div><h2>Promedio últimas 24 remuneraciones</h2><div class="sub">Art. 17 N°13 LIR: tope exento de la indemnización voluntaria. Celdas vacías se completan según la regla elegida (en violeta) y ya quedan en pesos actuales; el reajuste IPC se aplica a los meses con dato real.</div></div>
+        <div class="toolbar">
+          <label class="lbl" for="rRel">Meses sin dato</label>
+          <select class="inp" id="rRel" data-k="r24.relleno" style="width:auto">
+            <option value="ultima">Completar con última remuneración</option>
+            <option value="cero">Considerar en cero</option>
+            <option value="excluir">Excluir del promedio</option>
+          </select>
+          <label class="chk"><input type="checkbox" id="rIpc" data-k="r24.ipc"> Reajustar por IPC</label>
+          <button class="btn" id="bR24Copy" type="button">Copiar 3 meses de haberes</button>
+        </div>
+      </div>
+      <div class="tbl-wrap"><table class="t" id="tR24"></table></div>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <div class="card-h"><div><h2>Indemnización voluntaria</h2><div class="sub">Monto adicional pactado sobre lo legal</div></div></div>
+        <div class="card-b fields">
+          <label for="vMod">Tipo</label>
+          <select class="inp" id="vMod" data-k="vol.modo"><option value="ninguna">Sin indemnización voluntaria adicional</option><option value="monto">Monto fijo</option><option value="rentas">N° de remuneraciones (base indemnización)</option></select>
+          <label for="vVal" id="lvVal">Valor</label><input class="inp" id="vVal" type="number" step="any" data-k="vol.valor">
+          <span class="lbl">Desglose</span><div id="n13" style="min-width:0"></div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><div><h2>Impuesto único (Art. 46 LIR)</h2><div class="sub">La parte afecta se reparte en los 12 meses anteriores al egreso y se reliquida mes a mes</div></div></div>
+        <div class="card-b fields">
+          <label for="rRt">Renta tributable mensual</label><input class="inp" id="rRt" type="number" data-k="rt">
+        </div>
+        <div class="tbl-wrap"><table class="t" id="tImp"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= PROYECCIÓN UF ================= -->
+  <section class="panel" id="p-uf" hidden>
+    <div class="kpis" id="ufKpis"></div>
+    <div class="card">
+      <div class="card-h">
+        <div><h2>Proyección estadística de la UF</h2><div class="sub" id="ufSub"></div></div>
+        <div class="toolbar">
+          <label class="lbl" for="pMet">Método</label>
+          <select class="inp" id="pMet" style="width:auto">
+            <option value="prom">Promedio geométrico IPC</option>
+            <option value="estacional">Estacional (mismo mes, años previos)</option>
+            <option value="tendencia">Tendencia log-lineal</option>
+            <option value="meta">Inflación anual esperada</option>
+          </select>
+          <label class="lbl" for="pN">Ventana</label>
+          <select class="inp" id="pN" style="width:auto"><option value="12">12 meses</option><option value="24">24 meses</option><option value="36">36 meses</option><option value="60">60 meses</option></select>
+          <label class="lbl" for="pMeta" id="lMeta">Inflación anual</label><input class="inp" id="pMeta" type="number" step="0.1" style="width:80px">
+          <label class="lbl" for="pH">Horizonte</label>
+          <select class="inp" id="pH" style="width:auto"><option value="12">12 meses</option><option value="24">24 meses</option><option value="36">36 meses</option><option value="60">60 meses</option></select>
+        </div>
+      </div>
+      <div class="card-b"><svg class="chart" id="ufChart" viewBox="0 0 960 360" role="img" aria-label="UF histórica y proyectada"></svg>
+        <div class="legend"><span><i class="sw" style="background:var(--accent)"></i>UF real (último día de cada mes)</span><span><i class="sw" style="background:var(--proj)"></i>UF proyectada</span><span><i class="sw" style="background:rgba(199,155,255,.3);height:10px"></i>Banda 90 %</span><span><i class="sw" style="background:var(--warn)"></i>Fecha de egreso simulada</span></div>
+      </div>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <div class="card-h"><div><h2>Valor real vs proyección</h2><div class="sub">Cómo habría acertado el método con datos de hace 12 meses</div></div></div>
+        <div class="tbl-wrap"><table class="t" id="tBack"></table></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><div><h2>Proyección mensual</h2><div class="sub">UF al día 9 y al último día de cada mes</div></div><button class="btn" id="bUfX" type="button">Exportar Excel</button></div>
+        <div class="tbl-wrap" style="max-height:520px;overflow-y:auto"><table class="t" id="tProj"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ================= HISTÓRICO UF ================= -->
+  <section class="panel" id="p-hist" hidden>
+    <div class="grid g2">
+      <div class="card">
+        <div class="card-h"><div><h2>Consultar UF de un día</h2><div class="sub">Valor real, reconstruido por IPC o proyectado</div></div></div>
+        <div class="card-b fields">
+          <label for="hDia">Fecha</label><input class="inp" id="hDia" type="date">
+          <span class="lbl">UF</span><div class="calc" id="hDiaV">—</div>
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><div><h2>Agregar o corregir valores</h2><div class="sub">Al publicarse el IPC, ingresa la UF del día 9 del mes siguiente</div></div></div>
+        <div class="card-b mini-form">
+          <div><label class="lbl" for="hNF">Fecha</label><input class="inp" id="hNF" type="date"></div>
+          <div><label class="lbl" for="hNV">Valor UF</label><input class="inp" id="hNV" type="number" step="0.01"></div>
+          <div><button class="btn primary" id="bHAdd" type="button">Guardar valor</button></div>
+          <div><label class="btn" for="fUfImp">Importar Excel/CSV (Fecha, Valor)</label><input type="file" id="fUfImp" accept=".xlsx,.xls,.csv" hidden></div>
+        </div>
+        <div class="card-b mini-form" style="padding-top:0">
+          <div><label class="lbl" for="hActMes">Mes</label><input class="inp" id="hActMes" type="month"></div>
+          <div><button class="btn primary" id="bUfAct" type="button">⟳ Actualizar mes</button></div>
+        </div>
+        <div class="card-b" style="padding-top:0"><div class="note" id="hActInfo">Trae la UF (días 1, 9, 10 y último) y la UTM oficiales del SII para el mes elegido.</div></div>
+        <div class="card-b" style="padding-top:0"><div class="note" id="hExtra"></div></div>
+      </div>
+    </div>
+    <div class="card">
+      <div class="card-h">
+        <div><h2>Histórico mensual de la UF</h2><div class="sub">Fuente: SII, valores diarios de la UF. IPC implícito = variación de la UF entre días 9.</div></div>
+        <div class="toolbar"><select class="inp" id="hYear" style="width:auto" aria-label="Año"></select><button class="btn" id="bHX" type="button">Exportar Excel</button></div>
+      </div>
+      <div class="card-b"><svg class="chart" id="ipcChart" viewBox="0 0 960 200" role="img" aria-label="IPC mensual implícito"></svg></div>
+      <div class="tbl-wrap"><table class="t" id="tHist"></table></div>
+    </div>
+  </section>
+
+  <!-- ================= HISTORIAL ================= -->
+  <section class="panel" id="p-log" hidden>
+    <div class="card">
+      <div class="card-h">
+        <div><h2>Historial de simulaciones</h2><div class="sub">Cada edición queda registrada con fecha y hora; la versión original se conserva siempre</div></div>
+        <div class="toolbar"><input class="inp" id="lQ" placeholder="Buscar por nombre o RUT" style="width:220px" aria-label="Buscar en historial"><button class="btn" id="bLX" type="button">Exportar Excel</button></div>
+      </div>
+      <div class="tbl-wrap"><table class="t" id="tLog"></table></div>
+    </div>
+    <div class="card" id="verCard" hidden>
+      <div class="card-h"><div><h2 id="verTitle">Versiones</h2><div class="sub">Original + ediciones, con lo que cambió en cada una</div></div><button class="btn sm" id="bVerClose" type="button">Cerrar</button></div>
+      <div class="card-b"><ul class="timeline" id="verList"></ul></div>
+    </div>
+  </section>
+
+  <!-- ================= CONFIGURACIÓN ================= -->
+  <section class="panel" id="p-cfg" hidden>
+    <div class="grid g2">
+      <div class="card">
+        <div class="card-h"><h2>Empresa</h2><button class="btn primary sm" id="bEmp" type="button">Guardar</button></div>
+        <div class="card-b fields">
+          <label for="eNom">Razón social</label><input class="inp" id="eNom">
+          <label for="eRut">RUT</label><input class="inp" id="eRut">
+          <label for="eDir">Dirección</label><input class="inp" id="eDir">
+        </div>
+      </div>
+      <div class="card">
+        <div class="card-h"><div><h2>Base de personal</h2><div class="sub" id="baseInfo"></div></div></div>
+        <div class="card-b" style="display:flex;flex-direction:column;gap:10px">
+          <div class="drop">Importa el informe de personal (mismo formato INFSQL: RUT, nombre, fecha alta, puesto, tienda, salario, gratificación).<br><label class="btn" for="fBase" style="margin-top:8px">Elegir archivo</label><input type="file" id="fBase" accept=".xlsx,.xls" hidden></div>
+          <div class="note">Solo se guardan los campos que usa el simulador. Datos bancarios, contacto y salud no se incluyen.</div>
+        </div>
+      </div>
+    </div>
+    <div class="grid g2">
+      <div class="card">
+        <div class="card-h"><div><h2>Feriados</h2><div class="sub">Una fecha por línea: AAAA-MM-DD Nombre</div></div><button class="btn primary sm" id="bFer" type="button">Guardar feriados</button></div>
+        <div class="card-b"><textarea class="inp" id="fFer" rows="14" aria-label="Lista de feriados"></textarea></div>
+      </div>
+      <div class="card">
+        <div class="card-h"><div><h2>Impuesto único y UTM</h2><div class="sub">Tabla mensual en UTM; UTM futura proyectada con el IPC del método elegido</div></div></div>
+        <div class="tbl-wrap"><table class="t" id="tIusc"></table></div>
+        <div class="tbl-wrap" style="max-height:300px;overflow-y:auto"><table class="t" id="tUtm"></table></div>
+      </div>
+    </div>
+  </section>
+
+  <datalist id="dlPer"></datalist>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+const D = {"uf":[["2019-01",27565.79,27565.79,27564.9,27546.22],["2019-02",27545.34,27538.22,27539.2,27556.9],["2019-03",27557.89,27565.76,27565.76,27565.76],["2019-04",27565.76,27565.76,27570.34,27662.17],["2019-05",27666.77,27703.59,27706.27,27762.55],["2019-06",27765.23,27786.7,27792.24,27903.3],["2019-07",27908.86,27953.42,27953.42,27953.42],["2019-08",27953.42,27953.42,27955.22,27993.08],["2019-09",27994.89,28009.33,28011.2,28048.53],["2019-10",28050.4,28065.35,28065.35,28065.35],["2019-11",28065.35,28065.35,28072.81,28222.33],["2019-12",28229.83,28289.87,28290.78,28309.94],["2020-01",28310.86,28318.16,28319.07,28338.25],["2020-02",28339.17,28346.48,28352.33,28463.67],["2020-03",28469.54,28516.56,28520.23,28597.46],["2020-04",28601.15,28630.63,28633.49,28690.73],["2020-05",28693.59,28716.52,28716.52,28716.52],["2020-06",28716.52,28716.52,28715.56,28696.42],["2020-07",28695.46,28687.8,28686.87,28667.44],["2020-08",28666.51,28659.11,28660.03,28679.45],["2020-09",28680.37,28687.77,28688.73,28707.85],["2020-10",28708.8,28716.46,28722.0,28838.63],["2020-11",28844.2,28888.76,28895.48,29030.17],["2020-12",29036.92,29090.98,29090.04,29070.33],["2021-01",29069.39,29061.89,29064.7,29123.74],["2021-02",29126.55,29149.08,29156.34,29287.38],["2021-03",29294.68,29353.12,29355.01,29394.77],["2021-04",29396.67,29411.83,29415.74,29494.13],["2021-05",29498.06,29529.48,29533.28,29613.26],["2021-06",29617.07,29647.6,29650.56,29709.83],["2021-07",29712.8,29736.54,29737.5,29757.64],["2021-08",29758.6,29766.28,29773.93,29935.08],["2021-09",29942.78,30004.41,30008.4,30088.37],["2021-10",30092.38,30124.43,30136.02,30380.53],["2021-11",30392.22,30485.92,30499.05,30762.8],["2021-12",30776.05,30882.24,30887.21,30991.74],["2022-01",30996.73,31036.65,31044.63,31212.65],["2022-02",31220.68,31284.94,31298.27,31539.2],["2022-03",31552.64,31660.36,31663.42,31727.74],["2022-04",31730.8,31755.34,31775.27,32176.49],["2022-05",32196.69,32358.69,32373.21,32679.54],["2022-06",32694.2,32811.71,32824.76,33086.83],["2022-07",33099.99,33205.45,33215.05,33417.26],["2022-08",33426.92,33504.3,33519.33,33836.51],["2022-09",33851.69,33973.36,33986.87,34258.23],["2022-10",34271.85,34381.04,34390.98,34600.35],["2022-11",34610.35,34690.47,34696.24,34811.8],["2022-12",34817.58,34863.92,34875.11,35110.98],["2023-01",35122.26,35212.56,35215.96,35287.5],["2023-02",35290.91,35318.2,35328.25,35509.68],["2023-03",35519.79,35600.75,35599.6,35575.48],["2023-04",35574.33,35565.15,35578.12,35838.55],["2023-05",35851.62,35956.37,35959.84,36032.89],["2023-06",36036.37,36064.24,36065.44,36089.48],["2023-07",36090.68,36100.3,36097.97,36049.05],["2023-08",36046.72,36028.1,36032.74,36130.31],["2023-09",36134.97,36172.21,36173.42,36197.53],["2023-10",36198.73,36208.38,36216.53,36388.07],["2023-11",36396.26,36461.84,36466.69,36563.87],["2023-12",36568.74,36607.69,36615.93,36789.36],["2024-01",36797.64,36863.94,36857.98,36733.04],["2024-02",36727.1,36679.62,36688.44,36856.5],["2024-03",36865.37,36936.38,36943.51,37093.52],["2024-04",37100.68,37158.0,37162.94,37261.98],["2024-05",37266.94,37306.63,37312.63,37438.91],["2024-06",37444.94,37493.16,37496.9,37571.86],["2024-07",37575.61,37605.64,37604.43,37578.95],["2024-08",37577.74,37568.03,37576.48,37754.47],["2024-09",37762.97,37831.01,37834.79,37910.42],["2024-10",37914.2,37944.5,37945.72,37971.42],["2024-11",37972.65,37982.44,37995.04,38247.92],["2024-12",38260.61,38362.26,38364.73,38416.69],["2025-01",38419.17,38438.98,38436.5,38384.41],["2025-02",38381.93,38362.1,38377.09,38647.94],["2025-03",38663.05,38784.08,38789.07,38894.11],["2025-04",38899.12,38939.22,38945.69,39075.41],["2025-05",39081.9,39133.92,39136.44,39189.45],["2025-06",39191.97,39212.19,39214.8,39267.07],["2025-07",39269.69,39290.61,39285.53,39179.01],["2025-08",39173.95,39133.45,39144.76,39383.07],["2025-09",39394.46,39485.65,39485.65,39485.65],["2025-10",39485.65,39485.65,39490.74,39597.67],["2025-11",39602.77,39643.59,39643.59,39643.59],["2025-12",39643.59,39643.59,39647.42,39727.96],["2026-01",39731.79,39762.52,39759.95,39706.07],["2026-02",39703.5,39682.99,39688.65,39790.63],["2026-03",39796.31,39841.72,39841.72,39841.72],["2026-04",39841.72,39841.72,39854.94,40120.2],["2026-05",40133.5,40240.14,40256.91,40610.69],["2026-06",40627.62,40763.26,40765.97,40820.31],["2026-07",40823.03,40844.79,40844.79,40844.79],["2026-08",40844.79,40844.79,40846.11,40873.77],["2026-09",40875.09,40885.63,40893.78,41057.2],["2026-10",41065.38,41130.94,41136.24,41247.63],["2026-11",41252.94,41295.46,null,null]],"utm":{"2025-01":67429,"2025-02":67294,"2025-03":68034,"2025-04":68306,"2025-05":68648,"2025-06":68785,"2025-07":68923,"2025-08":68647,"2025-09":69265,"2025-10":69265,"2025-11":69542,"2025-12":69542,"2026-01":69751,"2026-02":69611,"2026-03":69889,"2026-04":69889,"2026-05":70588,"2026-06":71506,"2026-07":71649,"2026-08":71649,"2026-09":71721,"2026-10":72151,"2026-11":72440},"base":[]};
+/* ---------- utilidades ---------- */
+const $ = (s, r = document) => r.querySelector(s);
+const esc = (s) => String(s ?? "").replace(/[&<>"']/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const nf0 = new Intl.NumberFormat("es-CL", { maximumFractionDigits: 0 });
+const nf2 = new Intl.NumberFormat("es-CL", { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+const clp = (v) => "$ " + nf0.format(Math.round(v || 0));
+const n0 = (v) => nf0.format(Math.round(v || 0));
+const n2 = (v) => (v == null || !Number.isFinite(v) ? "—" : nf2.format(v));
+const pc = (v, d = 2) => (v == null || !Number.isFinite(v) ? "—" : (v * 100).toLocaleString("es-CL", { minimumFractionDigits: d, maximumFractionDigits: d }) + " %");
+const num = (x) => { if (typeof x === "number") return Number.isFinite(x) ? x : 0; const n = parseFloat(String(x ?? "").replace(/\./g, "").replace(",", ".")); return Number.isFinite(n) ? n : 0; };
+const numRaw = (x) => { if (typeof x === "number") return x; const s = String(x ?? "").trim(); if (!s) return 0; const n = parseFloat(s.includes(",") ? s.replace(/\./g, "").replace(",", ".") : s); return Number.isFinite(n) ? n : 0; };
+const P2 = (n) => String(n).padStart(2, "0");
+const toD = (iso) => { const [y, m, d] = iso.split("-").map(Number); return new Date(Date.UTC(y, m - 1, d)); };
+const toIso = (dt) => dt.toISOString().slice(0, 10);
+const addDays = (iso, n) => toIso(new Date(toD(iso).getTime() + n * 864e5));
+const dim = (y, m) => new Date(Date.UTC(y, m, 0)).getUTCDate();
+const ymOf = (iso) => iso.slice(0, 7);
+const ymAdd = (ym, k) => { let [y, m] = ym.split("-").map(Number); let t = y * 12 + (m - 1) + k; return Math.floor(t / 12) + "-" + P2((t % 12) + 1); };
+const ymDiff = (a, b) => { const [ya, ma] = a.split("-").map(Number), [yb, mb] = b.split("-").map(Number); return (yb - ya) * 12 + (mb - ma); };
+const addMonthsIso = (iso, k) => { const ym = ymAdd(iso.slice(0, 7), k); const [Y, M] = ym.split("-").map(Number); return ym + "-" + P2(Math.min(+iso.slice(8, 10), dim(Y, M))); };
+const fd = (iso) => (iso ? iso.slice(8, 10) + "-" + iso.slice(5, 7) + "-" + iso.slice(0, 4) : "");
+const MES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
+const MESL = ["Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio", "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"];
+const ymL = (ym) => MES[+ym.slice(5) - 1] + " " + ym.slice(0, 4);
+const todayIso = () => { const d = new Date(); return d.getFullYear() + "-" + P2(d.getMonth() + 1) + "-" + P2(d.getDate()); };
+const lastDayOf = (ym) => ym + "-" + P2(dim(+ym.slice(0, 4), +ym.slice(5)));
+const fdt = (ts) => { if (!ts) return ""; const d = new Date(ts); return P2(d.getDate()) + "-" + P2(d.getMonth() + 1) + "-" + d.getFullYear() + " " + P2(d.getHours()) + ":" + P2(d.getMinutes()); };
+const clone = (o) => JSON.parse(JSON.stringify(o));
+const uid = () => "S" + Date.now().toString(36) + Math.random().toString(36).slice(2, 6);
+let toastT; const toast = (m) => { const t = $("#toast"); t.textContent = m; t.hidden = false; clearTimeout(toastT); toastT = setTimeout(() => (t.hidden = true), 3200); };
+const lsGet = (k, d) => { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } };
+const lsSet = (k, v) => { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} };
+
+/* ---------- feriados ---------- */
+const FER_DEF = `2026-01-01 Año Nuevo
+2026-04-03 Viernes Santo
+2026-04-04 Sábado Santo
+2026-05-01 Día del Trabajo
+2026-05-21 Glorias Navales
+2026-06-21 Pueblos Indígenas
+2026-06-29 San Pedro y San Pablo
+2026-07-16 Virgen del Carmen
+2026-08-15 Asunción de la Virgen
+2026-09-18 Independencia Nacional
+2026-09-19 Glorias del Ejército
+2026-10-12 Encuentro de Dos Mundos
+2026-10-31 Iglesias Evangélicas
+2026-11-01 Todos los Santos
+2026-12-08 Inmaculada Concepción
+2026-12-25 Navidad
+2027-01-01 Año Nuevo
+2027-03-26 Viernes Santo
+2027-03-27 Sábado Santo
+2027-05-01 Día del Trabajo
+2027-05-21 Glorias Navales
+2027-06-21 Pueblos Indígenas
+2027-06-28 San Pedro y San Pablo
+2027-07-16 Virgen del Carmen
+2027-08-15 Asunción de la Virgen
+2027-09-17 Feriado adicional Fiestas Patrias
+2027-09-18 Independencia Nacional
+2027-09-19 Glorias del Ejército
+2027-10-11 Encuentro de Dos Mundos
+2027-10-31 Iglesias Evangélicas
+2027-11-01 Todos los Santos
+2027-12-08 Inmaculada Concepción
+2027-12-25 Navidad
+2028-01-01 Año Nuevo (verificar 2028)
+2028-04-14 Viernes Santo
+2028-04-15 Sábado Santo
+2028-05-01 Día del Trabajo
+2028-05-21 Glorias Navales
+2028-06-20 Pueblos Indígenas
+2028-06-26 San Pedro y San Pablo
+2028-07-16 Virgen del Carmen
+2028-08-15 Asunción de la Virgen
+2028-09-18 Independencia Nacional
+2028-09-19 Glorias del Ejército
+2028-10-09 Encuentro de Dos Mundos
+2028-10-27 Iglesias Evangélicas
+2028-11-01 Todos los Santos
+2028-12-08 Inmaculada Concepción
+2028-12-25 Navidad`;
+let FER = new Set();
+const parseFer = (txt) => new Set(String(txt).split(/\n/).map((l) => l.trim().slice(0, 10)).filter((s) => /^\d{4}-\d{2}-\d{2}$/.test(s)));
+const isWeekend = (iso) => { const w = toD(iso).getUTCDay(); return w === 0 || w === 6; };
+const habilesEntre = (a, b) => { if (!a || !b || b < a) return 0; let n = 0; for (let d = a; d <= b; d = addDays(d, 1)) if (!isWeekend(d) && !FER.has(d)) n++; return n; };
+
+/* ---------- UF: histórico, reconstrucción diaria y proyección ---------- */
+const UF = {
+  M: new Map(), dias: new Map(),
+  build() {
+    this.M.clear();
+    for (const [ym, d1, d9, d10, last] of D.uf) this.M.set(ym, { d1, d9, d10, last });
+    for (const [iso, v] of this.dias) {
+      const ym = iso.slice(0, 7), d = +iso.slice(8, 10);
+      const o = this.M.get(ym) || { d1: null, d9: null, d10: null, last: null };
+      if (d === 1) o.d1 = v; if (d === 9) o.d9 = v; if (d === 10) o.d10 = v; if (iso === lastDayOf(ym)) o.last = v;
+      this.M.set(ym, o);
+    }
+    this.keys = [...this.M.keys()].filter((k) => this.M.get(k).d9 != null).sort();
+    this.first = this.keys[0]; this.lastK = this.keys[this.keys.length - 1];
+    this.ipcK = new Map();
+    for (const k of this.keys) { const b = this.M.get(ymAdd(k, 1)); if (b && b.d9 != null) this.ipcK.set(ymAdd(k, -1), b.d9 / this.M.get(k).d9 - 1); }
+  },
+};
+function model(cfg, cutoff) {
+  const lastK = cutoff && cutoff < UF.lastK ? cutoff : UF.lastK;
+  const lastIpc = ymAdd(lastK, -2);
+  const known = [...UF.ipcK.entries()].filter(([m]) => m <= lastIpc).sort((a, b) => (a[0] < b[0] ? -1 : 1));
+  const N = Math.max(3, +cfg.n || 12);
+  const win = known.slice(-N).map((x) => x[1]);
+  const gmean = Math.exp(win.reduce((a, r) => a + Math.log(1 + r), 0) / win.length) - 1;
+  const mean = win.reduce((a, b) => a + b, 0) / win.length;
+  const sigma = Math.sqrt(win.reduce((a, r) => a + (r - mean) ** 2, 0) / Math.max(1, win.length - 1));
+  let rateFn = () => gmean, label = "promedio geométrico del IPC de los últimos " + N + " meses";
+  if (cfg.metodo === "meta") { const r = Math.pow(1 + num(cfg.meta) / 100, 1 / 12) - 1; rateFn = () => r; label = "inflación anual esperada de " + n2(num(cfg.meta)) + " %"; }
+  else if (cfg.metodo === "estacional") {
+    const yrs = Math.max(2, Math.round(N / 12)); const by = new Map();
+    known.slice(-yrs * 12).forEach(([m, r]) => { const c = m.slice(5); if (!by.has(c)) by.set(c, []); by.get(c).push(r); });
+    rateFn = (m) => { const a = by.get(m.slice(5)); return a && a.length ? a.reduce((x, y) => x + y, 0) / a.length : gmean; };
+    label = "IPC promedio del mismo mes en los últimos " + yrs + " años";
+  } else if (cfg.metodo === "tendencia") {
+    const ks = UF.keys.filter((k) => k <= lastK).slice(-(N + 1));
+    const xs = ks.map((_, i) => i), ys = ks.map((k) => Math.log(UF.M.get(k).d9));
+    const mx = xs.reduce((a, b) => a + b, 0) / xs.length, my = ys.reduce((a, b) => a + b, 0) / ys.length;
+    const b = xs.reduce((a, x, i) => a + (x - mx) * (ys[i] - my), 0) / xs.reduce((a, x) => a + (x - mx) ** 2, 0);
+    const r = Math.exp(b) - 1; rateFn = () => r; label = "regresión log-lineal de la UF, últimos " + N + " meses";
+  }
+  const ipc = (m) => (m <= lastIpc && UF.ipcK.has(m) ? UF.ipcK.get(m) : rateFn(m));
+  const memo = new Map();
+  const d9 = (ym) => {
+    if (ym <= lastK) { const v = UF.M.get(ym); if (v && v.d9 != null) return v.d9; }
+    if (ym < UF.first) return null;
+    if (memo.has(ym)) return memo.get(ym);
+    const p = d9(ymAdd(ym, -1)); const v = p == null ? null : p * (1 + ipc(ymAdd(ym, -2)));
+    memo.set(ym, v); return v;
+  };
+  const annual = Math.pow(1 + gmean, 12) - 1;
+  return { cfg, cut: !!cutoff, lastK, lastIpc, ipc, d9, sigma, mean, gmean, annual, label, N };
+}
+function ufAt(md, iso) {
+  if (!iso) return { v: null, st: "—" };
+  const d = +iso.slice(8, 10); let m0 = ymOf(iso); if (d < 10) m0 = ymAdd(m0, -1);
+  const known = ymAdd(m0, 1) <= md.lastK;
+  if (!md.cut && known) {
+    if (UF.dias.has(iso)) return { v: UF.dias.get(iso), st: "real" };
+    const o = UF.M.get(ymOf(iso));
+    if (o) { if (d === 1 && o.d1) return { v: o.d1, st: "real" }; if (d === 9 && o.d9) return { v: o.d9, st: "real" }; if (d === 10 && o.d10) return { v: o.d10, st: "real" }; if (iso === lastDayOf(ymOf(iso)) && o.last) return { v: o.last, st: "real" }; }
+  }
+  const a = md.d9(m0), b = md.d9(ymAdd(m0, 1));
+  if (a == null || b == null) return { v: null, st: "sin dato" };
+  const k = (toD(iso) - toD(m0 + "-09")) / 864e5, n = dim(+m0.slice(0, 4), +m0.slice(5));
+  const v = Math.round(a * Math.pow(b / a, k / n) * 100) / 100;
+  const h = Math.max(0, ymDiff(md.lastIpc, ymAdd(m0, -1)));
+  const z = 1.645, band = h ? [v * Math.exp(-z * md.sigma * Math.sqrt(h)), v * Math.exp(z * md.sigma * Math.sqrt(h))] : null;
+  return { v, st: known ? "real" : "proyectado", h, band };
+}
+/* UTM: conocida o proyectada con el IPC (UTM(m) = UTM(m-1) × (1 + IPC(m-2))) */
+function utmAt(md, ym) {
+  if (D.utm[ym]) return D.utm[ym];
+  const ks = Object.keys(D.utm).sort();
+  if (ym > ks[ks.length - 1]) { let u = D.utm[ks[ks.length - 1]], m = ks[ks.length - 1]; while (m < ym) { m = ymAdd(m, 1); u = Math.round(u * (1 + md.ipc(ymAdd(m, -2)))); } return u; }
+  let u = D.utm[ks[0]], m = ks[0]; while (m > ym) { u = Math.round(u / (1 + md.ipc(ymAdd(m, -2)))); m = ymAdd(m, -1); } return u;
+}
+const TRAMOS = [[13.5, 0, 0], [30, 0.04, 0.54], [50, 0.08, 1.74], [70, 0.135, 4.49], [90, 0.23, 11.14], [120, 0.304, 17.8], [310, 0.35, 23.32], [Infinity, 0.4, 38.82]];
+const iusc = (rt, utm) => { if (rt <= 0) return 0; const u = rt / utm; for (const [h, f, r] of TRAMOS) if (u <= h) return Math.max(0, Math.round(rt * f - r * utm)); return 0; };
+
+/* ---------- estado ---------- */
+const CAUSAL = { "161N": "Art. 161: Necesidades de la empresa", "161D": "Art. 161 inc. 2: Desahucio", "159-1": "Art. 159 N°1: Mutuo acuerdo", "159-2": "Art. 159 N°2: Renuncia voluntaria", "159-4": "Art. 159 N°4: Vencimiento del plazo", "159-5": "Art. 159 N°5: Conclusión del trabajo", "160": "Art. 160: Despido disciplinario" };
+const IAS_OK = new Set(["161N", "161D"]);
+const S = { sim: null, proj: lsGet("fq_proj", { metodo: "prom", n: 12, meta: 3, h: 24 }), editId: null, editDoc: null, sims: [], base: D.base, empresa: { nom: "", rut: "", dir: "" }, db: null, user: null, dl: null, uidMe: null, names: {} };
+let MD = null; // modelo UF vigente
+
+function exampleSim() {
+  return {
+    v: 1, persona: { rut: "11111111-1", nombre: "EJEMPLO APELLIDO NOMBRE", cargo: "Cargo de ejemplo", cc: "0000 CENTRO DE EJEMPLO", jornada: "40 Horas Semanales", ingreso: "2019-02-01" },
+    egreso: "2027-02-26", causal: "161N", aviso: false, t90ias: true, t90av: true, t11: true, ufModo: "mesAnterior", ufManual: "", reaj: 0, sueldoMes: false,
+    mesRef: "2026-10",
+    items: [
+      { id: "sueldo_base", nombre: "Sueldo base", tipo: "F", m1: 2500000, m2: 2500000, m3: 2600000, vac: true, ind: true, r24: true },
+      { id: "bono_por_antiguedad", nombre: "Bono por Antiguedad", tipo: "F", m1: 40000, m2: 40000, m3: 41000, vac: true, ind: true, r24: true },
+      { id: "gratificacion", nombre: "Gratificación", tipo: "F", m1: 219115, m2: 219115, m3: 219115, vac: false, ind: true, r24: false },
+      { id: "asignacion_de_colacion", nombre: "Asignacion De Colacion", tipo: "F", m1: 150000, m2: 150000, m3: 150000, vac: true, ind: true, r24: false },
+      { id: "asignacion_teletrabajo", nombre: "Asignación Teletrabajo", tipo: "F", m1: 55000, m2: 55000, m3: 55000, vac: true, ind: true, r24: false },
+      { id: "aguinaldo_fiestas_patrias", nombre: "Aguinaldo Fiestas Patrias", tipo: "V", m1: 0, m2: 190000, m3: 0, vac: false, ind: false, r24: false },
+    ],
+    vac: { modo: "saldo", fecha: "2026-11-03", normales: 62, prop: 11.38, prog: 6, adic: 0, tomados: 43, progAnual: 2, progTom: 0, feriados: true, proy: [] },
+    r24: { relleno: "ultima", ipc: true, meses: {
+      "2026-08": { sueldo_base: 2500000, bono_por_antiguedad: 40000, gratificacion: 219115, asignacion_de_colacion: 150000, asignacion_teletrabajo: 55000 },
+      "2026-09": { sueldo_base: 2500000, bono_por_antiguedad: 40000, aguinaldo_fiestas_patrias: 190000, gratificacion: 219115, asignacion_de_colacion: 150000, asignacion_teletrabajo: 55000 },
+      "2026-10": { sueldo_base: 2600000, bono_por_antiguedad: 41000, gratificacion: 219115, asignacion_de_colacion: 150000, asignacion_teletrabajo: 55000 } } },
+    liqs: [{ ym: "2026-08", archivo: "ReciboSimpCL (agosto 2026)", n: 5, rt: 2300000 }, { ym: "2026-09", archivo: "ReciboSimpCL_100.pdf", n: 6, rt: 2450000 }, { ym: "2026-10", archivo: "ReciboSimpCL_99.pdf", n: 5, rt: 2400000 }],
+    vacDoc: { archivo: "RmanVac_1.pdf", fecha: "2026-11-03" },
+    vol: { modo: "ninguna", valor: 0 }, rt: 2400000, afc: 0, desc: [], nota: "Ejemplo: datos ficticios con UF proyectada",
+  };
+}
+function simFromBase(r) {
+  const [rut, nombre, ingreso, cargo, ccc, ccd, jor, sal, grat] = r;
+  if (rut === "11111111-1") return exampleSim();
+  const s = exampleSim();
+  const t = todayIso();
+  const ref = ymAdd(ymOf(t), -1);
+  const ufM = ufAt(MD, lastDayOf(ymAdd(ref, -1))).v || 41000;
+  const imp = Math.min(sal + grat, 90 * ufM);
+  Object.assign(s, {
+    persona: { rut, nombre, cargo, cc: (ccc + " " + ccd).trim(), jornada: jor ? jor + " Horas Semanales" : "", ingreso },
+    egreso: lastDayOf(ymAdd(ymOf(t), 3)), mesRef: ref,
+    items: [
+      { id: "sueldo_base", nombre: "Sueldo base", tipo: "F", m1: sal, m2: sal, m3: sal, vac: true, ind: true, r24: true },
+      { id: "gratificacion", nombre: "Gratificación", tipo: "F", m1: grat, m2: grat, m3: grat, vac: false, ind: true, r24: false },
+    ], liqs: [], vacDoc: null,
+    vac: { modo: "teorico", fecha: t, normales: 0, prop: 0, prog: 0, adic: 0, tomados: 0, progAnual: 0, progTom: 0, feriados: true, proy: [] },
+    r24: { relleno: "ultima", ipc: true, meses: {} },
+    rt: Math.max(0, Math.round(sal + grat - imp * (0.1144 + 0.07 + 0.006))), nota: "",
+  });
+  return s;
+}
+
+/* ---------- motor de cálculo del finiquito ---------- */
+function mesesDesde(ing, iso) { // meses completos y días restantes, contando el día final
+  const end = addDays(iso, 1); let k = Math.max(0, ymDiff(ing.slice(0, 7), iso.slice(0, 7)) - 1);
+  while (addMonthsIso(ing, k + 1) <= end) k++;
+  while (k > 0 && addMonthsIso(ing, k) > end) k--;
+  const dias = Math.round((toD(end) - toD(addMonthsIso(ing, k))) / 864e5);
+  return { k, dias, start: addMonthsIso(ing, k) };
+}
+function antig(ing, egr) { const { k, dias } = mesesDesde(ing, egr); return { y: Math.floor(k / 12), m: k % 12, d: dias, k }; }
+function propAt(ing, iso) { // feriado proporcional del año en curso (1,25 días por mes)
+  const { k, dias, start } = mesesDesde(ing, iso); const mm = k % 12;
+  return 1.25 * mm + 1.25 * dias / dim(+start.slice(0, 4), +start.slice(5, 7));
+}
+function aniversariosEntre(ing, a, b) { let n = 0; for (let j = 1; j < 80; j++) { const x = addMonthsIso(ing, 12 * j); if (x > b) break; if (x > a) n++; } return n; }
+function itemVal(it, s, aplicaReaj) {
+  const vals = [it.m1, it.m2, it.m3].filter((v) => v !== "" && v != null);
+  let v = it.tipo === "V" ? (vals.length ? vals.reduce((a, b) => a + num(b), 0) / vals.length : 0) : num(it.m3);
+  if (aplicaReaj && it.tipo === "F") v *= 1 + num(s.reaj) / 100;
+  return v;
+}
+function calc(s, md, ufOverride) {
+  const R = { warn: [] };
+  const ing = s.persona.ingreso, egr = s.egreso;
+  if (!ing || !egr || egr < ing) { R.err = "Ingresa fecha de ingreso y una fecha de egreso posterior."; return R; }
+  R.antig = antig(ing, egr);
+  const a = R.antig;
+  R.periodos = a.y + (a.m > 6 || (a.m === 6 && a.d > 0) ? 1 : 0);
+  // UF
+  const fu = s.ufModo === "egreso" ? egr : s.ufModo === "hoy" ? todayIso() : lastDayOf(ymAdd(ymOf(egr), -1));
+  if (ufOverride) { R.ufFecha = ufOverride.fecha; R.uf = ufOverride.v; R.ufSt = ufOverride.st; }
+  else if (s.ufModo === "manual" && num(s.ufManual) > 0) { R.ufFecha = null; R.uf = num(s.ufManual); R.ufSt = "manual"; }
+  else { const u = ufAt(md, fu); R.ufFecha = fu; R.uf = u.v; R.ufSt = u.st; R.ufBand = u.band; }
+  if (!R.uf) { R.err = "No hay UF disponible para " + fd(fu) + "."; return R; }
+  R.tope = Math.round(90 * R.uf);
+  // bases
+  const B = { indF: 0, indV: 0, vacF: 0, vacV: 0 };
+  R.items = s.items.map((it) => { const v = itemVal(it, s, true); if (it.ind) B[it.tipo === "V" ? "indV" : "indF"] += v; if (it.vac) B[it.tipo === "V" ? "vacV" : "vacF"] += v; return { ...it, valor: v }; });
+  B.ind = B.indF + B.indV; B.vac = B.vacF + B.vacV; R.bases = B;
+  // vacaciones
+  const V = s.vac, vr = {};
+  if (V.modo === "saldo") {
+    vr.aniv = aniversariosEntre(ing, V.fecha || egr, egr);
+    vr.normPend = num(V.normales) + 15 * vr.aniv;
+    vr.diasTotales = vr.normPend + num(V.tomados);
+    vr.progTot = num(V.prog) + num(V.progAnual) * vr.aniv + num(V.progTom);
+    vr.progPend = num(V.prog) + num(V.progAnual) * vr.aniv;
+  } else {
+    vr.aniv = a.y; vr.diasTotales = 15 * a.y; vr.normPend = vr.diasTotales - num(V.tomados);
+    vr.progTot = num(V.prog); vr.progPend = num(V.prog) - num(V.progTom);
+  }
+  vr.prop = Math.round(propAt(ing, egr) * 100) / 100;
+  vr.adic = num(V.adic);
+  const desdeProy = V.modo === "saldo" ? V.fecha || "" : "";
+  vr.proy = (V.proy || []).map((p) => { const fin = p.hasta && p.hasta > egr ? egr : p.hasta; const auto = p.desde && fin ? habilesEntre(p.desde > desdeProy ? p.desde : addDays(desdeProy, 1), fin) : 0; const dias = p.dias !== "" && p.dias != null ? num(p.dias) : auto; const cuenta = !!p.desde && p.desde > desdeProy && p.desde <= egr; return { ...p, auto, dias, cuenta }; });
+  vr.proyDias = vr.proy.filter((p) => p.cuenta).reduce((x, p) => x + p.dias, 0);
+  vr.tomados = num(V.tomados) + vr.proyDias;
+  vr.habiles = Math.max(0, Math.round((vr.normPend + vr.prop + vr.progPend + vr.adic - vr.proyDias) * 100) / 100);
+  let inh = 0, h = 0, d = egr; const target = Math.floor(vr.habiles + 1e-9);
+  while (h < target) { d = addDays(d, 1); if (isWeekend(d) || (V.feriados && FER.has(d))) inh++; else h++; }
+  vr.inhabiles = inh; vr.hasta = d;
+  vr.total = Math.round((vr.habiles + inh) * 100) / 100;
+  R.vac = vr;
+  R.feriado = { dias: vr.total, vd: B.vac / 30, monto: Math.round(vr.total * B.vac / 30) };
+  // mes de aviso
+  const aplicaIAS = IAS_OK.has(s.causal);
+  const av = { aplica: aplicaIAS && !s.aviso, base: B.ind };
+  av.legal = av.aplica ? Math.min(B.ind, R.tope) : 0;
+  av.pagado = av.aplica ? (s.t90av ? av.legal : B.ind) : 0;
+  av.exceso = av.pagado - av.legal;
+  R.aviso = av;
+  // indemnización por años de servicio
+  const ias = { aplica: aplicaIAS };
+  ias.perLegal = Math.min(R.periodos, 11);
+  ias.perPag = s.t11 ? ias.perLegal : R.periodos;
+  ias.baseLegal = Math.min(B.ind, R.tope);
+  ias.basePag = s.t90ias ? ias.baseLegal : B.ind;
+  ias.legal = aplicaIAS ? Math.round(ias.perLegal * ias.baseLegal) : 0;
+  ias.pagado = aplicaIAS ? Math.round(ias.perPag * ias.basePag) : 0;
+  ias.exceso = ias.pagado - ias.legal;
+  R.ias = ias;
+  // voluntaria adicional
+  const vol = s.vol || { modo: "ninguna" };
+  R.volAd = vol.modo === "monto" ? num(vol.valor) : vol.modo === "rentas" ? Math.round(num(vol.valor) * B.ind) : 0;
+  // 24 rentas
+  R.r24 = rentas24(s, md, R);
+  // tope exento Art. 17 N°13
+  const n13 = {};
+  n13.anios = R.periodos;
+  n13.limiteBruto = Math.round(R.r24.prom * n13.anios);
+  n13.limite = Math.max(0, n13.limiteBruto - ias.legal);
+  n13.partes = [["Exceso indemnización años de servicio", ias.exceso], ["Exceso mes de aviso", av.exceso], ["Indemnización voluntaria adicional", R.volAd]];
+  let rest = n13.limite; n13.det = n13.partes.map(([k, v]) => { const ex = Math.min(v, rest); rest -= ex; return { k, v, exento: ex, afecto: v - ex }; });
+  n13.total = n13.det.reduce((x, p) => x + p.v, 0); n13.exento = n13.det.reduce((x, p) => x + p.exento, 0); n13.afecto = n13.total - n13.exento;
+  R.n13 = n13;
+  // impuesto reliquidado en 12 meses
+  const T = ymOf(egr), rows = [];
+  for (let i = 12; i >= 1; i--) { const ym = ymAdd(T, -i), utm = utmAt(md, ym), rt = num(s.rt), t0 = iusc(rt, utm), t1 = iusc(rt + n13.afecto / 12, utm); rows.push({ ym, utm, rt, t0, t1, dif: t1 - t0 }); }
+  R.imp = { rows, total: rows.reduce((x, r) => x + r.dif, 0) };
+  // sueldo del mes
+  R.sueldoMes = s.sueldoMes ? Math.round(B.ind * Math.min(30, +egr.slice(8, 10)) / 30) : 0;
+  // descuentos
+  const desc = (s.desc || []).map((x) => ({ concepto: x.concepto, monto: num(x.monto) }));
+  R.desc = { rows: desc, afc: num(s.afc), imp: R.imp.total };
+  R.desc.total = desc.reduce((x, r) => x + r.monto, 0) + R.desc.afc + R.desc.imp;
+  R.haberes = R.feriado.monto + av.pagado + ias.pagado + R.volAd + R.sueldoMes;
+  R.total = R.haberes - R.desc.total;
+  if (!aplicaIAS) R.warn.push("La causal elegida no da derecho legal a indemnización por años de servicio ni mes de aviso.");
+  return R;
+}
+function rentas24(s, md, R) {
+  const T = ymOf(s.egreso), items = s.items.filter((i) => i.r24), rows = [];
+  const ref = s.mesRef || T;
+  for (let i = 24; i >= 1; i--) {
+    const ym = ymAdd(T, -i), rec = (s.r24.meses || {})[ym] || {};
+    let monto = 0, real = 0, est = 0;
+    const cells = items.map((it) => {
+      const raw = rec[it.id]; const has = raw !== undefined && raw !== "" && raw !== null;
+      let v; if (has) { v = num(raw); real++; } else { est++; v = s.r24.relleno === "ultima" ? itemVal(it, s, ym > ref) : 0; }
+      monto += v; return { id: it.id, v, has };
+    });
+    const excl = s.r24.relleno === "excluir" && real === 0;
+    let f = 1; if (s.r24.ipc && real > 0) for (let m = ym; m <= ymAdd(T, -1); m = ymAdd(m, 1)) f *= 1 + md.ipc(m);
+    rows.push({ ym, cells, monto, real: real > 0 && est === 0 ? "real" : real > 0 ? "parcial" : "estimado", excl, f, reaj: Math.round(monto * f) });
+  }
+  const inc = rows.filter((r) => !r.excl);
+  return { rows, items, n: inc.length, prom: inc.length ? Math.round(inc.reduce((x, r) => x + r.reaj, 0) / inc.length) : 0 };
+}
+function resumen(R) { return R.err ? { err: R.err } : { total: R.total, haberes: R.haberes, feriado: R.feriado.monto, aviso: R.aviso.pagado, ias: R.ias.pagado, vol: R.volAd, imp: R.imp.total, uf: R.uf, ufFecha: R.ufFecha, ufSt: R.ufSt, vacDias: R.vac.total }; }
+
+/* ---------- vinculación de formularios ---------- */
+const getP = (o, p) => p.split(".").reduce((x, k) => (x == null ? x : x[k]), o);
+const setP = (o, p, v) => { const ks = p.split("."); let x = o; for (let i = 0; i < ks.length - 1; i++) { if (x[ks[i]] == null || typeof x[ks[i]] !== "object") x[ks[i]] = {}; x = x[ks[i]]; } x[ks[ks.length - 1]] = v; };
+function readInput(el) { if (el.type === "checkbox") return el.checked; if (el.type === "number") return el.value === "" ? "" : numRaw(el.value); return el.value; }
+function fillInputs(root = document) {
+  root.querySelectorAll("[data-k]").forEach((el) => {
+    const v = getP(S.sim, el.dataset.k);
+    if (el.type === "checkbox") el.checked = !!v; else if (document.activeElement !== el) el.value = v ?? "";
+  });
+}
+let calcT;
+document.addEventListener("input", (e) => {
+  const el = e.target; if (!el.dataset || !el.dataset.k || !S.sim) return;
+  setP(S.sim, el.dataset.k, readInput(el));
+  clearTimeout(calcT); calcT = setTimeout(recalc, 120);
+});
+document.addEventListener("change", (e) => {
+  const el = e.target; if (!el.dataset || !el.dataset.k || !S.sim) return;
+  setP(S.sim, el.dataset.k, readInput(el));
+  const k = el.dataset.k;
+  if (["egreso", "mesRef", "r24.relleno"].includes(k) || /^items\.\d+\.r24$/.test(k)) renderR24Grid();
+  if (/^items\.\d+\.(nombre)$/.test(k)) renderR24Grid();
+  renderToggles(); recalc();
+});
+
+/* ---------- render de formularios ---------- */
+function renderAll() { if (!S.sim.liqs) S.sim.liqs = []; fillInputs(); renderDocs(); renderItems(); renderVac(); renderDesc(); renderR24Grid(); renderToggles(); recalc(); }
+function renderToggles() {
+  const s = S.sim;
+  $("#fUfV").hidden = $("#lUfV").hidden = s.ufModo !== "manual";
+  document.querySelectorAll("#segVac button").forEach((b) => b.setAttribute("aria-pressed", String(b.dataset.v === s.vac.modo)));
+  const sal = s.vac.modo === "saldo";
+  ["vF", "vP"].forEach((id) => { $("#" + id).disabled = !sal; });
+  $("#vN").disabled = !sal; $("#vGa").disabled = !sal;
+  $("#vacSaldo label[for=vG]").textContent = sal ? "Progresivos pendientes" : "Progresivos devengados";
+  $("#lvVal").textContent = s.vol.modo === "rentas" ? "N° de remuneraciones" : "Monto";
+  $("#vVal").disabled = s.vol.modo === "ninguna";
+  $("#pMeta").hidden = $("#lMeta").hidden = S.proj.metodo !== "meta";
+}
+function renderItems() {
+  const s = S.sim, ref = s.mesRef || ymOf(todayIso());
+  const h = [ymAdd(ref, -2), ymAdd(ref, -1), ref].map(ymL);
+  $("#tItems").innerHTML = `<thead><tr><th>Concepto</th><th>Tipo</th><th class="n">${h[0]}</th><th class="n">${h[1]}</th><th class="n">${h[2]}</th><th class="n">Valor base</th><th class="c">Vacaciones</th><th class="c">Indemnización</th><th class="c">24 rentas</th><th></th></tr></thead>
+  <tbody>${s.items.map((it, i) => `<tr>
+    <td class="e"><input class="inp" data-k="items.${i}.nombre" aria-label="Concepto" style="min-width:190px"></td>
+    <td><div class="seg" data-tipo="${i}"><button type="button" data-v="F" aria-pressed="${it.tipo !== "V"}">Fijo</button><button type="button" data-v="V" aria-pressed="${it.tipo === "V"}">Variable</button></div></td>
+    <td class="e"><input class="inp" type="number" data-k="items.${i}.m1" aria-label="${h[0]}" style="min-width:110px"></td>
+    <td class="e"><input class="inp" type="number" data-k="items.${i}.m2" aria-label="${h[1]}" style="min-width:110px"></td>
+    <td class="e"><input class="inp" type="number" data-k="items.${i}.m3" aria-label="${h[2]}" style="min-width:110px"></td>
+    <td class="n cc" id="iv${i}">—</td>
+    <td class="c"><input type="checkbox" class="chkb" data-k="items.${i}.vac" aria-label="Considerar en vacaciones"></td>
+    <td class="c"><input type="checkbox" class="chkb" data-k="items.${i}.ind" aria-label="Considerar en indemnización"></td>
+    <td class="c"><input type="checkbox" class="chkb" data-k="items.${i}.r24" aria-label="Considerar en 24 rentas"></td>
+    <td><button class="btn sm danger" type="button" data-delitem="${i}" aria-label="Eliminar ítem">✕</button></td></tr>`).join("")}</tbody>
+  <tfoot><tr><td colspan="5">Bases de cálculo</td><td class="n" id="ivTot"></td><td class="n" id="ivVac"></td><td class="n" id="ivInd"></td><td class="n" id="iv24"></td><td></td></tr></tfoot>`;
+  document.querySelectorAll("#tItems .chkb").forEach((c) => { c.style.width = "16px"; c.style.height = "16px"; c.style.accentColor = "var(--accent)"; });
+  fillInputs($("#tItems"));
+}
+document.addEventListener("click", (e) => {
+  const tb = e.target.closest("[data-tipo] button");
+  if (tb) { const i = +tb.parentElement.dataset.tipo; S.sim.items[i].tipo = tb.dataset.v; S.sim.items[i].tipoFijado = true; renderItems(); renderR24Grid(); recalc(); return; }
+  const di = e.target.closest("[data-delitem]");
+  if (di) { S.sim.items.splice(+di.dataset.delitem, 1); renderItems(); renderR24Grid(); recalc(); return; }
+  const dv = e.target.closest("[data-delvac]");
+  if (dv) { S.sim.vac.proy.splice(+dv.dataset.delvac, 1); renderVac(); recalc(); return; }
+  const dd = e.target.closest("[data-deldesc]");
+  if (dd) { S.sim.desc.splice(+dd.dataset.deldesc, 1); renderDesc(); recalc(); return; }
+  const sv = e.target.closest("#segVac button");
+  if (sv) { S.sim.vac.modo = sv.dataset.v; renderToggles(); recalc(); }
+});
+$("#bAddItem").onclick = () => { S.sim.items.push({ id: "i" + Date.now().toString(36), nombre: "Nuevo ítem", tipo: "F", m1: "", m2: "", m3: "", vac: true, ind: true, r24: false }); renderItems(); recalc(); };
+$("#bAddVac").onclick = () => { const f = S.sim.vac.fecha && S.sim.vac.fecha > todayIso() ? S.sim.vac.fecha : todayIso(); S.sim.vac.proy.push({ desde: addDays(f, 7), hasta: addDays(f, 11), dias: "", nota: "" }); renderVac(); recalc(); };
+$("#bAddDesc").onclick = () => { S.sim.desc.push({ concepto: "Descuento", monto: 0 }); renderDesc(); recalc(); };
+function renderVac() {
+  const p = S.sim.vac.proy || [];
+  $("#tVac").innerHTML = p.length ? `<thead><tr><th>Desde</th><th>Hasta</th><th class="n">Hábiles (auto)</th><th class="n">Días a descontar</th><th>Nota</th><th>Estado</th><th></th></tr></thead><tbody>${p.map((x, i) => `<tr>
+    <td class="e"><input class="inp" type="date" data-k="vac.proy.${i}.desde" aria-label="Desde"></td>
+    <td class="e"><input class="inp" type="date" data-k="vac.proy.${i}.hasta" aria-label="Hasta"></td>
+    <td class="n cc" id="va${i}">—</td>
+    <td class="e"><input class="inp" type="number" step="0.5" data-k="vac.proy.${i}.dias" aria-label="Días a descontar" placeholder="auto" style="width:90px"></td>
+    <td class="e"><input class="inp" data-k="vac.proy.${i}.nota" aria-label="Nota" style="min-width:140px"></td>
+    <td id="vs${i}"></td>
+    <td><button class="btn sm danger" type="button" data-delvac="${i}" aria-label="Eliminar período">✕</button></td></tr>`).join("")}</tbody><tfoot><tr><td colspan="3">Total descontado del saldo</td><td class="n" id="vaTot"></td><td colspan="3"></td></tr></tfoot>`
+    : `<tbody><tr><td class="note" style="padding:14px">Sin vacaciones proyectadas. Agrega un período para descontarlo del saldo antes del egreso.</td></tr></tbody>`;
+  fillInputs($("#tVac"));
+}
+function renderDesc() {
+  const d = S.sim.desc || [];
+  $("#tDesc").innerHTML = d.length ? `<thead><tr><th>Concepto</th><th class="n">Monto</th><th></th></tr></thead><tbody>${d.map((x, i) => `<tr><td class="e"><input class="inp" data-k="desc.${i}.concepto" aria-label="Concepto"></td><td class="e"><input class="inp" type="number" data-k="desc.${i}.monto" aria-label="Monto"></td><td><button class="btn sm danger" type="button" data-deldesc="${i}" aria-label="Eliminar descuento">✕</button></td></tr>`).join("")}</tbody>`
+    : `<tbody><tr><td class="note" style="padding:14px">Sin otros descuentos.</td></tr></tbody>`;
+  fillInputs($("#tDesc"));
+}
+function renderR24Grid() {
+  const s = S.sim; if (!s.egreso) { $("#tR24").innerHTML = ""; return; }
+  const T = ymOf(s.egreso), items = s.items.filter((i) => i.r24);
+  const rows = []; for (let i = 24; i >= 1; i--) rows.push(ymAdd(T, -i));
+  $("#tR24").innerHTML = `<thead><tr><th>Mes</th>${items.map((it) => `<th class="n">${esc(it.nombre)}</th>`).join("")}<th class="n">Total mes</th><th>Origen</th><th class="n">Factor IPC</th><th class="n">Reajustado</th></tr></thead>
+  <tbody>${rows.map((ym, r) => `<tr id="rr${r}"><td>${ymL(ym)}</td>${items.map((it) => `<td class="e"><input class="inp" type="number" data-k="r24.meses.${ym}.${it.id}" aria-label="${esc(it.nombre)} ${ymL(ym)}" style="min-width:110px"></td>`).join("")}<td class="n cc" id="rt${r}"></td><td id="ro${r}"></td><td class="n" id="rf${r}"></td><td class="n cc" id="rj${r}"></td></tr>`).join("")}</tbody>
+  <tfoot><tr><td colspan="${items.length + 3}">Promedio 24 rentas (<span id="rN"></span> meses)</td><td></td><td class="n" id="rProm"></td></tr></tfoot>`;
+  fillInputs($("#tR24"));
+}
+$("#bR24Copy").onclick = () => {
+  const s = S.sim, ref = s.mesRef; if (!ref) return;
+  [["m1", ymAdd(ref, -2)], ["m2", ymAdd(ref, -1)], ["m3", ref]].forEach(([k, ym]) => { const rec = (s.r24.meses[ym] = s.r24.meses[ym] || {}); s.items.forEach((it) => { if (it[k] !== "" && it[k] != null) rec[it.id] = num(it[k]); }); });
+  renderR24Grid(); recalc(); toast("Se copiaron los 3 meses de haberes al grid de 24 rentas");
+};
+
+/* ---------- render de resultados ---------- */
+let LAST = null;
+function recalc() {
+  const s = S.sim; if (!s) return;
+  lsSet("fq_draft", { sim: s, editId: S.editId });
+  const R = calc(s, MD); LAST = R;
+  // valores por ítem
+  s.items.forEach((it, i) => { const c = $("#iv" + i); if (c) c.textContent = n0(itemVal(it, s, true)); });
+  if (R.err) { $("#det").innerHTML = `<div class="banner">${esc(R.err)}</div>`; $("#tots").innerHTML = ""; return; }
+  $("#ivVac").textContent = n0(R.bases.vac); $("#ivInd").textContent = n0(R.bases.ind); $("#iv24").textContent = n0(R.r24.rows.length ? R.r24.rows[R.r24.rows.length - 1].monto : 0); $("#ivTot").textContent = "";
+  // kpis UF
+  const hoy = ufAt(MD, todayIso());
+  $("#kUf").textContent = n2(R.uf); $("#kUf").className = "big" + (R.ufSt === "proyectado" ? " proj" : "");
+  $("#kUfN").textContent = (R.ufFecha ? fd(R.ufFecha) + " · " : "") + R.ufSt + (R.ufBand ? " · banda 90 %: " + n2(R.ufBand[0]) + " – " + n2(R.ufBand[1]) : "");
+  $("#kUfHoy").textContent = n2(hoy.v); $("#kUfHoyN").textContent = fd(todayIso()) + " · " + hoy.st + (R.uf && hoy.v ? " · variación al egreso " + pc(R.uf / hoy.v - 1) : "");
+  $("#kTope").textContent = clp(R.tope); $("#kTopeN").textContent = "90 × " + n2(R.uf);
+  // vacaciones
+  const v = R.vac;
+  $("#vRes").textContent = n2(v.habiles) + " hábiles + " + v.inhabiles + " inhábiles = " + n2(v.total) + " días";
+  (v.proy || []).forEach((p, i) => { const a = $("#va" + i), st = $("#vs" + i), inp = document.querySelector(`[data-k="vac.proy.${i}.dias"]`); if (a) a.textContent = p.auto; if (inp) inp.placeholder = String(p.auto); if (st) st.innerHTML = p.cuenta ? `<span class="pill pos">Descuenta</span>` : `<span class="pill warn">Fuera de rango</span>`; });
+  if ($("#vaTot")) $("#vaTot").textContent = n2(v.proyDias);
+  // 24 rentas
+  R.r24.rows.forEach((r, i) => {
+    if (!$("#rt" + i)) return;
+    r.cells.forEach((c) => { const inp = document.querySelector(`[data-k="r24.meses.${r.ym}.${c.id}"]`); if (inp) inp.placeholder = c.has ? "" : n0(c.v); });
+    $("#rt" + i).textContent = n0(r.monto);
+    $("#ro" + i).innerHTML = r.excl ? `<span class="pill warn">Excluido</span>` : r.real === "real" ? `<span class="pill pos">Real</span>` : r.real === "parcial" ? `<span class="pill warn">Parcial</span>` : `<span class="pill proj">Estimado</span>`;
+    $("#rf" + i).textContent = r.f.toFixed(4).replace(".", ",");
+    $("#rj" + i).textContent = r.excl ? "—" : n0(r.reaj);
+    $("#rr" + i).className = r.excl ? "off" : "";
+  });
+  if ($("#rProm")) { $("#rProm").textContent = clp(R.r24.prom); $("#rN").textContent = R.r24.n; }
+  renderN13(R); renderImp(R); renderDetalle(R); renderCmp(R);
+  $("#simSub").textContent = (s.persona.nombre || "Sin trabajador") + " · egreso " + fd(s.egreso) + " · " + (CAUSAL[s.causal] || "");
+  renderEditBanner();
+}
+function renderN13(R) {
+  const n = R.n13;
+  $("#n13").innerHTML = `<div class="lines">
+   <div class="line"><span>Promedio 24 rentas × ${n.anios} años<div class="d">${clp(R.r24.prom)} × ${n.anios}</div></span><span class="a">${clp(n.limiteBruto)}</span></div>
+   <div class="line minus"><span>Menos indemnización legal exenta<div class="d">${R.ias.perLegal} años × ${clp(R.ias.baseLegal)}</div></span><span class="a">− ${clp(R.ias.legal)}</span></div>
+   <div class="line"><span>Tope exento disponible para lo voluntario</span><span class="a">${clp(n.limite)}</span></div>
+   ${n.det.map((p) => `<div class="line"><span>${esc(p.k)}<div class="d">Exento ${clp(p.exento)} · afecto ${clp(p.afecto)}</div></span><span class="a">${clp(p.v)}</span></div>`).join("")}
+   <div class="line tot"><span>Monto afecto a impuesto</span><span class="a">${clp(n.afecto)}</span></div></div>`;
+}
+function renderImp(R) {
+  const I = R.imp;
+  $("#tImp").innerHTML = `<thead><tr><th>Mes</th><th class="n">UTM</th><th class="n">Renta tributable</th><th class="n">Impuesto original</th><th class="n">+ 1/12 afecto</th><th class="n">Impuesto reliquidado</th><th class="n">Diferencia</th></tr></thead>
+  <tbody>${I.rows.map((r) => `<tr><td>${ymL(r.ym)}${!D.utm[r.ym] ? ' <span class="pill proj">proy.</span>' : ""}</td><td class="n">${n0(r.utm)}</td><td class="n">${n0(r.rt)}</td><td class="n">${n0(r.t0)}</td><td class="n">${n0(R.n13.afecto / 12)}</td><td class="n">${n0(r.t1)}</td><td class="n cc">${n0(r.dif)}</td></tr>`).join("")}</tbody>
+  <tfoot><tr><td colspan="6">Impuesto único por indemnización voluntaria afecta</td><td class="n">${clp(I.total)}</td></tr></tfoot>`;
+}
+function detLines(R, s) {
+  const a = R.antig, v = R.vac, B = R.bases;
+  return {
+    antecedentes: [["Nombre", s.persona.nombre], ["RUT", s.persona.rut], ["Cargo", s.persona.cargo], ["C. Costo", s.persona.cc], ["Fecha ingreso", fd(s.persona.ingreso)], ["Jornada", s.persona.jornada], ["Fecha egreso", fd(s.egreso)], ["Motivo egreso", CAUSAL[s.causal]], ["N° años contratado", a.y], ["N° meses contratado", a.m], ["N° días contratado", a.d], ["Períodos indemnización", R.periodos]],
+    vacaciones: [["Días totales", n2(v.diasTotales)], ["Días tomados", n2(v.tomados) + (v.proyDias ? " (incl. " + n2(v.proyDias) + " proyectados)" : "")], ["Fracción mens. + días", n2(v.prop)], ["Días progresivos totales", n2(v.progTot)], ["Días progresivos tomados", n2(num(s.vac.progTom))], ["Días adicionales", n2(v.adic)], ["Días hábiles pendientes", n2(v.habiles)], ["Días inhábiles", v.inhabiles + (s.vac.feriados ? " (sáb., dom. y feriados)" : " (sáb. y dom.)")], ["Total vacaciones", n2(v.total)], ["Vacaciones cubren hasta", fd(v.hasta)]],
+    bases: [["Indemnización fijo", clp(B.indF)], ["Indemnización variable", clp(B.indV)], ["Base indemnización", clp(B.ind)], ["Vacaciones fijo", clp(B.vacF)], ["Vacaciones variable", clp(B.vacV)], ["Base vacaciones", clp(B.vac)]],
+  };
+}
+function renderDetalle(R) {
+  const s = S.sim, L = detLines(R, s), av = R.aviso, ias = R.ias, n13 = R.n13;
+  const kv = (arr) => `<div class="kv">${arr.map(([k, v]) => `<div><span>${esc(k)}</span><span>${esc(v)}</span></div>`).join("")}</div>`;
+  const af = (k) => n13.det.find((d) => d.k.startsWith(k)) || { afecto: 0 };
+  $("#detSub").textContent = "UF " + n2(R.uf) + (R.ufFecha ? " al " + fd(R.ufFecha) : "") + " (" + R.ufSt + ") · tope 90 UF " + clp(R.tope);
+  $("#detPill").textContent = R.ufSt === "proyectado" ? "UF proyectada" : R.ufSt === "manual" ? "UF manual" : "UF real"; $("#detPill").className = "pill " + (R.ufSt === "proyectado" ? "proj" : "pos");
+  $("#det").innerHTML = `${R.warn.map((w) => `<div class="banner">${esc(w)}</div>`).join("")}
+  <div class="doc-sec"><h3>Antecedentes personales</h3>${kv(L.antecedentes)}</div>
+  <div class="doc-sec"><h3>Detalle de vacaciones</h3>${kv(L.vacaciones)}</div>
+  <div class="doc-sec"><h3>Bases de cálculo</h3>${kv(L.bases)}</div>
+  <div class="doc-sec"><h3>Haberes</h3><div class="lines">
+    <div class="line"><span>Feriado proporcional<div class="d">${n2(R.feriado.dias)} días × valor diario ${clp(R.feriado.vd)} (base ${clp(R.bases.vac)} / 30)</div></span><span class="a">${clp(R.feriado.monto)}</span></div>
+    <div class="line"><span>Mes sustitutivo del aviso<div class="d">${av.aplica ? "Base última rem. " + clp(av.base) + " · tope exento " + clp(av.legal) + " · voluntario afecto " + clp(af("Exceso mes").afecto) : "No aplica"}</div></span><span class="a">${clp(av.pagado)}</span></div>
+    <div class="line"><span>Indemnización por años de servicio<div class="d">${ias.aplica ? ias.perPag + " períodos × " + clp(ias.basePag) + " · tope legal exento " + clp(ias.legal) + " · voluntaria afecta " + clp(af("Exceso indem").afecto) : "No aplica"}</div></span><span class="a">${clp(ias.pagado)}</span></div>
+    ${R.volAd ? `<div class="line"><span>Indemnización voluntaria adicional<div class="d">Exenta ${clp(af("Indemnización vol").exento)} · afecta ${clp(af("Indemnización vol").afecto)} · promedio 24 rentas ${clp(R.r24.prom)}</div></span><span class="a">${clp(R.volAd)}</span></div>` : ""}
+    ${R.sueldoMes ? `<div class="line"><span>Sueldo del mes<div class="d">${+s.egreso.slice(8, 10)} días (bruto referencial)</div></span><span class="a">${clp(R.sueldoMes)}</span></div>` : ""}
+    <div class="line tot"><span>Total haberes</span><span class="a">${clp(R.haberes)}</span></div></div></div>
+  <div class="doc-sec"><h3>Descuentos</h3><div class="lines">
+    ${R.desc.rows.map((d) => `<div class="line minus"><span>${esc(d.concepto)}</span><span class="a">− ${clp(d.monto)}</span></div>`).join("")}
+    <div class="line minus"><span>Aporte empleador seguro de cesantía</span><span class="a">− ${clp(R.desc.afc)}</span></div>
+    <div class="line minus"><span>Impuesto único indemnización voluntaria<div class="d">Afecto ${clp(n13.afecto)} reliquidado en 12 meses</div></span><span class="a">− ${clp(R.desc.imp)}</span></div>
+    <div class="line tot"><span>Total a pagar finiquito</span><span class="a">${clp(R.total)}</span></div></div></div>`;
+  $("#tots").innerHTML = `<div><div class="eyebrow">Feriado proporcional</div><div class="v">${clp(R.feriado.monto)}</div></div><div><div class="eyebrow">Mes de aviso</div><div class="v">${clp(av.pagado)}</div></div><div><div class="eyebrow">Años de servicio</div><div class="v">${clp(ias.pagado + R.volAd)}</div></div><div><div class="eyebrow">Descuentos</div><div class="v">${clp(R.desc.total)}</div></div><div class="hl"><div class="eyebrow">Total a pagar</div><div class="v">${clp(R.total)}</div></div>`;
+}
+function renderCmp(R) {
+  const s = S.sim, h = ufAt(MD, todayIso());
+  const Rh = calc(s, MD, { fecha: todayIso(), v: h.v, st: "real" });
+  const d = R.total - Rh.total;
+  $("#cmpUf").innerHTML = `<div><div class="eyebrow">Con UF de hoy (${n2(h.v)})</div><div class="v">${clp(Rh.total)}</div><div class="note">Tope 90 UF ${clp(Rh.tope)}</div></div>
+   <div><div class="eyebrow">Con UF ${R.ufSt} (${n2(R.uf)})</div><div class="v" style="color:var(--proj)">${clp(R.total)}</div><div class="note">Tope 90 UF ${clp(R.tope)}</div></div>
+   <div><div class="eyebrow">Diferencia por la UF</div><div class="v ${d >= 0 ? "up" : "down"}">${d >= 0 ? "+ " : "− "}${clp(Math.abs(d))}</div><div class="note">${pc(Rh.total ? R.total / Rh.total - 1 : 0)} sobre el total</div></div>`;
+}
+
+/* ---------- UF: pestañas ---------- */
+function setModel() { MD = model(S.proj); lsSet("fq_proj", S.proj); }
+function renderUfTab() {
+  const md = MD, t = todayIso(), hoy = ufAt(md, t), fin = ufAt(md, lastDayOf(ymOf(t))), a12 = ufAt(md, addMonthsIso(t, 12));
+  const egr = S.sim && S.sim.egreso ? ufAt(md, S.sim.egreso) : null;
+  $("#ufChip").textContent = "UF hoy " + n2(hoy.v);
+  $("#ufKpis").innerHTML = `<div class="kpi"><div class="eyebrow">UF hoy · ${fd(t)}</div><div class="big">${n2(hoy.v)}</div><div class="note">${hoy.st}</div></div>
+   <div class="kpi"><div class="eyebrow">Fin de mes · ${fd(lastDayOf(ymOf(t)))}</div><div class="big ${fin.st === "proyectado" ? "proj" : ""}">${n2(fin.v)}</div><div class="note">${fin.st}${fin.band ? " · " + n2(fin.band[0]) + " – " + n2(fin.band[1]) : ""}</div></div>
+   <div class="kpi"><div class="eyebrow">En 12 meses · ${fd(addMonthsIso(t, 12))}</div><div class="big proj">${n2(a12.v)}</div><div class="note">${a12.band ? "Banda 90 %: " + n2(a12.band[0]) + " – " + n2(a12.band[1]) : ""}</div></div>
+   <div class="kpi"><div class="eyebrow">Inflación implícita</div><div class="big">${pc(md.annual, 1)}</div><div class="note">anual · IPC mensual ${pc(md.gmean, 2)} · σ ${pc(md.sigma, 2)}</div></div>`;
+  $("#ufSub").textContent = "Método: " + md.label + ". Último IPC conocido: " + ymL(md.lastIpc) + "; UF publicada hasta el 09-" + md.lastK.slice(5) + "-" + md.lastK.slice(0, 4) + (egr ? ". Egreso simulado " + fd(S.sim.egreso) + ": " + n2(egr.v) : "");
+  $("#pMet").value = S.proj.metodo; $("#pN").value = String(S.proj.n); $("#pMeta").value = S.proj.meta; $("#pH").value = String(S.proj.h);
+  drawUfChart(); renderBack(); renderProjTable();
+}
+function drawUfChart() {
+  const md = MD, W = 960, H = 360, L = 70, Rm = 16, T = 16, Bm = 34;
+  const hist = []; for (const k of [...UF.M.keys()].sort()) { const o = UF.M.get(k); if (o.last) hist.push([lastDayOf(k), o.last]); }
+  const start = ymOf(todayIso()), hz = +S.proj.h || 24, proj = [];
+  for (let i = 0; i <= hz; i++) { const ym = ymAdd(start, i), iso = lastDayOf(ym), u = ufAt(md, iso); if (u.st === "proyectado" || i === 0) proj.push([iso, u.v, u.band || [u.v, u.v]]); }
+  const egr = S.sim && S.sim.egreso;
+  const x0 = toD(hist[0][0]).getTime(), x1 = toD(proj[proj.length - 1][0]).getTime();
+  const ys = hist.map((p) => p[1]).concat(proj.flatMap((p) => p[2]));
+  let y0 = Math.min(...ys), y1 = Math.max(...ys); const pad = (y1 - y0) * 0.05; y0 -= pad; y1 += pad;
+  const X = (iso) => L + ((toD(iso).getTime() - x0) / (x1 - x0)) * (W - L - Rm), Y = (v) => T + (1 - (v - y0) / (y1 - y0)) * (H - T - Bm);
+  const step = Math.pow(10, Math.floor(Math.log10((y1 - y0) / 4))); const st = [1, 2, 2.5, 5, 10].map((m) => m * step).find((s) => (y1 - y0) / s <= 6) || step * 10;
+  let g = "";
+  for (let v = Math.ceil(y0 / st) * st; v <= y1; v += st) g += `<line x1="${L}" x2="${W - Rm}" y1="${Y(v)}" y2="${Y(v)}" stroke="rgba(64,228,214,.12)"/><text x="${L - 8}" y="${Y(v) + 4}" text-anchor="end">${n0(v)}</text>`;
+  const ya = +hist[0][0].slice(0, 4), yb = +proj[proj.length - 1][0].slice(0, 4);
+  for (let y = ya + 1; y <= yb; y++) { const xx = X(y + "-01-01"); g += `<line x1="${xx}" x2="${xx}" y1="${T}" y2="${H - Bm}" stroke="rgba(64,228,214,.07)"/><text x="${xx}" y="${H - 12}" text-anchor="middle">${y}</text>`; }
+  const band = proj.map((p) => `${X(p[0])},${Y(p[2][1])}`).join(" ") + " " + proj.slice().reverse().map((p) => `${X(p[0])},${Y(p[2][0])}`).join(" ");
+  const lineH = hist.map((p, i) => (i ? "L" : "M") + X(p[0]).toFixed(1) + " " + Y(p[1]).toFixed(1)).join(" ");
+  const lineP = proj.map((p, i) => (i ? "L" : "M") + X(p[0]).toFixed(1) + " " + Y(p[1]).toFixed(1)).join(" ");
+  const tx = X(todayIso());
+  let em = "";
+  if (egr && toD(egr).getTime() >= x0 && toD(egr).getTime() <= x1) { const u = ufAt(md, egr); const ex = X(egr); em = `<line x1="${ex}" x2="${ex}" y1="${T}" y2="${H - Bm}" stroke="#FFD25C" stroke-dasharray="4 4"/><circle cx="${ex}" cy="${Y(u.v)}" r="5" fill="#FFD25C"/><text x="${ex > W - 260 ? ex - 8 : ex + 8}" y="${H - Bm - 22}" text-anchor="${ex > W - 260 ? "end" : "start"}" style="fill:#FFD25C">Egreso ${fd(egr)} · ${n2(u.v)}</text>`; }
+  const last = proj[proj.length - 1];
+  $("#ufChart").innerHTML = `${g}<polygon points="${band}" fill="rgba(199,155,255,.18)"/><path d="${lineH}" fill="none" stroke="#36F5E3" stroke-width="2" style="filter:drop-shadow(0 0 4px rgba(54,245,227,.8))"/><path d="${lineP}" fill="none" stroke="#C79BFF" stroke-width="2" stroke-dasharray="6 4"/><line x1="${tx}" x2="${tx}" y1="${T}" y2="${H - Bm}" stroke="rgba(221,253,255,.35)"/><text x="${tx - 6}" y="${H - Bm - 6}" text-anchor="end">hoy</text>${em}<circle cx="${X(last[0])}" cy="${Y(last[1])}" r="4" fill="#C79BFF"/><text x="${X(last[0]) - 6}" y="${Y(last[1]) - 10}" text-anchor="end" style="fill:#C79BFF">${n2(last[1])}</text>`;
+}
+function renderBack() {
+  const cut = ymAdd(UF.lastK, -12), mb = model(S.proj, cut), rows = [];
+  for (let i = 11; i >= 0; i--) { const ym = ymAdd(ymOf(todayIso()), -i), iso = i === 0 ? todayIso() : lastDayOf(ym), real = ufAt(MD, iso), pr = ufAt(mb, iso); if (real.st !== "real") continue; rows.push({ iso, real: real.v, pr: pr.v }); }
+  const mae = rows.reduce((a, r) => a + Math.abs(r.pr / r.real - 1), 0) / (rows.length || 1);
+  $("#tBack").innerHTML = `<thead><tr><th>Fecha</th><th class="n">UF real</th><th class="n">Proyectada (corte ${ymL(cut)})</th><th class="n">Error</th></tr></thead><tbody>${rows.map((r) => { const e = r.pr / r.real - 1; return `<tr><td>${fd(r.iso)}${r.iso === todayIso() ? ' <span class="pill">hoy</span>' : ""}</td><td class="n">${n2(r.real)}</td><td class="n" style="color:var(--proj)">${n2(r.pr)}</td><td class="n ${e >= 0 ? "up" : "down"}">${pc(e)}</td></tr>`; }).join("")}</tbody><tfoot><tr><td colspan="3">Error absoluto medio del método</td><td class="n">${pc(mae)}</td></tr></tfoot>`;
+}
+function projRows() {
+  const rows = [], start = ymAdd(MD.lastK, -3), hz = +S.proj.h || 24;
+  for (let i = 0; i <= hz + 3; i++) { const ym = ymAdd(start, i), d9 = ufAt(MD, ym + "-09"), l = ufAt(MD, lastDayOf(ym)); rows.push({ ym, ipcM: ymAdd(ym, -2), ipc: MD.ipc(ymAdd(ym, -2)), ipcReal: ymAdd(ym, -2) <= MD.lastIpc, d9, l }); }
+  return rows;
+}
+function renderProjTable() {
+  $("#tProj").innerHTML = `<thead><tr><th>Mes</th><th class="n">IPC aplicado</th><th class="n">UF día 9</th><th class="n">UF último día</th><th class="n">Banda baja</th><th class="n">Banda alta</th><th>Estado</th></tr></thead><tbody>${projRows().map((r) => `<tr><td>${ymL(r.ym)}</td><td class="n">${pc(r.ipc)} <span class="note">${MES[+r.ipcM.slice(5) - 1]}</span></td><td class="n">${n2(r.d9.v)}</td><td class="n" ${r.l.st === "proyectado" ? 'style="color:var(--proj)"' : ""}>${n2(r.l.v)}</td><td class="n">${r.l.band ? n2(r.l.band[0]) : "—"}</td><td class="n">${r.l.band ? n2(r.l.band[1]) : "—"}</td><td>${r.l.st === "real" ? '<span class="pill pos">Real</span>' : r.d9.st === "real" ? '<span class="pill warn">Parcial</span>' : '<span class="pill proj">Proyectado</span>'}</td></tr>`).join("")}</tbody>`;
+}
+["pMet", "pN", "pMeta", "pH"].forEach((id) => $("#" + id).addEventListener("change", () => {
+  S.proj = { metodo: $("#pMet").value, n: +$("#pN").value, meta: numRaw($("#pMeta").value), h: +$("#pH").value };
+  setModel(); renderToggles(); renderUfTab(); recalc(); renderCfgTables();
+}));
+function renderHist() {
+  const ys = [...new Set([...UF.M.keys()].map((k) => k.slice(0, 4)))].sort().reverse();
+  const sel = $("#hYear"); if (!sel.options.length) sel.innerHTML = `<option value="">Todos los años</option>` + ys.map((y) => `<option>${y}</option>`).join("");
+  const y = sel.value; const ks = [...UF.M.keys()].sort().reverse().filter((k) => !y || k.startsWith(y));
+  $("#tHist").innerHTML = `<thead><tr><th>Mes</th><th class="n">Día 1</th><th class="n">Día 9</th><th class="n">Día 10</th><th class="n">Último día</th><th class="n">IPC implícito</th><th class="n">Var. UF 12 meses</th></tr></thead><tbody>${ks.map((k) => { const o = UF.M.get(k), ipcm = ymAdd(k, -2), ipc = UF.ipcK.get(ipcm), p = UF.M.get(ymAdd(k, -12)); const v12 = o.last && p && p.last ? o.last / p.last - 1 : null; return `<tr><td>${MESL[+k.slice(5) - 1]} ${k.slice(0, 4)}</td><td class="n">${n2(o.d1)}</td><td class="n">${n2(o.d9)}</td><td class="n">${n2(o.d10)}</td><td class="n">${n2(o.last)}</td><td class="n">${ipc != null ? pc(ipc, 1) + ' <span class="note">' + MES[+ipcm.slice(5) - 1] + "</span>" : "—"}</td><td class="n">${pc(v12)}</td></tr>`; }).join("")}</tbody>`;
+  // IPC chart
+  const arr = [...UF.ipcK.entries()].sort((a, b) => (a[0] < b[0] ? -1 : 1));
+  const W = 960, H = 200, L = 46, T = 12, Bm = 26, bw = (W - L - 10) / arr.length, mx = Math.max(...arr.map((x) => Math.abs(x[1]))), Y = (v) => T + (1 - (v + mx * 0.15) / (mx * 1.15)) * (H - T - Bm);
+  let g = `<line x1="${L}" x2="${W - 10}" y1="${Y(0)}" y2="${Y(0)}" stroke="rgba(64,228,214,.35)"/>`;
+  [0.005, 0.01, 0.015].forEach((v) => { if (v <= mx) g += `<line x1="${L}" x2="${W - 10}" y1="${Y(v)}" y2="${Y(v)}" stroke="rgba(64,228,214,.1)"/><text x="${L - 6}" y="${Y(v) + 4}" text-anchor="end">${(v * 100).toFixed(1).replace(".", ",")}%</text>`; });
+  arr.forEach(([m, v], i) => { const x = L + i * bw; g += `<rect x="${x + 0.5}" y="${Math.min(Y(v), Y(0))}" width="${Math.max(1, bw - 1.2)}" height="${Math.max(1, Math.abs(Y(v) - Y(0)))}" fill="${v >= 0 ? "#36F5E3" : "#FF6B86"}" opacity=".8"><title>${ymL(m)}: ${pc(v, 1)}</title></rect>`; if (m.endsWith("-01")) g += `<text x="${x}" y="${H - 8}">${m.slice(0, 4)}</text>`; });
+  $("#ipcChart").innerHTML = g;
+  const ex = [...UF.dias.entries()].sort();
+  $("#hExtra").textContent = ex.length ? "Valores agregados por ti: " + ex.slice(-6).map(([d, v]) => fd(d) + " = " + n2(v)).join(" · ") + (ex.length > 6 ? " (+" + (ex.length - 6) + ")" : "") : "Base precargada: SII, enero 2019 a 09-11-2026.";
+  $("#hDia").dispatchEvent(new Event("input"));
+}
+$("#hYear").onchange = renderHist;
+$("#hDia").addEventListener("input", () => { const v = $("#hDia").value; if (!v) return; const u = ufAt(MD, v); $("#hDiaV").innerHTML = u.v ? `${n2(u.v)} &nbsp;<span class="pill ${u.st === "real" ? "pos" : "proj"}">${u.st}</span>${u.band ? ' <span class="note">banda ' + n2(u.band[0]) + " – " + n2(u.band[1]) + "</span>" : ""}` : "Sin dato"; });
+$("#bHAdd").onclick = async () => { const d = $("#hNF").value, v = numRaw($("#hNV").value); if (!d || !(v > 0)) { toast("Ingresa fecha y valor UF"); return; } UF.dias.set(d, v); await saveUfExtra(); toast("UF del " + fd(d) + " guardada"); };
+/* Base central de parámetros oficiales. Orden: 1) base de datos de Claude, 2) herramientas.quidelxpert.cl, 3) mindicador.cl (solo UF y UTM). */
+const PARAM_URL = "https://herramientas.quidelxpert.cl/parametros/parametros.json";
+async function paramOficial(ym, db) {
+  const sitio = typeof window !== "undefined" && !!window.CLAUDE_LOCAL; // página propia: la base es local, primero se consulta la web
+  const local = async () => { if (!db) return null; try { const s = await db.doc("parametros/" + ym).get(); return s.exists ? { d: s.data(), via: sitio ? "este navegador" : "base de Claude" } : null; } catch (e) { return null; } };
+  if (!sitio) { const l = await local(); if (l) return l; }
+  try {
+    const r = await fetch(PARAM_URL + "?t=" + Date.now(), { cache: "no-store" });
+    if (r.ok) { const j = await r.json(); const d = j && j.meses && j.meses[ym]; if (d) return { d, via: "herramientas.quidelxpert.cl" }; }
+  } catch (e) { /* sin red o bloqueado dentro de Claude */ }
+  try {
+    const y = ym.slice(0, 4), m = ym.slice(5, 7), ult = new Date(+y, +m, 0).getDate(), p2 = (n) => String(n).padStart(2, "0");
+    const val = async (ind, dia) => { try { const r = await fetch("https://mindicador.cl/api/" + ind + "/" + p2(dia) + "-" + m + "-" + y); if (!r.ok) return null; const j = await r.json(); const v = j && j.serie && j.serie[0] ? +j.serie[0].valor : 0; return v > 0 ? v : null; } catch (e) { return null; } };
+    const [u1, u9, u10, uU, utm] = await Promise.all([val("uf", 1), val("uf", 9), val("uf", 10), val("uf", ult), val("utm", 1)]);
+    const d = { periodo: ym, estado: "parcial", ufDias: {}, cargado: new Date().toISOString().slice(0, 10) };
+    if (u1) d.ufDias[ym + "-01"] = u1; if (u9) d.ufDias[ym + "-09"] = u9; if (u10) d.ufDias[ym + "-10"] = u10;
+    if (uU) { d.ufDias[ym + "-" + p2(ult)] = uU; d.uf = uU; }
+    if (utm) d.utm = utm;
+    if (d.uf || d.utm || Object.keys(d.ufDias).length) return { d, via: "mindicador.cl" };
+  } catch (e) { /* nada */ }
+  return sitio ? local() : null;
+}
+const UTMX = {};
+$("#hActMes").value = ymOf(todayIso());
+$("#bUfAct").onclick = async () => {
+  const ym = ($("#hActMes").value || "").trim(), b = $("#bUfAct"), info = $("#hActInfo");
+  if (!/^\d{4}-\d{2}$/.test(ym)) { toast("Elige un mes"); return; }
+  b.disabled = true;
+  try {
+    const r = await paramOficial(ym, S.db);
+    if (!r) { info.textContent = "Todavía no hay valores oficiales publicados para " + ymL(ym) + ". Pídele a Claude: «actualiza los parámetros de " + ymL(ym) + "»."; return; }
+    const P = r.d; let n = 0;
+    for (const [iso, v] of Object.entries(P.ufDias || {})) if (/^\d{4}-\d{2}-\d{2}$/.test(iso) && +v > 0) { UF.dias.set(iso, +v); n++; }
+    if (+P.uf > 0) { UF.dias.set(lastDayOf(ym), +P.uf); if (!P.ufDias) n++; }
+    const utms = { ...(P.utmProx || {}) }; if (+P.utm > 0) utms[ym] = +P.utm;
+    for (const [k, v] of Object.entries(utms)) if (/^\d{4}-\d{2}$/.test(k) && +v > 0) { UTMX[k] = +v; D.utm[k] = +v; }
+    await saveUfExtra(); renderCfgTables();
+    info.textContent = ymL(ym) + " actualizado desde " + r.via + ": " + n + " valores de UF" + (+P.uf > 0 ? " (último día " + n2(+P.uf) + ")" : "") + (+P.utm > 0 ? " · UTM " + n0(+P.utm) : "") + (P.cargado ? " · cargado el " + P.cargado : "") + ".";
+    toast("UF y UTM de " + ymL(ym) + " actualizadas");
+  } catch (e) { toast("No se pudo consultar la base central (" + ((e && e.code) || "error") + ")"); }
+  finally { b.disabled = false; }
+};
+async function saveUfExtra() { UF.build(); setModel(); await Store.setCfg("uf", { dias: Object.fromEntries(UF.dias), utm: UTMX }); renderHist(); renderUfTab(); recalc(); }
+
+/* ---------- configuración ---------- */
+function renderCfgTables() {
+  const u = utmAt(MD, ymOf(todayIso()));
+  $("#tIusc").innerHTML = `<thead><tr><th>Desde UTM</th><th>Hasta UTM</th><th class="n">Factor</th><th class="n">Rebaja UTM</th><th class="n">Hasta $ (${ymL(ymOf(todayIso()))})</th></tr></thead><tbody>${TRAMOS.map((t, i) => `<tr><td>${i ? String(TRAMOS[i - 1][0]).replace(".", ",") : "0"}</td><td>${t[0] === Infinity ? "y más" : String(t[0]).replace(".", ",")}</td><td class="n">${pc(t[1], 1)}</td><td class="n">${String(t[2]).replace(".", ",")}</td><td class="n">${t[0] === Infinity ? "—" : n0(t[0] * u)}</td></tr>`).join("")}</tbody>`;
+  const rows = []; for (let i = -10; i <= 26; i++) { const ym = ymAdd(ymOf(todayIso()), i); rows.push([ym, utmAt(MD, ym), !!D.utm[ym]]); }
+  $("#tUtm").innerHTML = `<thead><tr><th>Mes</th><th class="n">UTM</th><th>Estado</th></tr></thead><tbody>${rows.map(([ym, v, k]) => `<tr><td>${ymL(ym)}</td><td class="n">${n0(v)}</td><td>${k ? '<span class="pill pos">SII</span>' : '<span class="pill proj">Proyectada</span>'}</td></tr>`).join("")}</tbody>`;
+  $("#baseInfo").textContent = S.base.length + " trabajadores cargados" + (S.baseFecha ? " · importada " + fdt(S.baseFecha) : " · informe INFSQL 29-10-2026");
+  $("#eNom").value = S.empresa.nom; $("#eRut").value = S.empresa.rut; $("#eDir").value = S.empresa.dir;
+}
+$("#bFer").onclick = async () => { const txt = $("#fFer").value; FER = parseFer(txt); await Store.setCfg("feriados", { txt }); recalc(); toast(FER.size + " feriados guardados"); };
+$("#bEmp").onclick = async () => { S.empresa = { nom: $("#eNom").value, rut: $("#eRut").value, dir: $("#eDir").value }; await Store.setCfg("empresa", S.empresa); toast("Datos de empresa guardados"); };
+function fillPersonList() { $("#dlPer").innerHTML = S.base.map((r) => `<option value="${esc(r[0] + " · " + r[1])}"></option>`).join(""); }
+$("#qPer").addEventListener("change", () => {
+  const q = $("#qPer").value.trim(); if (!q) return;
+  const rut = q.split(" · ")[0].replace(/\./g, "").toUpperCase();
+  const r = S.base.find((x) => x[0].toUpperCase() === rut) || S.base.find((x) => x[1].toUpperCase().includes(q.toUpperCase()));
+  if (!r) { toast("No se encontró el trabajador en la base"); return; }
+  S.sim = simFromBase(r); S.editId = null; S.editDoc = null; S.lastImport = null; $("#qPer").value = "";
+  renderAll();
+  const n = S.sims.filter((x) => x.rut === r[0]).length;
+  toast(r[1] + " cargado" + (n ? " · tiene " + n + " simulación(es) en el historial" : "") + (r[0] === "11111111-1" ? "" : " · ingresa el saldo real de vacaciones"));
+});
+
+/* ---------- almacenamiento (db de la página, con respaldo local) ---------- */
+const Store = {
+  async init() {
+    try {
+      const [db, user] = await Promise.all([window.claude?.use ? window.claude.use("db") : null, window.claude?.use ? window.claude.use("user") : null]);
+      S.db = db; S.user = user;
+      if (user) { try { S.uidMe = await user.id(); } catch {} }
+      if (db) { st("ok", "Historial compartido conectado"); return true; }
+    } catch {}
+    st("warn", "Historial solo en este navegador"); return false;
+  },
+  local() { return lsGet("fq_local", { sims: {}, vers: {}, cfg: {} }); },
+  saveLocal(x) { lsSet("fq_local", x); },
+  async listSims() {
+    if (S.db) { const q = await S.db.collection("sims").orderBy("creado", "desc").limit(1000).get(); return q.docs.map((d) => ({ id: d.id, ...d.data() })); }
+    const L = this.local(); return Object.entries(L.sims).map(([id, v]) => ({ id, ...v })).sort((a, b) => b.creado - a.creado);
+  },
+  async setSim(id, data) { if (S.db) return S.db.doc("sims/" + id).set(data); const L = this.local(); L.sims[id] = data; this.saveLocal(L); },
+  async addVer(id, vid, data) { if (S.db) return S.db.doc("sims/" + id + "/versiones/" + vid).set(data); const L = this.local(); (L.vers[id] = L.vers[id] || {})[vid] = data; this.saveLocal(L); },
+  async listVers(id) { if (S.db) { const q = await S.db.collection("sims/" + id + "/versiones").orderBy("ts", "asc").limit(500).get(); return q.docs.map((d) => ({ id: d.id, ...d.data() })); } const L = this.local(); return Object.entries(L.vers[id] || {}).map(([k, v]) => ({ id: k, ...v })).sort((a, b) => a.ts - b.ts); },
+  async delSim(id) { if (S.db) { const vs = await this.listVers(id); for (const v of vs) await S.db.doc("sims/" + id + "/versiones/" + v.id).delete(); return S.db.doc("sims/" + id).delete(); } const L = this.local(); delete L.sims[id]; delete L.vers[id]; this.saveLocal(L); },
+  async getCfg(k) { if (S.db) { const d = await S.db.doc("config/" + k).get(); return d.exists ? d.data() : null; } return this.local().cfg[k] || null; },
+  async setCfg(k, v) { try { if (S.db) return await S.db.doc("config/" + k).set(v); const L = this.local(); L.cfg[k] = v; this.saveLocal(L); } catch (e) { toast("No se pudo guardar la configuración (" + (e?.code || "error") + ")"); } },
+};
+function st(k, t) { $("#stDot").className = "dot " + (k === "ok" ? "ok" : k === "err" ? "err" : ""); $("#stTxt").textContent = t; }
+async function nameOf(id) { if (!id) return "—"; if (S.names[id]) return S.names[id]; if (!S.user) return "Usuario"; try { const ps = await S.user.profiles([id]); S.names[id] = (ps[id] && ps[id].name) || "Usuario"; } catch { S.names[id] = "Usuario"; } return S.names[id]; }
+async function loadSims() { try { S.sims = await Store.listSims(); } catch (e) { S.sims = []; st("err", "No se pudo leer el historial"); } renderLog(); }
+
+/* ---------- guardar / versiones ---------- */
+const DIFF_LBL = { egreso: "Fecha egreso", causal: "Causal", aviso: "Aviso", t90ias: "Tope 90 UF indemnización", t90av: "Tope 90 UF aviso", t11: "Tope 11 años", ufModo: "UF para topes", ufManual: "UF manual", reaj: "Reajuste", sueldoMes: "Sueldo del mes", mesRef: "Mes referencia", rt: "Renta tributable", afc: "Aporte AFC", nota: "Observación" };
+function diffSims(a, b) {
+  const out = [];
+  if (!a) return out;
+  for (const k of Object.keys(DIFF_LBL)) if (JSON.stringify(a[k]) !== JSON.stringify(b[k])) out.push(DIFF_LBL[k] + ": " + fmtV(a[k]) + " → " + fmtV(b[k]));
+  ["nombre", "rut", "cargo", "cc", "ingreso", "jornada"].forEach((k) => { if ((a.persona || {})[k] !== (b.persona || {})[k]) out.push("Persona." + k + ": " + fmtV(a.persona[k]) + " → " + fmtV(b.persona[k])); });
+  const ia = new Map((a.items || []).map((i) => [i.id, i])), ib = new Map((b.items || []).map((i) => [i.id, i]));
+  for (const [id, it] of ib) { const o = ia.get(id); if (!o) { out.push("Ítem agregado: " + it.nombre); continue; } for (const f of ["nombre", "tipo", "m1", "m2", "m3", "vac", "ind", "r24"]) if (JSON.stringify(o[f]) !== JSON.stringify(it[f])) out.push(it.nombre + " · " + f + ": " + fmtV(o[f]) + " → " + fmtV(it[f])); }
+  for (const [id, it] of ia) if (!ib.has(id)) out.push("Ítem eliminado: " + it.nombre);
+  for (const f of ["modo", "fecha", "normales", "prop", "prog", "adic", "tomados", "progAnual", "progTom", "feriados"]) if (JSON.stringify((a.vac || {})[f]) !== JSON.stringify((b.vac || {})[f])) out.push("Vacaciones · " + f + ": " + fmtV(a.vac[f]) + " → " + fmtV(b.vac[f]));
+  if (JSON.stringify(a.vac?.proy) !== JSON.stringify(b.vac?.proy)) out.push("Vacaciones proyectadas: " + (a.vac?.proy || []).length + " → " + (b.vac?.proy || []).length + " períodos");
+  if (JSON.stringify(a.r24) !== JSON.stringify(b.r24)) out.push("Datos de 24 rentas modificados");
+  if (JSON.stringify(a.vol) !== JSON.stringify(b.vol)) out.push("Indemnización voluntaria: " + fmtV(a.vol?.valor) + " → " + fmtV(b.vol?.valor));
+  if (JSON.stringify(a.desc) !== JSON.stringify(b.desc)) out.push("Descuentos modificados");
+  if (JSON.stringify(a.liqs) !== JSON.stringify(b.liqs)) out.push("Liquidaciones cargadas: " + (a.liqs || []).map((x) => ymL(x.ym)).join(", ") + " → " + (b.liqs || []).map((x) => ymL(x.ym)).join(", "));
+  if (JSON.stringify(a.vacDoc) !== JSON.stringify(b.vacDoc)) out.push("Saldo de vacaciones actualizado desde PDF");
+  if (JSON.stringify(a.proj) !== JSON.stringify(b.proj)) out.push("Método de proyección UF: " + (a.proj?.metodo || "—") + " → " + (b.proj?.metodo || "—"));
+  return out.slice(0, 40);
+}
+const fmtV = (v) => (v === true ? "sí" : v === false ? "no" : v === "" || v == null ? "vacío" : /^\d{4}-\d{2}-\d{2}$/.test(v) ? fd(v) : typeof v === "number" ? n2(v).replace(/,00$/, "") : String(v));
+async function guardar(nueva) {
+  const s = clone(S.sim); s.proj = clone(S.proj);
+  const R = calc(s, MD); if (R.err) { toast(R.err); return; }
+  const res = resumen(R), ts = Date.now(), por = S.uidMe || null;
+  try {
+    if (!nueva && S.editId && S.editDoc) {
+      const prev = S.editDoc;
+      const cambios = diffSims(prev.actual?.input, s);
+      if (!cambios.length) { toast("No hay cambios que guardar"); return; }
+      const doc = { ...prev, actual: { input: s, res }, actualizado: ts, actualizadoPor: por, nEd: (prev.nEd || 0) + 1, nombre: s.persona.nombre, rut: s.persona.rut, egreso: s.egreso, causal: s.causal };
+      delete doc.id;
+      await Store.setSim(S.editId, doc);
+      await Store.addVer(S.editId, "v" + ts, { ts, por, tipo: "edicion", nota: s.nota || "", cambios, input: s, res });
+      S.editDoc = { id: S.editId, ...doc };
+      toast("Edición registrada " + fdt(ts) + " · el original se conserva");
+    } else {
+      const id = uid();
+      const doc = { rut: s.persona.rut, nombre: s.persona.nombre, egreso: s.egreso, causal: s.causal, creado: ts, creadoPor: por, actualizado: ts, actualizadoPor: por, nEd: 0, original: { input: s, res }, actual: { input: s, res } };
+      await Store.setSim(id, doc);
+      await Store.addVer(id, "v" + ts, { ts, por, tipo: "original", nota: s.nota || "Creación", cambios: [], input: s, res });
+      S.editId = id; S.editDoc = { id, ...doc };
+      toast("Simulación guardada " + fdt(ts));
+    }
+  } catch (e) { toast("No se pudo guardar (" + (e?.code || e?.message || "error") + ")"); return; }
+  await loadSims(); renderEditBanner();
+}
+$("#bSave").onclick = () => guardar(false);
+$("#bSaveNew").onclick = () => guardar(true);
+function renderEditBanner() {
+  const b = $("#editBanner");
+  if (S.editId && S.editDoc) b.innerHTML = `<div class="banner info" style="margin-bottom:16px">Editando la simulación de <b>${esc(S.editDoc.nombre)}</b> creada el ${fdt(S.editDoc.creado)}${S.editDoc.nEd ? " · " + S.editDoc.nEd + " edición(es), última " + fdt(S.editDoc.actualizado) : ""}. Al guardar se registra una versión nueva con fecha y hora; el original queda intacto. <button class="btn sm" id="bStopEdit" type="button" style="margin-left:6px">Dejar de editar</button></div>`;
+  else b.innerHTML = "";
+  const x = $("#bStopEdit"); if (x) x.onclick = () => { S.editId = null; S.editDoc = null; renderEditBanner(); recalc(); toast("La próxima vez que guardes se creará una simulación nueva"); };
+}
+function confirmIn(box, label, onYes) {
+  if (box.querySelector(".confirm")) return;
+  const orig = [...box.children]; orig.forEach((c) => (c.hidden = true));
+  const sp = document.createElement("span"); sp.className = "confirm";
+  sp.innerHTML = `${esc(label)} <button class="btn sm solid-danger" type="button" data-yes>Sí</button><button class="btn sm" type="button" data-no>No</button>`;
+  box.appendChild(sp);
+  const restore = () => { sp.remove(); orig.forEach((c) => (c.hidden = false)); };
+  sp.querySelector("[data-yes]").onclick = async (e) => { e.stopPropagation(); restore(); await onYes(); };
+  sp.querySelector("[data-no]").onclick = (e) => { e.stopPropagation(); restore(); };
+  sp.querySelector("[data-no]").focus();
+}
+const blankSim = () => ({ v: 1, persona: { rut: "", nombre: "", cargo: "", cc: "", jornada: "", ingreso: "" }, egreso: "", causal: "161N", aviso: false, t90ias: true, t90av: true, t11: true, ufModo: "mesAnterior", ufManual: "", reaj: 0, sueldoMes: false, mesRef: ymAdd(ymOf(todayIso()), -1), items: [{ id: "sueldo_base", nombre: "Sueldo base", tipo: "F", m1: "", m2: "", m3: "", vac: true, ind: true, r24: true }], liqs: [], vacDoc: null, vac: { modo: "saldo", fecha: todayIso(), normales: 0, prop: 0, prog: 0, adic: 0, tomados: 0, progAnual: 0, progTom: 0, feriados: true, proy: [] }, r24: { relleno: "ultima", ipc: true, meses: {} }, vol: { modo: "ninguna", valor: 0 }, rt: 0, afc: 0, desc: [], nota: "" });
+$("#bClear").onclick = () => confirmIn($("#clearBox"), "¿Limpiar todos los datos?", async () => {
+  S.sim = blankSim(); S.lastImport = null;
+  S.editId = null; S.editDoc = null; renderAll(); toast("Datos limpios. Busca un trabajador o ingresa los datos.");
+});
+
+/* ---------- historial ---------- */
+async function renderLog() {
+  const q = ($("#lQ").value || "").toUpperCase();
+  const rows = S.sims.filter((x) => !q || (x.nombre || "").toUpperCase().includes(q) || (x.rut || "").toUpperCase().includes(q));
+  $("#tLog").innerHTML = rows.length ? `<thead><tr><th>Creada</th><th>Trabajador</th><th>RUT</th><th>Egreso</th><th>Causal</th><th class="n">Total original</th><th class="n">Total actual</th><th>Ediciones</th><th></th></tr></thead><tbody>${rows.map((x) => { const o = x.original?.res?.total, a = x.actual?.res?.total; return `<tr><td>${fdt(x.creado)}</td><td>${esc(x.nombre)}</td><td>${esc(x.rut)}</td><td>${fd(x.egreso)}</td><td>${esc((CAUSAL[x.causal] || "").split(":")[0])}</td><td class="n">${clp(o)}</td><td class="n cc">${clp(a)}</td><td>${x.nEd ? `<span class="pill warn">${x.nEd} · ${fdt(x.actualizado)}</span>` : '<span class="pill pos">Original</span>'}</td><td><span class="toolbar" style="flex-wrap:nowrap" id="la-${x.id}"><button class="btn sm primary" data-open="${x.id}" type="button">Editar</button><button class="btn sm" data-orig="${x.id}" type="button">Copiar original</button><button class="btn sm" data-vers="${x.id}" type="button">Versiones</button><button class="btn sm danger" data-del="${x.id}" type="button">Eliminar</button></span></td></tr>`; }).join("")}</tbody>`
+    : `<tbody><tr><td style="padding:24px;text-align:center" class="note"><b style="color:var(--ink)">Aún no hay simulaciones guardadas.</b><br>Usa “Guardar” en el simulador; aquí verás cada simulación con su original y sus ediciones fechadas.</td></tr></tbody>`;
+}
+$("#lQ").addEventListener("input", renderLog);
+$("#tLog").addEventListener("click", async (e) => {
+  const b = e.target.closest("button"); if (!b) return;
+  const id = b.dataset.open || b.dataset.orig || b.dataset.vers || b.dataset.del; const x = S.sims.find((s) => s.id === id); if (!x) return;
+  if (b.dataset.open) { S.sim = clone(x.actual.input); if (x.actual.input.proj) { S.proj = clone(x.actual.input.proj); setModel(); } S.editId = id; S.editDoc = x; renderAll(); renderUfTab(); showTab("sim"); toast("Simulación abierta para editar"); }
+  if (b.dataset.orig) { S.sim = clone(x.original.input); if (x.original.input.proj) { S.proj = clone(x.original.input.proj); setModel(); } S.editId = null; S.editDoc = null; renderAll(); renderUfTab(); showTab("sim"); toast("Copia del original cargada; al guardar se crea una simulación nueva"); }
+  if (b.dataset.vers) showVers(x);
+  if (b.dataset.del) confirmIn($("#la-" + id), "¿Eliminar con todas sus versiones?", async () => { try { await Store.delSim(id); if (S.editId === id) { S.editId = null; S.editDoc = null; renderEditBanner(); } toast("Simulación eliminada"); await loadSims(); } catch (err) { toast("No se pudo eliminar (" + (err?.code || "error") + ")"); } });
+});
+async function showVers(x) {
+  $("#verCard").hidden = false; $("#verTitle").textContent = "Versiones · " + x.nombre; $("#verList").innerHTML = `<li><small>Cargando…</small></li>`;
+  let vs = []; try { vs = await Store.listVers(x.id); } catch {}
+  const names = await Promise.all(vs.map((v) => nameOf(v.por)));
+  $("#verList").innerHTML = vs.map((v, i) => `<li class="${v.tipo === "original" ? "orig" : ""}"><b>${v.tipo === "original" ? "Original" : "Edición " + i}</b> · ${fdt(v.ts)} · ${esc(names[i])} · total ${clp(v.res?.total)}${v.nota ? ` <small>${esc(v.nota)}</small>` : ""}${v.cambios && v.cambios.length ? `<small>${v.cambios.map(esc).join("<br>")}</small>` : ""}<div class="toolbar" style="margin-top:6px"><button class="btn sm" type="button" data-loadver="${i}">Cargar como copia</button></div></li>`).join("") || "<li><small>Sin versiones registradas.</small></li>";
+  $("#verList").onclick = (e) => { const b = e.target.closest("[data-loadver]"); if (!b) return; const v = vs[+b.dataset.loadver]; S.sim = clone(v.input); if (v.input.proj) { S.proj = clone(v.input.proj); setModel(); } S.editId = null; S.editDoc = null; renderAll(); renderUfTab(); showTab("sim"); toast("Versión del " + fdt(v.ts) + " cargada como copia"); };
+  $("#verCard").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+$("#bVerClose").onclick = () => ($("#verCard").hidden = true);
+
+/* ---------- librerías y descargas ---------- */
+const loadScript = (src) => new Promise((res, rej) => { const s = document.createElement("script"); s.src = src; s.onload = res; s.onerror = () => rej(new Error("No se pudo cargar la librería")); document.head.appendChild(s); });
+let xlsxP, pdfP;
+const loadXLSX = () => xlsxP || (xlsxP = loadScript("https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js").catch((e) => { xlsxP = null; throw e; }));
+const loadPDF = () => pdfP || (pdfP = loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js").then(() => loadScript("https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js")).catch((e) => { pdfP = null; throw e; }));
+async function guardarArchivo(filename, blob) {
+  let dl = S.dl; if (!dl && window.claude?.use) dl = S.dl = await window.claude.use("downloads");
+  if (!dl && !window.claude?.use) dl = S.dl = { save: async ({ filename, data }) => { const b = data instanceof Blob ? data : new Blob([data]); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); } };
+  if (!dl) { toast("Las descargas no están disponibles en esta vista."); return; }
+  try { await dl.save({ filename, data: blob }); toast("Archivo listo: " + filename); }
+  catch (e) { if (e?.code === "declined") return; toast(e?.code === "rate_limited" ? "Ya hay una descarga pendiente de confirmar." : "No se pudo generar la descarga (" + (e?.code || "error") + ")."); }
+}
+const stamp = () => { const d = new Date(); return d.getFullYear() + P2(d.getMonth() + 1) + P2(d.getDate()) + "_" + P2(d.getHours()) + P2(d.getMinutes()); };
+const Z = { money: '"$" #,##0', num: "#,##0.00", n0: "#,##0", pct: "0.00%", f4: "0.0000" };
+function hoja(aoa, fmt, cols) {
+  const ws = XLSX.utils.aoa_to_sheet(aoa);
+  aoa.forEach((row, r) => row.forEach((v, c) => { const z = fmt && fmt(r, c, v); if (z && typeof v === "number") { const ref = XLSX.utils.encode_cell({ r, c }); if (ws[ref]) ws[ref].z = z; } }));
+  if (cols) ws["!cols"] = cols.map((w) => ({ wch: w }));
+  return ws;
+}
+const wbBlob = (wb) => new Blob([XLSX.write(wb, { bookType: "xlsx", type: "array" })], { type: "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet" });
+const fileName = (pre) => pre + "_" + (S.sim.persona.rut || "sin_rut").replace(/[^0-9kK-]/g, "") + "_" + stamp();
+
+/* Exportar Excel del finiquito */
+$("#bXlsx").onclick = async () => {
+  const R = LAST; if (!R || R.err) { toast("Completa la simulación antes de exportar"); return; }
+  try { await loadXLSX(); } catch { toast("No se pudo cargar el generador de Excel"); return; }
+  const s = S.sim, L = detLines(R, s), wb = XLSX.utils.book_new();
+  const d = [["DETALLE CÁLCULO PAGO FINIQUITO (SIMULACIÓN)"], [S.empresa.nom + " · " + S.empresa.rut], ["UF " + R.ufSt + (R.ufFecha ? " al " + fd(R.ufFecha) : ""), R.uf], ["Tope 90 UF", R.tope], ["Método proyección UF", MD.label], [],
+    ["ANTECEDENTES PERSONALES"], ...L.antecedentes, [], ["DETALLE DE VACACIONES"], ...L.vacaciones, [], ["BASES DE CÁLCULO"], ["Indemnización fijo", R.bases.indF], ["Indemnización variable", R.bases.indV], ["Base indemnización", R.bases.ind], ["Vacaciones fijo", R.bases.vacF], ["Vacaciones variable", R.bases.vacV], ["Base vacaciones", R.bases.vac], [],
+    ["HABERES", "Detalle", "Monto"], ["Feriado proporcional", n2(R.feriado.dias) + " días × " + n0(R.feriado.vd), R.feriado.monto], ["Mes sustitutivo aviso", "Tope exento " + n0(R.aviso.legal), R.aviso.pagado], ["Indemnización años de servicio", R.ias.perPag + " períodos × " + n0(R.ias.basePag), R.ias.pagado], ["Indemnización voluntaria adicional", "", R.volAd], ["Sueldo del mes", "", R.sueldoMes], ["TOTAL HABERES", "", R.haberes], [],
+    ["DESCUENTOS"], ...R.desc.rows.map((x) => [x.concepto, "", x.monto]), ["Aporte empleador AFC", "", R.desc.afc], ["Impuesto único indemnización voluntaria", "Afecto " + n0(R.n13.afecto), R.desc.imp], ["TOTAL DESCUENTOS", "", R.desc.total], [], ["TOTAL A PAGAR FINIQUITO", "", R.total], [], ["Simulación referencial. La UF futura es una proyección estadística; el valor definitivo se conoce al publicarse el IPC."]];
+  XLSX.utils.book_append_sheet(wb, hoja(d, (r, c, v) => (v > 1000 ? Z.money : typeof v === "number" ? Z.num : null), [40, 34, 18]), "Finiquito");
+  XLSX.utils.book_append_sheet(wb, hoja([["Concepto", "Tipo", ymL(ymAdd(s.mesRef, -2)), ymL(ymAdd(s.mesRef, -1)), ymL(s.mesRef), "Valor base", "Vacaciones", "Indemnización", "24 rentas"], ...R.items.map((i) => [i.nombre, i.tipo === "V" ? "Variable" : "Fijo", num(i.m1), num(i.m2), num(i.m3), Math.round(i.valor), i.vac ? "SI" : "NO", i.ind ? "SI" : "NO", i.r24 ? "SI" : "NO"])], (r, c) => (r && c >= 2 && c <= 5 ? Z.n0 : null), [30, 10, 14, 14, 14, 14, 12, 14, 10]), "Haberes");
+  XLSX.utils.book_append_sheet(wb, hoja([["Desde", "Hasta", "Días hábiles", "Descuenta", "Nota"], ...R.vac.proy.map((p) => [fd(p.desde), fd(p.hasta), p.dias, p.cuenta ? "SI" : "NO", p.nota || ""])], null, [12, 12, 12, 10, 30]), "Vacaciones proyectadas");
+  XLSX.utils.book_append_sheet(wb, hoja([["Mes", ...R.r24.items.map((i) => i.nombre), "Total mes", "Origen", "Factor IPC", "Reajustado"], ...R.r24.rows.map((r) => [ymL(r.ym), ...r.cells.map((c) => Math.round(c.v)), Math.round(r.monto), r.excl ? "excluido" : r.real, r.f, r.excl ? "" : r.reaj]), [], ["Promedio 24 rentas", ...R.r24.items.map(() => ""), "", "", "", R.r24.prom]], (r, c, v) => (r && typeof v === "number" ? (v < 5 ? Z.f4 : Z.n0) : null), [12, ...R.r24.items.map(() => 16), 14, 10, 10, 14]), "24 rentas");
+  XLSX.utils.book_append_sheet(wb, hoja([["Concepto", "Monto", "Exento", "Afecto"], ...R.n13.det.map((p) => [p.k, p.v, p.exento, p.afecto]), [], ["Tope exento (prom. 24 × años − legal)", R.n13.limite], [], ["Mes", "UTM", "Renta tributable", "Impuesto original", "Impuesto reliquidado", "Diferencia"], ...R.imp.rows.map((r) => [ymL(r.ym), r.utm, r.rt, r.t0, r.t1, r.dif]), ["Total impuesto", "", "", "", "", R.imp.total]], (r, c, v) => (typeof v === "number" ? Z.n0 : null), [38, 14, 16, 16, 18, 14]), "Impuesto");
+  XLSX.utils.book_append_sheet(wb, hoja([["Mes", "IPC aplicado", "UF día 9", "UF último día", "Banda baja", "Banda alta", "Estado"], ...projRows().map((r) => [ymL(r.ym), r.ipc, r.d9.v, r.l.v, r.l.band ? r.l.band[0] : null, r.l.band ? r.l.band[1] : null, r.l.st])], (r, c) => (c === 1 ? Z.pct : c >= 2 && c <= 5 ? Z.num : null), [12, 12, 12, 14, 12, 12, 12]), "UF proyectada");
+  await guardarArchivo(fileName("Finiquito") + ".xlsx", wbBlob(wb));
+};
+
+/* Exportar PDF */
+$("#bPdf").onclick = async () => {
+  const R = LAST; if (!R || R.err) { toast("Completa la simulación antes de exportar"); return; }
+  try { await loadPDF(); } catch { toast("No se pudo cargar el generador de PDF"); return; }
+  const s = S.sim, L = detLines(R, s), { jsPDF } = window.jspdf, doc = new jsPDF({ unit: "pt", format: "a4" });
+  const teal = [3, 120, 112], W = doc.internal.pageSize.getWidth();
+  doc.setFont("helvetica", "bold"); doc.setFontSize(10); doc.text(S.empresa.nom, 40, 40); doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.text([S.empresa.dir, S.empresa.rut], 40, 52);
+  doc.setFont("helvetica", "bold"); doc.setFontSize(13); doc.setTextColor(...teal); doc.text("DETALLE CÁLCULO PAGO FINIQUITO", W / 2, 86, { align: "center" }); doc.setTextColor(0);
+  doc.setFont("helvetica", "normal"); doc.setFontSize(8.5); doc.text("Simulación a fecha futura · UF " + R.ufSt + " " + n2(R.uf) + (R.ufFecha ? " al " + fd(R.ufFecha) : "") + " · tope 90 UF " + clp(R.tope), W / 2, 100, { align: "center" });
+  const pair = (arr) => { const out = []; for (let i = 0; i < arr.length; i += 2) out.push([arr[i][0], String(arr[i][1] ?? ""), arr[i + 1] ? arr[i + 1][0] : "", arr[i + 1] ? String(arr[i + 1][1] ?? "") : ""]); return out; };
+  const sec = (title, body, y) => { doc.autoTable({ startY: y, head: [[{ content: title, colSpan: 4, styles: { halign: "center" } }]], body, theme: "grid", styles: { fontSize: 8, cellPadding: 3 }, headStyles: { fillColor: teal, textColor: 255 }, columnStyles: { 0: { fontStyle: "bold", cellWidth: 120 }, 2: { fontStyle: "bold", cellWidth: 120 } }, margin: { left: 40, right: 40 } }); return doc.lastAutoTable.finalY + 10; };
+  let y = sec("ANTECEDENTES PERSONALES", pair(L.antecedentes), 112);
+  y = sec("DETALLE DE VACACIONES", pair(L.vacaciones), y);
+  y = sec("BASES DE CÁLCULO", [["Indemnización fijo", clp(R.bases.indF), "Vacaciones fijo", clp(R.bases.vacF)], ["Indemnización variable", clp(R.bases.indV), "Vacaciones variable", clp(R.bases.vacV)], ["Base indemnización", clp(R.bases.ind), "Base vacaciones", clp(R.bases.vac)]], y);
+  const af = (k) => R.n13.det.find((d) => d.k.startsWith(k)) || { afecto: 0 };
+  doc.autoTable({ startY: y, head: [["HABERES", "Detalle", "Monto"]], body: [
+    ["Feriado proporcional", n2(R.feriado.dias) + " días × valor diario " + clp(R.feriado.vd), clp(R.feriado.monto)],
+    ["Mes sustitutivo aviso", R.aviso.aplica ? "Base " + clp(R.aviso.base) + " · tope exento " + clp(R.aviso.legal) + " · voluntario afecto " + clp(af("Exceso mes").afecto) : "No aplica", clp(R.aviso.pagado)],
+    ["Indemnización años de servicio", R.ias.aplica ? R.ias.perPag + " períodos × " + clp(R.ias.basePag) + " · tope legal exento " + clp(R.ias.legal) + " · voluntaria afecta " + clp(af("Exceso indem").afecto) : "No aplica", clp(R.ias.pagado)],
+    ["Indemnización voluntaria adicional", "Promedio 24 rentas " + clp(R.r24.prom) + " · afecto total " + clp(R.n13.afecto), clp(R.volAd)],
+    ["Sueldo del mes", "", clp(R.sueldoMes)], [{ content: "TOTAL HABERES", styles: { fontStyle: "bold" } }, "", { content: clp(R.haberes), styles: { fontStyle: "bold" } }]],
+    theme: "grid", styles: { fontSize: 8, cellPadding: 3 }, headStyles: { fillColor: teal }, columnStyles: { 0: { cellWidth: 150, fontStyle: "bold" }, 2: { halign: "right", cellWidth: 90 } }, margin: { left: 40, right: 40 } });
+  y = doc.lastAutoTable.finalY + 10;
+  doc.autoTable({ startY: y, head: [["DESCUENTOS", "Monto"]], body: [...R.desc.rows.map((d) => [d.concepto, clp(d.monto)]), ["Aporte empleador seguro de cesantía", clp(R.desc.afc)], ["Impuesto único indemnización voluntaria (Art. 46)", clp(R.desc.imp)], [{ content: "TOTAL DESCUENTOS", styles: { fontStyle: "bold" } }, { content: clp(R.desc.total), styles: { fontStyle: "bold" } }], [{ content: "TOTAL A PAGAR FINIQUITO", styles: { fontStyle: "bold", fillColor: [214, 245, 241] } }, { content: clp(R.total), styles: { fontStyle: "bold", fillColor: [214, 245, 241] } }]],
+    theme: "grid", styles: { fontSize: 8.5, cellPadding: 3 }, headStyles: { fillColor: teal }, columnStyles: { 1: { halign: "right", cellWidth: 110 } }, margin: { left: 40, right: 40 } });
+  doc.addPage();
+  doc.setFont("helvetica", "bold"); doc.setFontSize(11); doc.setTextColor(...teal); doc.text("PROMEDIO ÚLTIMAS 24 REMUNERACIONES Y UF PROYECTADA", 40, 44); doc.setTextColor(0);
+  doc.autoTable({ startY: 56, head: [["Mes", "Total mes", "Origen", "Factor IPC", "Reajustado"]], body: [...R.r24.rows.map((r) => [ymL(r.ym), n0(r.monto), r.excl ? "excluido" : r.real, r.f.toFixed(4).replace(".", ","), r.excl ? "—" : n0(r.reaj)]), [{ content: "Promedio (" + R.r24.n + " meses)", colSpan: 4, styles: { fontStyle: "bold" } }, { content: clp(R.r24.prom), styles: { fontStyle: "bold" } }]], theme: "striped", styles: { fontSize: 7.5, cellPadding: 2.5 }, headStyles: { fillColor: teal }, columnStyles: { 1: { halign: "right" }, 3: { halign: "right" }, 4: { halign: "right" } }, margin: { left: 40, right: 300 } });
+  doc.autoTable({ startY: 56, head: [["Mes", "UF último día", "Estado"]], body: projRows().slice(0, 30).map((r) => [ymL(r.ym), n2(r.l.v), r.l.st]), theme: "striped", styles: { fontSize: 7.5, cellPadding: 2.5 }, headStyles: { fillColor: [110, 70, 170] }, columnStyles: { 1: { halign: "right" } }, margin: { left: 320, right: 40 } });
+  const pages = doc.getNumberOfPages();
+  for (let p = 1; p <= pages; p++) { doc.setPage(p); doc.setFontSize(7); doc.setTextColor(110); doc.text("Valores referenciales. UF proyectada con " + MD.label + ". Generado " + fdt(Date.now()) + " · Pág. " + p + " de " + pages, 40, doc.internal.pageSize.getHeight() - 24); }
+  await guardarArchivo(fileName("Finiquito") + ".pdf", doc.output("blob"));
+};
+
+/* Plantilla Excel (rellena con la simulación actual) */
+const SI = (b) => (b ? "SI" : "NO");
+$("#bTpl").onclick = async () => {
+  try { await loadXLSX(); } catch { toast("No se pudo cargar el generador de Excel"); return; }
+  const s = S.sim, wb = XLSX.utils.book_new();
+  XLSX.utils.book_append_sheet(wb, hoja([["PLANTILLA SIMULADOR DE FINIQUITOS"], ["Completa las hojas Parametros, Haberes, Rentas24, Vacaciones y Descuentos y usa “Importar Excel” en el simulador."], ["Fechas en formato AAAA-MM-DD o DD-MM-AAAA. Montos sin puntos. SI/NO para opciones."], ["Causales: 161N, 161D, 159-1, 159-2, 159-4, 159-5, 160. UF para topes: mesAnterior, egreso, hoy, manual."], ["Haberes: Tipo FIJO usa el mes de referencia; VARIABLE promedia los 3 meses."], ["Rentas24: una fila por mes (AAAA-MM) y una columna por código de ítem; deja vacío lo que no tengas."]], null, [110]), "Instrucciones");
+  XLSX.utils.book_append_sheet(wb, hoja([["Campo", "Valor"], ["RUT", s.persona.rut], ["Nombre", s.persona.nombre], ["Cargo", s.persona.cargo], ["Centro de costo", s.persona.cc], ["Jornada", s.persona.jornada], ["Fecha ingreso", s.persona.ingreso], ["Fecha egreso", s.egreso], ["Causal", s.causal], ["Aviso otorgado", SI(s.aviso)], ["Tope 90 UF indemnización", SI(s.t90ias)], ["Tope 90 UF mes aviso", SI(s.t90av)], ["Tope 11 años", SI(s.t11)], ["UF para topes", s.ufModo], ["UF manual", s.ufManual], ["Reajuste proyectado %", num(s.reaj)], ["Incluir sueldo del mes", SI(s.sueldoMes)], ["Mes referencia haberes", s.mesRef], ["Renta tributable mensual", num(s.rt)], ["Indemnización voluntaria (ninguna/monto/rentas)", s.vol.modo], ["Indemnización voluntaria valor", num(s.vol.valor)], ["Aporte empleador AFC", num(s.afc)], ["24 rentas meses sin dato (ultima/cero/excluir)", s.r24.relleno], ["24 rentas reajuste IPC", SI(s.r24.ipc)], ["Observación", s.nota]], null, [44, 40]), "Parametros");
+  XLSX.utils.book_append_sheet(wb, hoja([["Código", "Concepto", "Tipo (FIJO/VARIABLE)", "Mes -2", "Mes -1", "Mes referencia", "Vacaciones", "Indemnización", "24 Rentas"], ...s.items.map((i) => [i.id, i.nombre, i.tipo === "V" ? "VARIABLE" : "FIJO", i.m1 === "" ? "" : num(i.m1), i.m2 === "" ? "" : num(i.m2), i.m3 === "" ? "" : num(i.m3), SI(i.vac), SI(i.ind), SI(i.r24)])], null, [10, 30, 18, 14, 14, 14, 12, 14, 10]), "Haberes");
+  const T = s.egreso ? ymOf(s.egreso) : ymOf(todayIso()), meses = []; for (let i = 24; i >= 1; i--) meses.push(ymAdd(T, -i));
+  XLSX.utils.book_append_sheet(wb, hoja([["Mes", ...s.items.map((i) => i.id)], ...meses.map((ym) => [ym, ...s.items.map((i) => { const v = (s.r24.meses[ym] || {})[i.id]; return v === undefined || v === "" ? "" : num(v); })])], null, [10, ...s.items.map(() => 12)]), "Rentas24");
+  const V = s.vac;
+  XLSX.utils.book_append_sheet(wb, hoja([["Campo", "Valor"], ["Origen saldo (saldo/teorico)", V.modo], ["Fecha saldo", V.fecha], ["Normales pendientes", num(V.normales)], ["Proporcional pendiente", num(V.prop)], ["Progresivos pendientes", num(V.prog)], ["Adicionales", num(V.adic)], ["Días tomados histórico", num(V.tomados)], ["Progresivos por aniversario", num(V.progAnual)], ["Progresivos tomados", num(V.progTom)], ["Contar feriados como inhábiles", SI(V.feriados)], [], ["Desde", "Hasta", "Días hábiles (opcional)", "Nota"], ...(V.proy || []).map((p) => [p.desde, p.hasta, p.dias, p.nota])], null, [32, 14, 22, 30]), "Vacaciones");
+  XLSX.utils.book_append_sheet(wb, hoja([["Concepto", "Monto"], ...(s.desc || []).map((d) => [d.concepto, num(d.monto)])], null, [36, 14]), "Descuentos");
+  await guardarArchivo(fileName("Plantilla_Finiquito") + ".xlsx", wbBlob(wb));
+};
+/* Importar plantilla */
+const anyDate = (v) => {
+  if (v == null || v === "") return "";
+  if (v instanceof Date) { const d = new Date(v.getTime() + 12 * 36e5); return d.getFullYear() + "-" + P2(d.getMonth() + 1) + "-" + P2(d.getDate()); }
+  if (typeof v === "number") { const d = new Date(Math.round((v - 25569) * 864e5)); return toIso(d); }
+  const s = String(v).trim(); let m;
+  if ((m = /^(\d{4})-(\d{1,2})-(\d{1,2})/.exec(s))) return m[1] + "-" + P2(m[2]) + "-" + P2(m[3]);
+  if ((m = /^(\d{1,2})[-\/.](\d{1,2})[-\/.](\d{4})/.exec(s))) return m[3] + "-" + P2(m[2]) + "-" + P2(m[1]);
+  return "";
+};
+const anyYm = (v) => { if (v instanceof Date || typeof v === "number") return anyDate(v).slice(0, 7); const s = String(v || "").trim(); let m; if ((m = /^(\d{4})-(\d{1,2})/.exec(s))) return m[1] + "-" + P2(m[2]); if ((m = /^(\d{1,2})[-\/](\d{4})/.exec(s))) return m[2] + "-" + P2(m[1]); return ""; };
+const yes = (v) => /^(si|sí|s|x|1|true|verdadero)$/i.test(String(v ?? "").trim());
+async function readBook(file) { await loadXLSX(); const buf = await file.arrayBuffer(); return XLSX.read(buf, { type: "array", cellDates: true }); }
+const aoaOf = (wb, name) => { const k = wb.SheetNames.find((n) => n.toLowerCase().replace(/\s/g, "") === name.toLowerCase()); return k ? XLSX.utils.sheet_to_json(wb.Sheets[k], { header: 1, raw: true, defval: "" }) : null; };
+$("#fImport").addEventListener("change", async (e) => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try {
+    const wb = await readBook(f); const P = aoaOf(wb, "Parametros"), H = aoaOf(wb, "Haberes");
+    if (!P || !H) { toast("El archivo no tiene las hojas Parametros y Haberes de la plantilla"); return; }
+    const kv = new Map(P.slice(1).map((r) => [String(r[0]).trim().toLowerCase(), r[1]]));
+    const g = (k) => kv.get(k.toLowerCase());
+    const s = exampleSim();
+    s.persona = { rut: String(g("RUT") || ""), nombre: String(g("Nombre") || ""), cargo: String(g("Cargo") || ""), cc: String(g("Centro de costo") || ""), jornada: String(g("Jornada") || ""), ingreso: anyDate(g("Fecha ingreso")) };
+    Object.assign(s, { egreso: anyDate(g("Fecha egreso")), causal: String(g("Causal") || "161N"), aviso: yes(g("Aviso otorgado")), t90ias: yes(g("Tope 90 UF indemnización")), t90av: yes(g("Tope 90 UF mes aviso")), t11: yes(g("Tope 11 años")), ufModo: String(g("UF para topes") || "mesAnterior"), ufManual: g("UF manual") === "" ? "" : numRaw(g("UF manual")), reaj: numRaw(g("Reajuste proyectado %")), sueldoMes: yes(g("Incluir sueldo del mes")), mesRef: anyYm(g("Mes referencia haberes")) || s.mesRef, rt: numRaw(g("Renta tributable mensual")), afc: numRaw(g("Aporte empleador AFC")), nota: String(g("Observación") || "") });
+    s.vol = { modo: String(g("Indemnización voluntaria (ninguna/monto/rentas)") || "ninguna"), valor: numRaw(g("Indemnización voluntaria valor")) };
+    s.items = H.slice(1).filter((r) => String(r[1]).trim()).map((r, i) => ({ id: String(r[0] || "i" + i).trim(), nombre: String(r[1]).trim(), tipo: /^v/i.test(String(r[2])) ? "V" : "F", m1: r[3] === "" ? "" : numRaw(r[3]), m2: r[4] === "" ? "" : numRaw(r[4]), m3: r[5] === "" ? "" : numRaw(r[5]), vac: yes(r[6]), ind: yes(r[7]), r24: yes(r[8]) }));
+    s.r24 = { relleno: String(g("24 rentas meses sin dato (ultima/cero/excluir)") || "ultima"), ipc: g("24 rentas reajuste IPC") === undefined ? true : yes(g("24 rentas reajuste IPC")), meses: {} };
+    const R4 = aoaOf(wb, "Rentas24");
+    if (R4 && R4.length > 1) { const hd = R4[0].map((x) => String(x).trim()); R4.slice(1).forEach((r) => { const ym = anyYm(r[0]); if (!ym) return; const rec = {}; hd.slice(1).forEach((id, j) => { if (id && r[j + 1] !== "" && r[j + 1] != null) rec[id] = numRaw(r[j + 1]); }); if (Object.keys(rec).length) s.r24.meses[ym] = rec; }); }
+    const Vs = aoaOf(wb, "Vacaciones");
+    if (Vs) {
+      const vk = new Map(); let i = 1; for (; i < Vs.length; i++) { if (String(Vs[i][0]).trim().toLowerCase() === "desde") break; if (Vs[i][0] !== "") vk.set(String(Vs[i][0]).trim().toLowerCase(), Vs[i][1]); }
+      const gv = (k) => vk.get(k.toLowerCase());
+      s.vac = { modo: String(gv("Origen saldo (saldo/teorico)") || "saldo"), fecha: anyDate(gv("Fecha saldo")), normales: numRaw(gv("Normales pendientes")), prop: numRaw(gv("Proporcional pendiente")), prog: numRaw(gv("Progresivos pendientes")), adic: numRaw(gv("Adicionales")), tomados: numRaw(gv("Días tomados histórico")), progAnual: numRaw(gv("Progresivos por aniversario")), progTom: numRaw(gv("Progresivos tomados")), feriados: gv("Contar feriados como inhábiles") === undefined ? true : yes(gv("Contar feriados como inhábiles")), proy: [] };
+      for (i = i + 1; i < Vs.length; i++) { const r = Vs[i]; const d1 = anyDate(r[0]), d2 = anyDate(r[1]); if (d1) s.vac.proy.push({ desde: d1, hasta: d2 || d1, dias: r[2] === "" ? "" : numRaw(r[2]), nota: String(r[3] || "") }); }
+    }
+    const Ds = aoaOf(wb, "Descuentos"); s.desc = Ds ? Ds.slice(1).filter((r) => String(r[0]).trim()).map((r) => ({ concepto: String(r[0]), monto: numRaw(r[1]) })) : [];
+    S.sim = s; S.editId = null; S.editDoc = null; renderAll(); showTab("sim"); toast("Plantilla importada: " + (s.persona.nombre || f.name));
+  } catch (err) { toast("No se pudo leer el archivo (" + (err?.message || "formato") + ")"); }
+});
+/* Importar base de personal */
+$("#fBase").addEventListener("change", async (e) => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try {
+    const wb = await readBook(f); const A = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true, defval: "" });
+    const h = A[0].map((x) => String(x).trim()); const ix = (k) => h.indexOf(k);
+    const need = ["cc_datos_personales_rut", "nombreabreviado", "fechaultimaalta"]; if (need.some((k) => ix(k) < 0)) { toast("Faltan columnas del informe INFSQL (RUT, nombre, fecha alta)"); return; }
+    const rows = A.slice(1).filter((r) => r[ix("cc_datos_personales_rut")]).map((r) => [String(r[ix("cc_datos_personales_rut")]).trim(), String(r[ix("nombreabreviado")]).trim(), anyDate(r[ix("fechaultimaalta")]), String(r[ix("d_commission_puesto")] ?? "").trim(), String(r[ix("cc_history/historico_tienda")] ?? "").trim(), String(r[ix("d_history/historico_tienda")] ?? "").trim(), Math.round(numRaw(r[ix("cc_jornada_semanal_jornada_semanal")])), Math.round(numRaw(r[ix("cc_salario_salario_mensual")])), Math.round(numRaw(r[ix("cc_salario_gratificación")]))]).sort((a, b) => (a[1] < b[1] ? -1 : 1));
+    S.base = rows; S.baseFecha = Date.now(); fillPersonList(); renderCfgTables();
+    await Store.setCfg("base", { rows: JSON.stringify(rows), fecha: S.baseFecha });
+    toast(rows.length + " trabajadores importados");
+  } catch (err) { toast("No se pudo leer la base (" + (err?.message || "formato") + ")"); }
+});
+/* Importar UF */
+$("#fUfImp").addEventListener("change", async (e) => {
+  const f = e.target.files[0]; e.target.value = ""; if (!f) return;
+  try {
+    let rows;
+    if (/\.csv$/i.test(f.name)) rows = (await f.text()).split(/\r?\n/).map((l) => l.split(/[;\t]|,(?=\s*\d)/));
+    else { const wb = await readBook(f); rows = XLSX.utils.sheet_to_json(wb.Sheets[wb.SheetNames[0]], { header: 1, raw: true, defval: "" }); }
+    let n = 0; rows.forEach((r) => { const d = anyDate(r[0]), v = typeof r[1] === "number" ? r[1] : numRaw(r[1]); if (d && v > 1000) { UF.dias.set(d, v); n++; } });
+    if (!n) { toast("No se encontraron filas Fecha, Valor"); return; }
+    await saveUfExtra(); toast(n + " valores UF importados");
+  } catch (err) { toast("No se pudo leer el archivo de UF"); }
+});
+$("#bUfX").onclick = async () => { try { await loadXLSX(); } catch { toast("No se pudo cargar el generador de Excel"); return; } const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, hoja([["Mes", "IPC aplicado", "Mes IPC", "UF día 9", "UF último día", "Banda baja 90%", "Banda alta 90%", "Estado"], ...projRows().map((r) => [r.ym, r.ipc, r.ipcM, r.d9.v, r.l.v, r.l.band ? r.l.band[0] : null, r.l.band ? r.l.band[1] : null, r.l.st]), [], ["Método", MD.label]], (r, c) => (c === 1 ? Z.pct : c >= 3 && c <= 6 ? Z.num : null), [10, 12, 10, 12, 14, 14, 14, 12]), "Proyección UF"); await guardarArchivo("Proyeccion_UF_" + stamp() + ".xlsx", wbBlob(wb)); };
+$("#bHX").onclick = async () => { try { await loadXLSX(); } catch { toast("No se pudo cargar el generador de Excel"); return; } const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, hoja([["Mes", "UF día 1", "UF día 9", "UF día 10", "UF último día", "IPC implícito", "Mes del IPC"], ...[...UF.M.keys()].sort().map((k) => { const o = UF.M.get(k); return [k, o.d1, o.d9, o.d10, o.last, UF.ipcK.get(ymAdd(k, -2)) ?? null, ymAdd(k, -2)]; })], (r, c) => (c >= 1 && c <= 4 ? Z.num : c === 5 ? "0.0%" : null), [10, 12, 12, 12, 14, 12, 10]), "Histórico UF"); await guardarArchivo("Historico_UF_" + stamp() + ".xlsx", wbBlob(wb)); };
+$("#bLX").onclick = async () => { try { await loadXLSX(); } catch { toast("No se pudo cargar el generador de Excel"); return; } const wb = XLSX.utils.book_new(); XLSX.utils.book_append_sheet(wb, hoja([["Creada", "Trabajador", "RUT", "Egreso", "Causal", "Total original", "Total actual", "Ediciones", "Última edición"], ...S.sims.map((x) => [fdt(x.creado), x.nombre, x.rut, fd(x.egreso), CAUSAL[x.causal] || x.causal, x.original?.res?.total ?? null, x.actual?.res?.total ?? null, x.nEd || 0, x.nEd ? fdt(x.actualizado) : ""])], (r, c) => (c === 5 || c === 6 ? Z.money : null), [16, 34, 13, 12, 34, 16, 16, 10, 16]), "Historial"); await guardarArchivo("Historial_Finiquitos_" + stamp() + ".xlsx", wbBlob(wb)); };
+
+/* ---------- lectura de PDF (liquidaciones y saldo de vacaciones) ---------- */
+const MESN = { enero: 1, febrero: 2, marzo: 3, abril: 4, mayo: 5, junio: 6, julio: 7, agosto: 8, septiembre: 9, setiembre: 9, octubre: 10, noviembre: 11, diciembre: 12 };
+const MESA = { ene: 1, feb: 2, mar: 3, abr: 4, may: 5, jun: 6, jul: 7, ago: 8, sep: 9, sept: 9, set: 9, oct: 10, nov: 11, dic: 12 };
+const clNum = (s) => { const t = String(s).replace(/\$/g, "").trim(); const n = parseFloat(t.replace(/\./g, "").replace(",", ".")); return Number.isFinite(n) ? n : 0; };
+const isNumTok = (t) => /^-?\$?\d[\d.]*(,\d+)?$/.test(t);
+const slug = (s) => String(s).normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase().replace(/[^a-z0-9]+/g, "_").replace(/^_|_$/g, "").slice(0, 40) || "item";
+function parseLiq(lines) {
+  const txt = lines.join("\n");
+  if (!/LIQUIDACI[OÓ]N\s+DE\s+REMUNERACIONES/i.test(txt)) return null;
+  const m = /(enero|febrero|marzo|abril|mayo|junio|julio|agosto|septiembre|setiembre|octubre|noviembre|diciembre)\s+(?:del?\s+)?(\d{4})/i.exec(txt);
+  if (!m) return null;
+  const ym = m[2] + "-" + String(MESN[m[1].toLowerCase()]).padStart(2, "0");
+  const g = (re) => { const x = re.exec(txt); return x ? x[1].replace(/\s+/g, " ").trim() : ""; };
+  const out = { tipo: "liq", ym, rut: g(/C[oó]digo:\s*([\dkK.]+-[\dkK])/i) || g(/Rut:\s*([\dkK.]+-[\dkK])\s*$/im), nombre: g(/Nombre:\s*(.+?)\s+C[oó]digo:/i), cargo: g(/Cargo:\s*(.+?)\s+Rut:/i), ingreso: g(/Fecha ingreso:\s*(\d{2}-\d{2}-\d{4})/i), cc: g(/C\. de costo:\s*\(?(.+?)\)?\s+D[ií]as trabajados/i), dias: clNum(g(/D[ií]as trabajados:\s*([\d,]+)/i) || "30"), rt: clNum(g(/Impto\.?[^\n]*?de:?\s*([\d.]+(?:,\d+)?)/i)), conceptos: [] };
+  let sec = null;
+  for (const raw of lines) {
+    const l = raw.replace(/\s+/g, " ").trim();
+    if (/^HABERES AFECTOS/i.test(l) || /^HABERES IMPONIBLES/i.test(l)) { sec = "afecto"; continue; }
+    if (/^(OTROS HABERES|HABERES NO IMPONIBLES|HABERES EXENTOS)/i.test(l)) { sec = "otros"; continue; }
+    if (/^(DESCUENTOS|TOTALES|TOTAL A PAGAR)/i.test(l)) { if (sec) sec = null; continue; }
+    if (!sec) continue;
+    const tk = l.split(" "); let j = tk.length; while (j > 0 && isNumTok(tk[j - 1])) j--;
+    if (j === tk.length || j === 0) continue;
+    const nombre = tk.slice(0, j).join(" ").replace(/[:.]+$/, ""), monto = clNum(tk[tk.length - 1]);
+    out.conceptos.push({ nombre, monto, sec });
+  }
+  return out.conceptos.length ? out : null;
+}
+function parseVacPdf(lines) {
+  const txt = lines.join("\n");
+  if (!/Vacaciones del Empleado/i.test(txt) && !/D[ií]as Pendientes/i.test(txt)) return null;
+  const f = /\(al:\s*(\d{1,2})-([a-zé]+)\.?-(\d{4})\)/i.exec(txt);
+  const fecha = f ? f[3] + "-" + String(MESA[f[2].toLowerCase().slice(0, 4)] || MESA[f[2].toLowerCase().slice(0, 3)]).padStart(2, "0") + "-" + String(f[1]).padStart(2, "0") : "";
+  const rut = (/Empleado:\s*([\dkK.]+-[\dkK])/i.exec(txt) || [])[1] || "";
+  let nums = null;
+  for (const l of lines) { const d = l.split(/\s+/).filter((t) => /^\d+,\d{2}$/.test(t)); if (d.length >= 10) { nums = d.slice(-10).map(clNum); break; } }
+  if (!nums) return null;
+  const [dN, dP, dG, dA, , pN, pP, pG, pA] = nums;
+  let usados = 0, nUsos = 0;
+  for (const l of lines) if (/\d{1,2}-[a-z]{3,5}\.?-\d{4}.*\d+,\d{2}\s+[A-Z]{1,2}\s*$/i.test(l)) { const d = l.match(/(\d+,\d{2})\s+[A-Z]{1,2}\s*$/i); if (d) { usados += clNum(d[1]); nUsos++; } }
+  return { tipo: "vac", fecha, rut, normales: pN, prop: pP, prog: pG, adic: pA, tomados: Math.round((dN - pN) * 100) / 100, progTom: Math.round((dG - pG) * 100) / 100, devNormales: dN, devProp: dP, devProg: dG, devAdic: dA, usados, nUsos };
+}
+/* Reglas de clasificación por defecto según el nombre del concepto */
+function defaultsConcepto(nombre, sec) {
+  const n = nombre.normalize("NFD").replace(/[̀-ͯ]/g, "").toLowerCase();
+  if (/sueldo base|sueldo mensual|salario base/.test(n)) return { tipo: "F", vac: true, ind: true, r24: true };
+  if (/antig/.test(n)) return { tipo: "F", vac: true, ind: true, r24: true };
+  if (/gratific/.test(n)) return { tipo: "F", vac: false, ind: true, r24: false };
+  if (/aguinaldo|fiestas patrias|navidad|bono vacaciones|bono de vacaciones|escolaridad|matrimonio|nacimiento|fallecimiento/.test(n)) return { tipo: "V", vac: false, ind: false, r24: false };
+  if (/asignacion familiar|asig\.? familiar/.test(n)) return { tipo: "F", vac: false, ind: false, r24: false };
+  if (/hora.? extra|h\.? ?extra|sobretiempo|recargo/.test(n)) return { tipo: "V", vac: false, ind: false, r24: false };
+  if (/comision|semana corrida|incentivo|produccion|venta|premio/.test(n)) return { tipo: "V", vac: true, ind: true, r24: true };
+  if (/colacion|movilizacion|teletrabajo|desgaste|caja|perdida de caja|viatico|asignacion/.test(n)) return { tipo: "F", vac: true, ind: true, r24: false };
+  if (/bono/.test(n)) return { tipo: "V", vac: true, ind: true, r24: sec === "afecto" };
+  return { tipo: "F", vac: true, ind: true, r24: sec === "afecto" };
+}
+
+let pdfjsP;
+const loadPdfJs = () => pdfjsP || (pdfjsP = loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.min.js").then(() => loadScript("https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js")).then(() => { window.pdfjsLib.GlobalWorkerOptions.workerSrc = "https://cdnjs.cloudflare.com/ajax/libs/pdf.js/3.11.174/pdf.worker.min.js"; }).catch((e) => { pdfjsP = null; throw e; }));
+async function pdfLines(file) {
+  await loadPdfJs();
+  const pdf = await window.pdfjsLib.getDocument({ data: new Uint8Array(await file.arrayBuffer()) }).promise, lines = [];
+  for (let p = 1; p <= pdf.numPages; p++) {
+    const tc = await (await pdf.getPage(p)).getTextContent(), rows = [];
+    for (const it of tc.items) { if (!it.str || !it.str.trim()) continue; const x = it.transform[4], y = it.transform[5]; let r = rows.find((r) => Math.abs(r.y - y) < 3); if (!r) rows.push((r = { y, it: [] })); r.it.push([x, it.str]); }
+    rows.sort((a, b) => b.y - a.y).forEach((r) => lines.push(r.it.sort((a, b) => a[0] - b[0]).map((x) => x[1]).join(" ").replace(/\s+/g, " ").trim()));
+  }
+  return lines;
+}
+const rutN = (r) => String(r || "").replace(/\./g, "").toUpperCase().trim();
+function ensurePersona(rut, info, conLiqs) {
+  const s = S.sim;
+  if (!rutN(rut) || rutN(s.persona.rut) === rutN(rut)) return false;
+  if (!s.persona.rut && !(s.liqs || []).length) { s.persona.rut = rut; return false; }
+  const b = S.base.find((x) => rutN(x[0]) === rutN(rut));
+  S.sim = b ? simFromBase(b) : blankSim();
+  if (!b) S.sim.persona = { rut, nombre: (info.nombre || "").replace(",", ""), cargo: info.cargo || "", cc: info.cc || "", jornada: "", ingreso: info.ingreso ? anyDate(info.ingreso) : "" };
+  if (conLiqs) { S.sim.items = []; S.sim.liqs = []; S.sim.r24.meses = {}; }
+  S.sim.vacDoc = null; S.editId = null; S.editDoc = null;
+  return true;
+}
+function applyLiqs(list) {
+  const s = S.sim; s.liqs = s.liqs || []; s.r24.meses = s.r24.meses || {};
+  const nuevos = [];
+  for (const L of list) {
+    if (!s.persona.nombre && L.nombre) s.persona.nombre = L.nombre.replace(",", "");
+    if (!s.persona.cargo && L.cargo) s.persona.cargo = L.cargo;
+    if (!s.persona.cc && L.cc) s.persona.cc = L.cc;
+    if (!s.persona.ingreso && L.ingreso) s.persona.ingreso = anyDate(L.ingreso);
+    s.liqs = s.liqs.filter((x) => x.ym !== L.ym).concat([{ ym: L.ym, archivo: L.archivo, n: L.conceptos.length, rt: L.rt }]);
+    const rec = {}; const seen = {};
+    L.conceptos.forEach((c) => { let id = slug(c.nombre); seen[id] = (seen[id] || 0) + 1; if (seen[id] > 1) id += "_" + seen[id]; rec[id] = (rec[id] || 0) + c.monto; c.id = id; });
+    s.r24.meses[L.ym] = rec;
+    L.conceptos.forEach((c) => { if (!s.items.find((i) => i.id === c.id)) { const d = defaultsConcepto(c.nombre, c.sec); s.items.push({ id: c.id, nombre: c.nombre, m1: "", m2: "", m3: "", ...d, auto: true }); nuevos.push(c.nombre); } });
+  }
+  s.liqs.sort((a, b) => (a.ym < b.ym ? -1 : 1));
+  const last = s.liqs[s.liqs.length - 1];
+  s.mesRef = last.ym; s.rt = last.rt || s.rt;
+  const ms = [ymAdd(last.ym, -2), ymAdd(last.ym, -1), last.ym];
+  const fromLiq = new Set(Object.values(s.r24.meses).flatMap((r) => Object.keys(r)));
+  s.items.forEach((it) => { if (!fromLiq.has(it.id) && !it.auto) return; ["m1", "m2", "m3"].forEach((k, i) => { const r = s.r24.meses[ms[i]]; it[k] = s.liqs.some((x) => x.ym === ms[i]) ? (r && r[it.id] != null ? r[it.id] : 0) : ""; }); });
+  // un concepto que cambia mes a mes y no es sueldo/antigüedad se sugiere variable
+  s.items.forEach((it) => { if (!it.auto || it.tipoFijado) return; const v = [it.m1, it.m2, it.m3].filter((x) => x !== ""); if (v.length >= 2 && new Set(v).size > 1 && !/sueldo|antig/i.test(it.nombre)) it.tipo = "V"; });
+  return nuevos;
+}
+function applyVac(V, archivo) {
+  Object.assign(S.sim.vac, { modo: "saldo", fecha: V.fecha || S.sim.vac.fecha, normales: V.normales, prop: V.prop, prog: V.prog, adic: V.adic, tomados: V.tomados, progTom: V.progTom });
+  S.sim.vacDoc = { archivo, fecha: V.fecha };
+}
+async function handlePdfs(files) {
+  if (!files.length) return;
+  toast("Leyendo " + files.length + " PDF…");
+  const liqs = [], vacs = [], fail = [];
+  for (const f of files) {
+    try { const lines = await pdfLines(f); const L = parseLiq(lines); if (L) { L.archivo = f.name; liqs.push(L); continue; } const V = parseVacPdf(lines); if (V) { V.archivo = f.name; vacs.push(V); continue; } fail.push(f.name); }
+    catch (e) { fail.push(f.name + (e && e.message && /librer/.test(e.message) ? " (no se pudo cargar el lector de PDF)" : "")); }
+  }
+  const ruts = [...new Set([...liqs, ...vacs].map((x) => rutN(x.rut)).filter(Boolean))];
+  if (ruts.length > 1) { toast("Los PDF son de trabajadores distintos (" + ruts.join(", ") + "). Sube los de una persona a la vez."); return; }
+  const first = liqs[0] || vacs[0];
+  let cambio = false;
+  if (first) cambio = ensurePersona(first.rut, first, liqs.length > 0);
+  const nuevos = liqs.length ? applyLiqs(liqs) : [];
+  vacs.forEach((v) => applyVac(v, v.archivo));
+  renderAll();
+  S.lastImport = { liqs: liqs.map((l) => l.ym), vacs: vacs.length, nuevos, fail, cambio };
+  renderDocs();
+  const msg = [liqs.length ? liqs.length + " liquidación(es)" : "", vacs.length ? "saldo de vacaciones" : ""].filter(Boolean).join(" y ");
+  toast(msg ? msg + " cargado" + (nuevos.length ? " · " + nuevos.length + " concepto(s) nuevo(s): revisa sus opciones" : "") + (fail.length ? " · no reconocido: " + fail.join(", ") : "") : "No se reconoció el formato de: " + fail.join(", "));
+}
+function renderDocs() {
+  const s = S.sim, L = s.liqs || [], li = S.lastImport;
+  const pills = L.map((x) => `<span class="pill pos" title="${esc(x.archivo || "")}">Liquidación ${ymL(x.ym)} · ${x.n} conceptos</span>`).join(" ") + (s.vacDoc ? ` <span class="pill" title="${esc(s.vacDoc.archivo)}">Saldo vacaciones al ${fd(s.vacDoc.fecha)}</span>` : "");
+  $("#docs").innerHTML = `<div class="drop" id="dropPdf" style="text-align:left;display:flex;gap:10px;align-items:center;flex-wrap:wrap">${pills || '<span>Sin documentos. Sube las liquidaciones (PDF) de los últimos meses y el informe de vacaciones; los conceptos se reconocen solos.</span>'}<span class="note" style="margin-left:auto">Arrastra aquí los PDF o usa “Subir liquidaciones / vacaciones”</span></div>${li && li.nuevos.length ? `<div class="banner info" style="margin-top:10px">Conceptos nuevos reconocidos: <b>${li.nuevos.map(esc).join(", ")}</b>. Se clasificaron con reglas por defecto; ajusta Fijo/Variable y en qué bases entran.</div>` : ""}${li && li.fail.length ? `<div class="banner" style="margin-top:10px">No se reconoció: ${li.fail.map(esc).join(", ")}. Formatos soportados: liquidación “LIQUIDACION DE REMUNERACIONES” y “Vacaciones del Empleado”.</div>` : ""}`;
+  const dz = $("#dropPdf");
+  dz.ondragover = (e) => { e.preventDefault(); dz.style.borderColor = "var(--accent)"; };
+  dz.ondragleave = () => (dz.style.borderColor = "");
+  dz.ondrop = (e) => { e.preventDefault(); dz.style.borderColor = ""; handlePdfs([...e.dataTransfer.files].filter((f) => /pdf$/i.test(f.name) || f.type === "application/pdf")); };
+}
+$("#fPdf").addEventListener("change", (e) => { const fs = [...e.target.files]; e.target.value = ""; handlePdfs(fs); });
+
+/* ---------- pestañas ---------- */
+function showTab(t) { document.querySelectorAll(".tab").forEach((b) => b.setAttribute("aria-selected", String(b.dataset.tab === t))); document.querySelectorAll("main > section.panel").forEach((p) => (p.hidden = p.id !== "p-" + t)); if (t === "uf") renderUfTab(); if (t === "hist") renderHist(); if (t === "cfg") renderCfgTables(); if (t === "log") renderLog(); }
+document.querySelectorAll(".tab").forEach((b) => (b.onclick = () => showTab(b.dataset.tab)));
+
+/* ---------- arranque ---------- */
+(function boot() {
+  FER = parseFer(FER_DEF); $("#fFer").value = FER_DEF;
+  UF.build(); setModel();
+  const dr = lsGet("fq_draft", null);
+  S.sim = dr && dr.sim && dr.sim.v === 1 ? dr.sim : exampleSim();
+  if (!S.sim.vac.proy) S.sim.vac.proy = [];
+  $("#hDia").value = todayIso(); $("#hNF").value = todayIso();
+  fillPersonList(); renderAll(); renderUfTab();
+  Store.init().then(async () => {
+    try {
+      const [fer, uf, emp, base] = await Promise.all([Store.getCfg("feriados"), Store.getCfg("uf"), Store.getCfg("empresa"), Store.getCfg("base")]);
+      if (fer && fer.txt) { FER = parseFer(fer.txt); $("#fFer").value = fer.txt; }
+      if (uf && uf.utm) { for (const [k, v] of Object.entries(uf.utm)) if (+v > 0) { UTMX[k] = +v; D.utm[k] = +v; } }
+      if (uf && uf.dias) { for (const [k, v] of Object.entries(uf.dias)) UF.dias.set(k, +v); UF.build(); setModel(); }
+      if (emp) S.empresa = { ...S.empresa, ...emp };
+      if (base && base.rows) { try { S.base = JSON.parse(base.rows); S.baseFecha = base.fecha; fillPersonList(); } catch {} }
+    } catch {}
+    if (dr && dr.editId) { await loadSims(); const x = S.sims.find((s) => s.id === dr.editId); if (x) { S.editId = x.id; S.editDoc = x; } } else await loadSims();
+    renderAll(); renderUfTab();
+    if (S.db) S.db.collection("sims").onSnapshot(() => loadSims(), () => {});
+  });
+  window.claude?.use?.("downloads").then((d) => (S.dl = d)).catch(() => {});
+})();
+</script>
+
+</body></html>

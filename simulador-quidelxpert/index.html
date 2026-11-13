@@ -211,6 +211,7 @@ table.datos.hist small { display: block; color: var(--tenue); font-family: var(-
       <label for="selMes">Período</label>
       <select id="selMes" aria-label="Mes"></select>
       <select id="selAnio" aria-label="Año"></select>
+      <button id="btnActMes" class="mini" type="button" title="Trae los parámetros oficiales del mes elegido (Previred y SII)">⟳ Actualizar mes</button>
       <span id="estadoMes" class="estado">Cargando…</span>
     </div>
   </header>
@@ -1486,6 +1487,109 @@ function fijarPeriodo(p) {
   }
   recalcular();
 }
+/* Base central de parámetros oficiales. Orden: 1) base de datos de Claude, 2) herramientas.quidelxpert.cl, 3) mindicador.cl (solo UF y UTM). */
+const PARAM_URL = "https://herramientas.quidelxpert.cl/parametros/parametros.json";
+async function paramOficial(ym, db) {
+  const sitio = typeof window !== "undefined" && !!window.CLAUDE_LOCAL; // página propia: la base es local, primero se consulta la web
+  const local = async () => { if (!db) return null; try { const s = await db.doc("parametros/" + ym).get(); return s.exists ? { d: s.data(), via: sitio ? "este navegador" : "base de Claude" } : null; } catch (e) { return null; } };
+  if (!sitio) { const l = await local(); if (l) return l; }
+  try {
+    const r = await fetch(PARAM_URL + "?t=" + Date.now(), { cache: "no-store" });
+    if (r.ok) { const j = await r.json(); const d = j && j.meses && j.meses[ym]; if (d) return { d, via: "herramientas.quidelxpert.cl" }; }
+  } catch (e) { /* sin red o bloqueado dentro de Claude */ }
+  try {
+    const y = ym.slice(0, 4), m = ym.slice(5, 7), ult = new Date(+y, +m, 0).getDate(), p2 = (n) => String(n).padStart(2, "0");
+    const val = async (ind, dia) => { try { const r = await fetch("https://mindicador.cl/api/" + ind + "/" + p2(dia) + "-" + m + "-" + y); if (!r.ok) return null; const j = await r.json(); const v = j && j.serie && j.serie[0] ? +j.serie[0].valor : 0; return v > 0 ? v : null; } catch (e) { return null; } };
+    const [u1, u9, u10, uU, utm] = await Promise.all([val("uf", 1), val("uf", 9), val("uf", 10), val("uf", ult), val("utm", 1)]);
+    const d = { periodo: ym, estado: "parcial", ufDias: {}, cargado: new Date().toISOString().slice(0, 10) };
+    if (u1) d.ufDias[ym + "-01"] = u1; if (u9) d.ufDias[ym + "-09"] = u9; if (u10) d.ufDias[ym + "-10"] = u10;
+    if (uU) { d.ufDias[ym + "-" + p2(ult)] = uU; d.uf = uU; }
+    if (utm) d.utm = utm;
+    if (d.uf || d.utm || Object.keys(d.ufDias).length) return { d, via: "mindicador.cl" };
+  } catch (e) { /* nada */ }
+  return sitio ? local() : null;
+}
+/* Base local (modo web, fuera de Claude): misma interfaz que la base de Claude, guardada en este navegador. */
+function dbLocal(pref) {
+  const subs = {}, mem = {};
+  const col0 = (c) => { if (!mem[c]) { try { mem[c] = JSON.parse(localStorage.getItem(pref + c) || "{}") || {}; } catch (e) { mem[c] = {}; } } return mem[c]; };
+  const emitir = (c) => (subs[c] || []).forEach((f) => { try { f(); } catch (e) { /* nada */ } });
+  const grabar = (c) => { try { localStorage.setItem(pref + c, JSON.stringify(mem[c])); } catch (e) { /* sin almacenamiento */ } emitir(c); };
+  const foto = (c, campo, dir) => {
+    const o = col0(c), ids = Object.keys(o).sort();
+    if (campo) ids.sort((a, b) => { const x = o[a][campo], y = o[b][campo]; return (x < y ? -1 : x > y ? 1 : 0) * (dir === "desc" ? -1 : 1); });
+    return { docs: ids.map((id) => ({ id, data: () => o[id] })) };
+  };
+  const col = (c, campo, dir) => ({
+    orderBy: (f, d) => col(c, f, d),
+    onSnapshot: (cb) => { const f = () => cb(foto(c, campo, dir)); (subs[c] = subs[c] || []).push(f); setTimeout(f, 0); return () => {}; },
+    doc: (id) => ({
+      get: async () => { const v = col0(c)[id]; return { exists: v !== undefined, id, data: () => v }; },
+      set: async (v) => { col0(c)[id] = JSON.parse(JSON.stringify(v)); grabar(c); },
+      delete: async () => { delete col0(c)[id]; grabar(c); },
+    }),
+  });
+  return {
+    collection: (c) => col(c),
+    doc: (ruta) => { const k = ruta.indexOf("/"); return col(ruta.slice(0, k)).doc(ruta.slice(k + 1)); },
+    varios: (c, objs) => { Object.assign(col0(c), JSON.parse(JSON.stringify(objs))); grabar(c); },
+    leer: (c) => col0(c),
+  };
+}
+/* Modo web: herramientas.quidelxpert.cl u otra página fuera de Claude. */
+async function iniciarWeb() {
+  S.web = true; S.db = dbLocal("qx-sim-"); S.puedeEditar = true;
+  S.downloads = { save: async ({ filename, data }) => { const b = data instanceof Blob ? data : new Blob([data], { type: "text/plain;charset=utf-8" }); const a = document.createElement("a"); a.href = URL.createObjectURL(b); a.download = filename; document.body.appendChild(a); a.click(); a.remove(); setTimeout(() => URL.revokeObjectURL(a.href), 5000); } };
+  S.db.collection("parametros").onSnapshot(alRecibirParametros);
+  S.db.collection("escenarios").orderBy("nombre").onSnapshot((snap) => { S.escenarios = snap.docs; renderEscenarios(); renderEscSim1(); if (!$("v-historial").hidden) renderHistorial(); });
+  S.db.collection("comparativas").orderBy("actualizado", "desc").onSnapshot((snap) => { S.comparativas = snap.docs; if (!$("v-historial").hidden) renderHistorial(); });
+  renderEscenarios();
+  try {
+    const r = await fetch(PARAM_URL + "?t=" + Date.now(), { cache: "no-store" });
+    const j = r.ok ? await r.json() : null, loc = S.db.leer("parametros"), nuevos = {};
+    Object.entries((j && j.meses) || {}).forEach(([p, d]) => { if (/^\d{4}-\d{2}$/.test(p) && d && (!loc[p] || (loc[p].estado !== "manual" && JSON.stringify(loc[p]) !== JSON.stringify(d)))) nuevos[p] = d; });
+    if (Object.keys(nuevos).length) S.db.varios("parametros", nuevos);
+  } catch (e) {
+    if (!Object.keys(S.db.leer("parametros")).length) aviso("No se pudo descargar la base de parámetros desde herramientas.quidelxpert.cl. Revisa tu conexión y recarga la página.", "error");
+  }
+}
+/* Página propia con base local: al abrir, copia a este navegador los meses publicados en herramientas.quidelxpert.cl. */
+async function sincronizarSitio(db) {
+  try {
+    const r = await fetch(PARAM_URL + "?t=" + Date.now(), { cache: "no-store" }); if (!r.ok) return;
+    const j = await r.json();
+    for (const [p, d] of Object.entries((j && j.meses) || {})) {
+      if (!/^\d{4}-\d{2}$/.test(p) || !d) continue;
+      const s = await db.collection("parametros").doc(p).get(), l = s.exists ? s.data() : null;
+      if (!l || (l.estado !== "manual" && (l.uf !== d.uf || l.utm !== d.utm || l.estado !== d.estado || l.cargado !== d.cargado || l.sis !== d.sis || l.imm !== d.imm))) await db.collection("parametros").doc(p).set(d);
+    }
+  } catch (e) { /* sin red: se usan los meses guardados */ }
+}
+/* Trae los valores oficiales del mes elegido: base de Claude, herramientas.quidelxpert.cl o mindicador.cl. */
+async function actualizarMes() {
+  const p = periodoDesdeSelectores(), b = $("btnActMes"), nombre = etiquetaPeriodo(p);
+  if (!S.db) { toast("No hay base de parámetros disponible en esta vista."); return; }
+  const t0 = b.textContent; b.disabled = true; b.textContent = "Buscando…";
+  try {
+    const r = await paramOficial(p, S.web ? null : S.db);
+    if (!r) { aviso("Todavía no hay parámetros oficiales publicados para " + nombre + ". Pídele a Claude: «actualiza los parámetros de " + nombre + "», o ingrésalos a mano en la pestaña Parámetros."); return; }
+    let P = r.d;
+    if (P.estado === "parcial") {
+      const ant = S.params[p] ? p : S.periodos.filter((x) => x < p).pop(), base = ant && S.params[ant];
+      if (!base) { aviso("Solo se encontró la UF y la UTM de " + nombre + " y no hay un mes anterior del que copiar las tasas. Ingrésalo a mano en la pestaña Parámetros."); return; }
+      P = { ...base, periodo: p, uf: P.uf || base.uf, utm: P.utm || base.utm, estado: "derivado", cargado: P.cargado, fuente: "Derivado: UF y UTM de mindicador.cl; tasas copiadas de " + etiquetaPeriodo(ant) };
+    }
+    S.params[p] = P;
+    if (!S.periodos.includes(p)) { S.periodos.push(p); S.periodos.sort(); poblarSelectoresPeriodo(); }
+    fijarPeriodo(p);
+    if ((S.web || window.CLAUDE_LOCAL) && r.via !== "este navegador") await S.db.collection("parametros").doc(p).set(P);
+    const est = P.estado === "verificado" ? "verificados en Previred" : P.estado === "derivado" ? "derivados (UF y UTM oficiales; tasas del último mes publicado por Previred)" : "ingresados a mano";
+    aviso("Parámetros de " + nombre + " actualizados desde " + r.via + ": " + est + ". UF $" + Number(P.uf).toLocaleString("es-CL", { minimumFractionDigits: 2 }) + " · UTM " + fmt(P.utm) + " · ingreso mínimo " + fmt(P.imm) + (P.cargado ? " · cargados el " + P.cargado : "") + ".");
+    toast("Mes actualizado: " + nombre);
+    clearTimeout(actualizarMes._h); actualizarMes._h = setTimeout(() => aviso(""), 12000);
+  } catch (e) { toast("No se pudo consultar la base (" + ((e && e.code) || "error") + ")."); }
+  finally { b.disabled = false; b.textContent = t0; }
+}
 function periodoDesdeSelectores() { return $("selAnio").value + "-" + $("selMes").value; }
 
 /* --- liquidación --- */
@@ -2072,6 +2176,7 @@ async function iniciar() {
   $("formSim").addEventListener("submit", (ev) => ev.preventDefault());
   $("selMes").addEventListener("change", () => fijarPeriodo(periodoDesdeSelectores()));
   $("selAnio").addEventListener("change", () => fijarPeriodo(periodoDesdeSelectores()));
+  $("btnActMes").addEventListener("click", actualizarMes);
   $("btnItem").addEventListener("click", () => { S.items.push({ id: nuevoId(), nombre: "Nuevo ítem", tipo: "HI", tributable: true, monto: 0 }); renderItems(); recalcular(); const u = S.items[S.items.length - 1]; const el = $("it-n-" + u.id); if (el) { el.focus(); el.select(); } });
   $("btnInverso").addEventListener("click", () => {
     const P = S.params[S.periodo]; if (!P) { toast("Elige un mes con parámetros."); return; }
@@ -2137,7 +2242,7 @@ async function iniciar() {
   $("btnNuevoMes").addEventListener("click", crearMes);
   window.addEventListener("hashchange", mostrarVista);
 
-  if (!window.claude || !window.claude.use) { S.cargado = true; aviso("Abre el simulador desde Claude para cargar los parámetros mensuales.", "error"); recalcular(); renderEscenarios(); return; }
+  if (!window.claude || !window.claude.use) { await iniciarWeb(); return; }
   const [db, user, downloads] = await Promise.all([claude.use("db"), claude.use("user"), claude.use("downloads")]);
   S.db = db; S.user = user; S.downloads = downloads;
   S.puedeEditar = !!(user && (user.canEdit() || user.isOwner()));
@@ -2146,6 +2251,7 @@ async function iniciar() {
   db.collection("escenarios").orderBy("nombre").onSnapshot((snap) => { S.escenarios = snap.docs; renderEscenarios(); renderEscSim1(); if (!$("v-historial").hidden) renderHistorial(); }, () => {});
   db.collection("comparativas").orderBy("actualizado", "desc").onSnapshot((snap) => { S.comparativas = snap.docs; if (!$("v-historial").hidden) renderHistorial(); }, () => {});
   renderEscenarios();
+  if (window.CLAUDE_LOCAL) sincronizarSitio(db);
 }
 iniciar();
 </script>
